@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+while (my $dir=shift @ARGV) {
+	if (-d $dir and -f "$dir/CuO2.ph.out") {
+		$dir =~ m#(\w+)$#;
+		$nk  = $1;
+		open RES,"$dir/CuO2.ph.out";
+		@w = map { m#=\s+(\S+) \[THz\] =#; $1 } grep (/omega\(/,<RES>);
+		print "$nk\t" .  join("\t",@w) . "\n";
+		close RES;
+	}
+}
+closedir PWD;
