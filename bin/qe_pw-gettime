@@ -1,0 +1,8 @@
+#!/bin/sh
+for f in *.out ; do
+	grep 'CPU time' $f | tail -n1 ;
+done | perl -pe '$time = 0; /([0-9.]+)d/ and $time +=24*360*$1;
+	/([0-9.]+)h/ and $time+=360*$1;
+	/([0-9.]+)m/ and $time+=60*$1;
+	/([0-9.]+)s/ and $time+=$1;
+	$a+=$time; $_ = "$a\n"; ' | tail -n1
