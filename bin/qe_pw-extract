@@ -65,6 +65,16 @@ sub extract_S {
 	};
 	return @S;
 }
+# extract Fermi energy
+sub extract_Ef {
+	my $fh=shift;
+	my @Ef;
+	while (<$fh>) {
+		m#Fermi energy is\s+(\S+) ev$# and push @Ef,$1;
+	}
+	return @Ef;
+}
+
 # ------------------------------------------------------------------------------------
 #   Main program
 # ------------------------------------------------------------------------------------
@@ -74,7 +84,8 @@ our ($opt_f,$opt_d);
 my %extract = (
 	E => \&extract_E,
 	F => \&extract_F,
-	S => \&extract_S
+	S => \&extract_S,
+	Ef => \&extract_Ef
 	);
 
 getopts("f:d:");
