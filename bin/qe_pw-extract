@@ -1,0 +1,102 @@
+#!/usr/bin/perl
+use strict;
+use Getopt::Std;
+
+# -----------------------------------------------------------------
+#                        Extractors
+# Extract energy
+sub extract_E {
+	my $fh = shift;
+	# --- matching line: ---
+	# !    total energy              =  -150.90270828 ryd
+	my @E = map { my @l=split; $l[4] } grep (/^!/,<$fh>);
+	return @E;
+}
+# Extract forces
+sub extract_F {
+	my $fh = shift;
+	my @F;
+	my @block=();
+	my $trigger=0;
+	# --- matching block: ---
+	#
+	#      atom   1 type  1   force =     0.01955501    0.02827548    0.00185099
+	#      atom   2 type  2   force =     0.00248174   -0.02624067    0.10253621
+	#      atom   3 type  2   force =    -0.02203676   -0.00203481   -0.10438720
+	#
+	while (<$fh>) {
+		if (m#atom\s+\d+ type\s+\d+\s+force =(.*)$#) {
+			$trigger=1;
+			$_=$1;
+			push @block,split;
+		} elsif ($trigger) {
+			$trigger=0;
+			push @F,join("\t",@block);
+			@block=();
+		}
+	}
+	return @F;
+}
+# Extract stress
+sub extract_S {
+	my $fh=shift;
+	my @S;
+	my $trigger=0;
+	my @block=();
+	# --- matching block: ---
+	#
+	#          total   stress  (ryd/bohr**3)                  (kbar)     P=  -66.79
+	#  -0.00041355   0.00000101  -0.00006949        -60.84      0.15    -10.22
+	#   0.00000101  -0.00038236   0.00006165          0.15    -56.25      9.07
+	#  -0.00006949   0.00006165  -0.00056612        -10.22      9.07    -83.28
+	#
+	while (<$fh>) {
+		if ($trigger) {
+			if (m#^\s*$#){
+				$trigger=0;
+				push @S,join("\t",@block);
+				@block=();
+			} else {
+				push @block,split;
+				$#block-=3;
+			}
+		}
+		$trigger ||= m#total   stress#;
+	};
+	return @S;
+}
+# ------------------------------------------------------------------------------------
+#   Main program
+# ------------------------------------------------------------------------------------
+
+our ($opt_f,$opt_d);
+# coderef list of all extractors
+my %extract = (
+	E => \&extract_E,
+	F => \&extract_F,
+	S => \&extract_S
+	);
+
+getopts("f:d:");
+
+my $filename=$opt_f || 'CuO2.scf.out';
+$opt_d or $opt_d = 'E';
+
+my $extract=$extract{$opt_d};
+my %result;
+opendir PWD,".";
+while (my $dir=readdir PWD) {
+	if (-d $dir and -f "$dir/$filename") {
+		$dir =~ m#([^/]+)$#;
+		my $LC = $1;
+		my $result_fh;
+		open $result_fh,"$dir/$filename";
+		my @E = &$extract($result_fh);
+		$result{$LC}=$E[-1] if @E;
+		close $result_fh;
+	}
+}
+closedir PWD;
+foreach (sort { $a <=> $b} keys %result) {
+	print "$_\t$result{$_}\n";
+}
