@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+use strict;
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# now parse the band data file created by bands.x
+open(INPUT,$ARGV[0]) or die "can't open '$ARGV[0]' for reading\n";
+open(OUTPUT,">$ARGV[1]") or die "can't open '$ARGV[1]' for writing\n";
+#   extract the number of bands from first line
+<INPUT>=~ m#nbnd= *(\w+), nks= *#;
+my $nbnd = $1;
+#   the data accumulator
+my @current_dataset  = ();
+#   the starting point is a special point
+while (<INPUT>) {
+	# check for a new data set (starts with a bunch of spaces)
+	my $newdataset=(m#^         #);
+	# continue an old dataset
+	unless ($newdataset) {
+		push @current_dataset, split;
+	}
+	# write out our collected dataset if we
+	#   - found a new one
+	#   - are at the end of the file
+	if (@current_dataset and ($newdataset or eof(INPUT))) {
+		print OUTPUT join("\t",@current_dataset) . "\n";
+	}
+	# start a new data set
+	if ($newdataset) {
+		@current_dataset = split;
+	}
+}
+close INPUT;
+close OUTPUT;
