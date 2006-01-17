@@ -74,6 +74,18 @@ sub extract_Ef {
 	}
 	return @Ef;
 }
+# usage
+sub usage {
+	print STDERR "usage: $0 -d <datatype> -f <filename> [options]
+	where <datatype> is one of:
+		E  - Total energy
+		Ef - Fermi energy
+		S  - stress tensor
+		F  - forces
+	Options:
+		-r - run recursively\n";
+	exit -1;
+}
 
 # ------------------------------------------------------------------------------------
 #   Main program
@@ -90,9 +102,9 @@ my %extract = (
 
 getopts("f:d:r");
 
-my $filename=$opt_f || 'CuO2.scf.out';
-$opt_d or $opt_d = 'E';
+usage() unless ($opt_d and $opt_f);
 
+my $filename=$opt_f;
 my $extract=$extract{$opt_d};
 if ($opt_r) {
 	my %result;
