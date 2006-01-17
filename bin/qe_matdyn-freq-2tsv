@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+usage() if (@ARGV != 3);
+
+my $src = shift;
+my $qpt = shift;
+my $dst = shift;
+open (SRC,$src) or die "can't open source $src\n";
+open (QPT,$qpt) or die "can't open matdyn input file $qpt\n";
+open (DST,">$dst") or die "can't open destination $dst\n";
+#advance to the first qpoint, i.e. the line following the number of q point
+until (<QPT> =~ /^\d+$/) {}
+$_=<SRC>;
+my ($nk,$nbranches) = split;
+my @acc=();
+while (<SRC>) {
+	my @line=split;
+	while ((@acc < $nbranches) and @line) {
+		push @acc, shift @line;
+	}
+	if (@acc == $nbranches) {
+		$_=<QPT>;
+		print DST join("\t",split,@acc) . "\n";
+		@acc=();
+	}
+}
+
+sub usage {
+	print STDERR "usage: $0 <sourcefile.freq> <file.matdyn.in> <destfile.freq.tsv>
+	q points are extracted from <file.matdyn.in>\n";
+	exit(-1);
+}
