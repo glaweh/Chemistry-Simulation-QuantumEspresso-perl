@@ -79,7 +79,7 @@ sub extract_Ef {
 #   Main program
 # ------------------------------------------------------------------------------------
 
-our ($opt_f,$opt_d);
+our ($opt_f,$opt_d,$opt_r);
 # coderef list of all extractors
 my %extract = (
 	E => \&extract_E,
@@ -88,26 +88,35 @@ my %extract = (
 	Ef => \&extract_Ef
 	);
 
-getopts("f:d:");
+getopts("f:d:r");
 
 my $filename=$opt_f || 'CuO2.scf.out';
 $opt_d or $opt_d = 'E';
 
 my $extract=$extract{$opt_d};
-my %result;
-opendir PWD,".";
-while (my $dir=readdir PWD) {
-	if (-d $dir and -f "$dir/$filename") {
-		$dir =~ m#([^/]+)$#;
-		my $LC = $1;
-		my $result_fh;
-		open $result_fh,"$dir/$filename";
-		my @E = &$extract($result_fh);
-		$result{$LC}=$E[-1] if @E;
-		close $result_fh;
+if ($opt_r) {
+	my %result;
+	opendir PWD,".";
+	while (my $dir=readdir PWD) {
+		if (-d $dir and -f "$dir/$filename") {
+			$dir =~ m#([^/]+)$#;
+			my $LC = $1;
+			my $result_fh;
+			open $result_fh,"$dir/$filename";
+			my @E = &$extract($result_fh);
+			$result{$LC}=$E[-1] if @E;
+			close $result_fh;
+		}
 	}
-}
-closedir PWD;
-foreach (sort { $a <=> $b} keys %result) {
-	print "$_\t$result{$_}\n";
+	closedir PWD;
+	foreach (sort { $a <=> $b} keys %result) {
+		print "$_\t$result{$_}\n";
+	}
+} else {
+	my $result_fh;
+	open $result_fh,"$filename";
+	my @E = &$extract($result_fh);
+	print "$E[-1]\n" if @E;
+	close $result_fh;
+	exit 0;
 }
