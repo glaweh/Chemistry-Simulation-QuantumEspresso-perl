@@ -74,6 +74,18 @@ sub extract_Ef {
 	}
 	return @Ef;
 }
+my $omega_seperator="\n";
+# extract phonon frequencies
+sub extract_omega {
+	my $fh=shift;
+	my @omega;
+	# match:   omega( 1) =      -2.614365 [THz] =     -87.206422 [cm-1]
+	while (<$fh>) {
+		m#^\s+omega.*=\s*([0-9.-]+) \[cm-1\]# and push @omega,$1;
+	}
+	return join($omega_seperator,@omega);
+}
+
 # usage
 sub usage {
 	print STDERR "usage: $0 -d <datatype> -f <filename> [options]
@@ -82,6 +94,7 @@ sub usage {
 		Ef - Fermi energy
 		S  - stress tensor
 		F  - forces
+		p  - phonon frequencies
 	Options:
 		-r - run recursively\n";
 	exit -1;
@@ -97,7 +110,8 @@ my %extract = (
 	E => \&extract_E,
 	F => \&extract_F,
 	S => \&extract_S,
-	Ef => \&extract_Ef
+	Ef => \&extract_Ef,
+	p => \&extract_omega
 	);
 
 getopts("f:d:r");
@@ -107,6 +121,7 @@ usage() unless ($opt_d and $opt_f);
 my $filename=$opt_f;
 my $extract=$extract{$opt_d};
 if ($opt_r) {
+	$omega_seperator=" ";
 	my %result;
 	opendir PWD,".";
 	while (my $dir=readdir PWD) {
