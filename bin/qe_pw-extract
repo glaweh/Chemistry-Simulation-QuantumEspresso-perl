@@ -2,6 +2,7 @@
 use strict;
 use Getopt::Std;
 
+my $column_seperator="\n";
 # -----------------------------------------------------------------
 #                        Extractors
 # Extract energy
@@ -31,7 +32,7 @@ sub extract_F {
 			push @block,split;
 		} elsif ($trigger) {
 			$trigger=0;
-			push @F,join("\t",@block);
+			push @F,join($column_seperator,@block);
 			@block=();
 		}
 	}
@@ -54,7 +55,7 @@ sub extract_S {
 		if ($trigger) {
 			if (m#^\s*$#){
 				$trigger=0;
-				push @S,join("\t",@block);
+				push @S,join($column_seperator,@block);
 				@block=();
 			} else {
 				push @block,split;
@@ -74,7 +75,6 @@ sub extract_Ef {
 	}
 	return @Ef;
 }
-my $omega_seperator="\n";
 # extract phonon frequencies
 sub extract_omega {
 	my $fh=shift;
@@ -83,7 +83,7 @@ sub extract_omega {
 	while (<$fh>) {
 		m#^\s+omega.*=\s*([0-9.-]+) \[cm-1\]# and push @omega,$1;
 	}
-	return join($omega_seperator,@omega);
+	return join($column_seperator,@omega);
 }
 
 # usage
@@ -116,34 +116,31 @@ my %extract = (
 
 getopts("d:r:");
 usage() unless ($opt_d);
-
 my $extract=$extract{$opt_d};
+
+my @filelist;
+
 if ($opt_r) {
-	my $filename=$opt_r;
-	$omega_seperator=" ";
-	my %result;
 	opendir PWD,".";
-	while (my $dir=readdir PWD) {
-		if (-d $dir and -f "$dir/$filename") {
-			$dir =~ m#([^/]+)$#;
-			my $LC = $1;
-			my $result_fh;
-			open $result_fh,"$dir/$filename";
-			my @E = &$extract($result_fh);
-			$result{$LC}=$E[-1] if @E;
-			close $result_fh;
-		}
-	}
+	@filelist = grep { -f $_ } map { "$_/$opt_r" } readdir(PWD);
 	closedir PWD;
-	foreach (sort { $a <=> $b} keys %result) {
-		print "$_\t$result{$_}\n";
-	}
 } else {
-	foreach my $filename (@ARGV) {
-		my $result_fh;
-		open $result_fh,"$filename";
-		my @E = &$extract($result_fh);
-		print "$E[-1]\n" if @E;
-		close $result_fh;
-	}
+	@filelist = @ARGV;
+}
+$column_seperator=" " if (@filelist>1);
+
+my %result;
+foreach my $filename (@filelist) {
+	$filename =~ m#([^/]+)/[^/]+$#;
+	my $dir = $1;
+
+	my $result_fh;
+	open $result_fh,"$filename";
+	my @RES = &$extract($result_fh);
+	$result{$dir}=$RES[-1] if (@RES);
+	close $result_fh;
+}
+
+foreach (sort { $a <=> $b} keys %result) {
+	print "$_$column_seperator$result{$_}\n";
 }
