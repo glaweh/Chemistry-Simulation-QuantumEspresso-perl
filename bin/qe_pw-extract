@@ -88,7 +88,7 @@ sub extract_omega {
 
 # usage
 sub usage {
-	print STDERR "usage: $0 -d <datatype> -f <filename> [options]
+	print STDERR "usage: $0 -d <datatype> <-r searchfilename | filename [filename] ...>
 	where <datatype> is one of:
 		E  - Total energy
 		Ef - Fermi energy
@@ -96,7 +96,7 @@ sub usage {
 		F  - forces
 		p  - phonon frequencies
 	Options:
-		-r - run recursively\n";
+		-r searchfilename - run recursively, search for files name 'searchfilename'\n";
 	exit -1;
 }
 
