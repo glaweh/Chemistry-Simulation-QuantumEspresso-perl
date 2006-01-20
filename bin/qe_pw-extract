@@ -104,7 +104,7 @@ sub usage {
 #   Main program
 # ------------------------------------------------------------------------------------
 
-our ($opt_f,$opt_d,$opt_r);
+our ($opt_d,$opt_r);
 # coderef list of all extractors
 my %extract = (
 	E => \&extract_E,
@@ -114,13 +114,12 @@ my %extract = (
 	p => \&extract_omega
 	);
 
-getopts("f:d:r");
+getopts("d:r:");
+usage() unless ($opt_d);
 
-usage() unless ($opt_d and $opt_f);
-
-my $filename=$opt_f;
 my $extract=$extract{$opt_d};
 if ($opt_r) {
+	my $filename=$opt_r;
 	$omega_seperator=" ";
 	my %result;
 	opendir PWD,".";
@@ -140,10 +139,11 @@ if ($opt_r) {
 		print "$_\t$result{$_}\n";
 	}
 } else {
-	my $result_fh;
-	open $result_fh,"$filename";
-	my @E = &$extract($result_fh);
-	print "$E[-1]\n" if @E;
-	close $result_fh;
-	exit 0;
+	foreach my $filename (@ARGV) {
+		my $result_fh;
+		open $result_fh,"$filename";
+		my @E = &$extract($result_fh);
+		print "$E[-1]\n" if @E;
+		close $result_fh;
+	}
 }
