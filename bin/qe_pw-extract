@@ -142,5 +142,5 @@ foreach my $filename (@filelist) {
 }
 
 foreach (sort { $a <=> $b} keys %result) {
-	print "$_$column_seperator$result{$_}\n";
+	print "$_$column_seperator$result{$_}\n" unless ($result{$_} eq '');
 }
