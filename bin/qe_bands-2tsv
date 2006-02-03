@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 use strict;
 
+die "usage: $0 <pwbands.dat> <tsvfile>\n" if (@ARGV != 2);
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # now parse the band data file created by bands.x
 open(INPUT,$ARGV[0]) or die "can't open '$ARGV[0]' for reading\n";
