@@ -142,5 +142,7 @@ foreach my $filename (@filelist) {
 }
 
 foreach (sort { $a <=> $b} keys %result) {
-	print "$_$column_seperator$result{$_}\n" unless ($result{$_} eq '');
+	my $prefix='';
+	$prefix = "$_$column_seperator" if (@filelist>1);
+	print "$prefix$result{$_}\n" unless ($result{$_} eq '');
 }
