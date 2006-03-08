@@ -12,7 +12,6 @@ open(OUTPUT,">$ARGV[1]") or die "can't open '$ARGV[1]' for writing\n";
 my $nbnd = $1;
 #   the data accumulator
 my @current_dataset  = ();
-#   the starting point is a special point
 while (<INPUT>) {
 	# check for a new data set (starts with a bunch of spaces)
 	my $newdataset=(m#^         #);
