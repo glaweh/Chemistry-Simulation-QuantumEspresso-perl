@@ -15,6 +15,8 @@ my @current_dataset  = ();
 while (<INPUT>) {
 	# check for a new data set (starts with a bunch of spaces)
 	my $newdataset=(m#^         #);
+	#insert spaces in front of minus signs
+	s/(\S)(-)/$1 $2/g;
 	# continue an old dataset
 	unless ($newdataset) {
 		push @current_dataset, split;
