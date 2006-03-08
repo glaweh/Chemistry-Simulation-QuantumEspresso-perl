@@ -85,6 +85,25 @@ sub extract_omega {
 	}
 	return join($column_seperator,@omega);
 }
+# extract occupation matrix traces
+sub extract_trn {
+	my $fh=shift;
+	my %occ;
+	my @n;
+	# match:atom  1   Tr[ns(na)]=  47.0181269
+	while (<$fh>) {
+		m#^atom\s+(\d+)\s+Tr\[ns\(na\)\]=\s*([0-9.-]+)# and push(@{$occ{$1}},$2);
+	}
+	# bare
+	foreach my $atom (sort { $a <=> $b }  keys %occ) {
+		push @n, ${$occ{$atom}}[1];
+	}
+	# screened
+	foreach my $atom (sort { $a <=> $b }  keys %occ) {
+		push @n, pop(@{$occ{$atom}});
+	}
+	return join($column_seperator,@n);
+}
 
 # usage
 sub usage {
@@ -95,6 +114,7 @@ sub usage {
 		S  - stress tensor
 		F  - forces
 		p  - phonon frequencies
+		Trn- Occupation matrix traces (for Hubbard U calculation)
 	Options:
 		-r searchfilename - run recursively, search for files name 'searchfilename'\n";
 	exit -1;
@@ -111,7 +131,8 @@ my %extract = (
 	F => \&extract_F,
 	S => \&extract_S,
 	Ef => \&extract_Ef,
-	p => \&extract_omega
+	p => \&extract_omega,
+	Trn => \&extract_trn
 	);
 
 getopts("d:r:");
