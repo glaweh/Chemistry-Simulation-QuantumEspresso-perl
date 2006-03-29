@@ -1,12 +1,20 @@
 #!/usr/bin/perl
 use strict;
 
-die "usage: $0 <pwbands.dat> <tsvfile>\n" if (@ARGV != 2);
+die "usage: $0 <pwbands.dat> [tsvfile]\n" if (@ARGV < 1);
+my $input=$ARGV[0];
+my $output;
+if ($ARGV[1]) {
+	$output=$ARGV[1];
+} else {
+	$input=~m#^(.*)\.dat$#;
+	$output="$1.tsv";
+}
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # now parse the band data file created by bands.x
-open(INPUT,$ARGV[0]) or die "can't open '$ARGV[0]' for reading\n";
-open(OUTPUT,">$ARGV[1]") or die "can't open '$ARGV[1]' for writing\n";
+open(INPUT,$input) or die "can't open '$input' for reading\n";
+open(OUTPUT,">$output") or die "can't open '$output' for writing\n";
 #   extract the number of bands from first line
 <INPUT>=~ m#nbnd= *(\w+), nks= *#;
 my $nbnd = $1;
