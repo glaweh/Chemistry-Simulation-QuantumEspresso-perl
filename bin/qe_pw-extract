@@ -105,16 +105,58 @@ sub extract_trn {
 	return join($column_seperator,@n);
 }
 
+# extract absolute and total magnetization
+sub extract_mabs {
+	my $fh=shift;
+	my @m_abs;
+
+	while (<$fh>) {
+		#match: absolute magnetization    =     0.05 Bohr mag/cell
+		m#absolute magnetization\s*=\s*([0-9.-]+)\s*Bohr# and push @m_abs,$1;
+	}
+	return @m_abs;
+}
+
+sub extract_mtot {
+	my $fh=shift;
+	my @m_total;
+
+	while (<$fh>) {
+		#match: total magnetization       =     0.00 Bohr mag/cell
+		m#total magnetization\s*=\s*([0-9.-]+)\s*Bohr# and push @m_total,$1;
+	}
+	return @m_total;
+}
+sub extract_ctime {
+	my $fh=shift;
+	my $ctime;
+	while (<$fh>) {
+		#match:     PWSCF        :    11h32m CPU time,       12h 9m wall time
+		if (m#:.*,\s*(.*) wall time#) {
+			my $thistime=0;
+			$_=$1;
+			m#([0-9.]+)d# and $thistime+=$1*24;
+			m#([0-9.]+)h# and $thistime+=$1;
+			m#([0-9.]+)m# and $thistime+=$1/60;
+			m#([0-9.]+)s# and $thistime+=$1/3600;
+			$ctime=$thistime;
+		}
+	}
+	return $ctime;
+}
 # usage
 sub usage {
 	print STDERR "usage: $0 [-s] -d <datatype> <-r searchfilename | filename [filename] ...>
 	where <datatype> is one of:
-		E  - Total energy
-		Ef - Fermi energy
-		S  - stress tensor
-		F  - forces
-		p  - phonon frequencies
-		Trn- Occupation matrix traces (for Hubbard U calculation)
+		E    - Total energy
+		Ef   - Fermi energy
+		S    - stress tensor
+		F    - forces
+		p    - phonon frequencies
+		Trn  - Occupation matrix traces (for Hubbard U calculation)
+		mabs - absolute magnetization
+		mtot - total magnetization
+		ctime - CPU time
 	Options:
 		-r searchfilename - run recursively, search for files name 'searchfilename'
 		-s                - strip first character from dirnames when running recursively\n";
@@ -133,7 +175,10 @@ my %extract = (
 	S => \&extract_S,
 	Ef => \&extract_Ef,
 	p => \&extract_omega,
-	Trn => \&extract_trn
+	Trn => \&extract_trn,
+	mabs => \&extract_mabs,
+	mtot => \&extract_mtot,
+	ctime => \&extract_ctime
 	);
 
 getopts("d:r:s");
