@@ -1,0 +1,51 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Std;
+use PDL;
+
+our ($opt_c);
+
+my $efermi=0;
+my $extract=0;
+my @data_list;
+my @current_dataset  = ();
+
+$opt_c='';
+getopts('c:');
+die '-c (UP|DOWN)' unless ($opt_c =~ m#(UP|DOWN)#);
+
+while (<>) {
+	chomp;
+	next if (m#^\s*$#);
+
+	if (m#^ ------ SPIN (\w+) --#) {
+		if ($opt_c eq $1) {
+			$extract = 1;
+		} else {
+			$extract = 0;
+		}
+		next;
+	}
+	if (m#^     the Fermi energy is\s*([0-9.-]+) ev#) {
+		$efermi=$1;
+		last;
+	}
+	if ($extract) {
+		#insert spaces in front of minus signs
+		s/(\S)(-)/$1 $2/g;
+		if (m#^          k =\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+#) {
+			push @data_list,pdl(@current_dataset) if ($#current_dataset>-1);
+			@current_dataset=($1,$2,$3);
+		}	else {
+			push @current_dataset, split;
+		}
+	}
+}
+
+push @data_list,pdl(@current_dataset) if ($#current_dataset>-1);
+my @data=dog(transpose(cat(@data_list)));
+my @k=(shift @data,shift @data,shift @data);
+foreach (@data) { $_-=$efermi; }
+my $kidx=sequence($k[0]->nelem);
+wcols $kidx,@data;
