@@ -26,7 +26,7 @@ sub extract_F {
 	#      atom   3 type  2   force =    -0.02203676   -0.00203481   -0.10438720
 	#
 	while (<$fh>) {
-		if (m#atom\s+\d+ type\s+\d+\s+force =(.*)$#) {
+		if (/atom\s+\d+ type\s+\d+\s+force =(.*)$/) {
 			$trigger=1;
 			$_=$1;
 			push @block,split;
@@ -53,7 +53,7 @@ sub extract_S {
 	#
 	while (<$fh>) {
 		if ($trigger) {
-			if (m#^\s*$#){
+			if (/^\s*$/){
 				$trigger=0;
 				push @S,join($column_seperator,@block);
 				@block=();
@@ -71,7 +71,7 @@ sub extract_Ef {
 	my $fh=shift;
 	my @Ef;
 	while (<$fh>) {
-		m#Fermi energy is\s+(\S+) ev$# and push @Ef,$1;
+		/Fermi energy is\s+(\S+) ev$/ and push @Ef,$1;
 	}
 	return @Ef;
 }
@@ -81,7 +81,7 @@ sub extract_omega {
 	my @omega;
 	# match:   omega( 1) =      -2.614365 [THz] =     -87.206422 [cm-1]
 	while (<$fh>) {
-		m#^\s+omega.*=\s*([0-9.-]+) \[cm-1\]# and push @omega,$1;
+		/^\s+omega.*=\s*([0-9.-]+) \[cm-1\]/ and push @omega,$1;
 	}
 	return join($column_seperator,@omega);
 }
@@ -92,7 +92,7 @@ sub extract_trn {
 	my @n;
 	# match:atom  1   Tr[ns(na)]=  47.0181269
 	while (<$fh>) {
-		m#^atom\s+(\d+)\s+Tr\[ns\(na\)\]=\s*([0-9.-]+)# and push(@{$occ{$1}},$2);
+		/^atom\s+(\d+)\s+Tr\[ns\(na\)\]=\s*([0-9.-]+)/ and push(@{$occ{$1}},$2);
 	}
 	# bare
 	foreach my $atom (sort { $a <=> $b }  keys %occ) {
@@ -112,7 +112,7 @@ sub extract_mabs {
 
 	while (<$fh>) {
 		#match: absolute magnetization    =     0.05 Bohr mag/cell
-		m#absolute magnetization\s*=\s*([0-9.-]+)\s*Bohr# and push @m_abs,$1;
+		/absolute magnetization\s*=\s*([0-9.-]+)\s*Bohr/ and push @m_abs,$1;
 	}
 	return @m_abs;
 }
@@ -123,7 +123,7 @@ sub extract_mtot {
 
 	while (<$fh>) {
 		#match: total magnetization       =     0.00 Bohr mag/cell
-		m#total magnetization\s*=\s*([0-9.-]+)\s*Bohr# and push @m_total,$1;
+		/total magnetization\s*=\s*([0-9.-]+)\s*Bohr/ and push @m_total,$1;
 	}
 	return @m_total;
 }
@@ -135,10 +135,10 @@ sub extract_ctime {
 		if (m#:.*,\s*(.*) wall time#) {
 			my $thistime=0;
 			$_=$1;
-			m#([0-9.]+)d# and $thistime+=$1*24;
-			m#([0-9.]+)h# and $thistime+=$1;
-			m#([0-9.]+)m# and $thistime+=$1/60;
-			m#([0-9.]+)s# and $thistime+=$1/3600;
+			/([0-9.]+)d/ and $thistime+=$1*24;
+			/([0-9.]+)h/ and $thistime+=$1;
+			/([0-9.]+)m/ and $thistime+=$1/60;
+			/([0-9.]+)s/ and $thistime+=$1/3600;
 			$ctime=$thistime;
 		}
 	}
