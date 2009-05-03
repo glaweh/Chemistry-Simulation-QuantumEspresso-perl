@@ -127,7 +127,8 @@ sub extract_mtot {
 	}
 	return @m_total;
 }
-sub extract_ctime {
+
+sub extract_walltime {
 	my $fh=shift;
 	my $ctime;
 	while (<$fh>) {
@@ -144,6 +145,44 @@ sub extract_ctime {
 	}
 	return $ctime;
 }
+
+sub extract_setuptime {
+	my $fh=shift;
+	my $stime;
+	while (<$fh>) {
+		#match:     total cpu time spent up to now is    105.33 secs
+		if (/     total cpu time spent up to now is\s*([0-9.]+) secs/) {
+			$stime+=$1/3600;
+			last;
+		}
+	}
+	return $stime;
+}
+
+sub extract_iterations {
+	my $fh=shift;
+	my $niter=0;
+	while (<$fh>) {
+		#match:     iteration # 33     ecut=    60.00 Ry     beta=0.70
+		if (/^     iteration #\s*(\d+)     ecut=/) {
+			$niter = $1;
+		}
+	}
+	return $niter;
+}
+
+sub extract_nk {
+	my $fh=shift;
+	my @nk=();
+	while (<$fh>) {
+		#match:     number of k points= 4104  gaussian broad. (Ry)=  0.0100     ngauss =   0
+		if (/^     number of k points=\s*(\d+)\s*/) {
+			push @nk,$1;
+		}
+	}
+	return @nk;
+}
+
 # usage
 sub usage {
 	print STDERR "usage: $0 [-s] [-a] -d <datatype> <-r searchfilename | filename [filename] ...>
@@ -156,7 +195,10 @@ sub usage {
 		Trn  - Occupation matrix traces (for Hubbard U calculation)
 		mabs - absolute magnetization
 		mtot - total magnetization
-		ctime - CPU time
+		wtime - Wall time
+		niter - number of iterations
+		stime - Setup time
+		nk    - total number of k points
 	Options:
 		-r searchfilename - run recursively, search for files name 'searchfilename'
 		-s                - strip first character from dirnames when running recursively
@@ -179,7 +221,10 @@ my %extract = (
 	Trn => \&extract_trn,
 	mabs => \&extract_mabs,
 	mtot => \&extract_mtot,
-	ctime => \&extract_ctime
+	wtime => \&extract_walltime,
+	stime => \&extract_setuptime,
+	niter => \&extract_iterations,
+	nk => \&extract_nk
 	);
 
 getopts("d:r:sa");
