@@ -237,14 +237,17 @@ if ($opt_r) {
 	opendir PWD,".";
 	@filelist = grep { -f $_ } map { "$_/$opt_r" } readdir(PWD);
 	closedir PWD;
+	opendir PWD,".";
+	push @filelist,grep { -f $_ } map { "$_/run/$opt_r" } readdir(PWD);
+	closedir PWD;
 } else {
 	@filelist = @ARGV;
 }
-$column_seperator=" " if (@filelist>1);
+$column_seperator=" " if ((@filelist>1) or $opt_r);
 
 my %result;
 foreach my $filename (@filelist) {
-	$filename =~ m#([^/]+)/[^/]+$#;
+	$filename =~ m#^([^/]+)#;
 	my $dir = $1;
 	$opt_s and $dir=~s/^.//;
 
@@ -261,6 +264,6 @@ foreach my $filename (@filelist) {
 
 foreach (sort { $a <=> $b} keys %result) {
 	my $prefix='';
-	$prefix = "$_$column_seperator" if (@filelist>1);
+	$prefix = "$_$column_seperator" if ((@filelist>1) or $opt_r);
 	print "$prefix$result{$_}\n" unless ($result{$_} eq '');
 }
