@@ -1,0 +1,49 @@
+#!/usr/bin/perl
+use strict;
+
+die "usage: $0 <pwout.out> [tsvfile]\n" if (@ARGV < 1);
+my $input=$ARGV[0];
+my $output;
+if ($ARGV[1]) {
+	$output=$ARGV[1];
+} else {
+	$output="$input.symm.tsv";
+}
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# now parse the band data file created by bands.x
+open(INPUT,$input) or die "can't open '$input' for reading\n";
+open(OUTPUT,">$output") or die "can't open '$output' for writing\n";
+my $nbnd=-1;
+while (<INPUT>) {
+	last if (/^\s*s\s+frac. trans.\s*$/);
+}
+
+#   the data accumulator
+while (<INPUT>) {
+	chomp;
+	next if (/^\s*$/);
+	#insert spaces in front of minus signs
+	s/(\S)(-)/$1 $2/g;
+
+	# write out our collected dataset if we
+	#   - found a new one
+	#   - are at the end of the file
+	if (/^\s*isym =\s*(\d+)\s*(.*)$/) {
+		print STDERR "$1: $2\n";
+	}
+
+	if (/^\s*cart\..*\(\s*(.*)\s*\)/) {
+		my @current_dataset  = ();
+		push @current_dataset, split /\s+/,$1;
+		while (<INPUT>) {
+			last if (/^\s*$/);
+			if (/\(\s*(.*)\s*\)/) {
+				push @current_dataset, split /\s+/,$1;
+			}
+		}
+		print OUTPUT join("\t",@current_dataset) . "\n" if (@current_dataset);
+	}
+}
+close INPUT;
+close OUTPUT;

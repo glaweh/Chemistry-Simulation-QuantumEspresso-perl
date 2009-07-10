@@ -1,0 +1,30 @@
+#!/usr/bin/perl
+use strict;
+
+die "usage: $0 <pwout.out> [tsvfile]\n" if (@ARGV < 1);
+my $input=$ARGV[0];
+my $output;
+if ($ARGV[1]) {
+	$output=$ARGV[1];
+} else {
+	$output="$input.wk.tsv";
+}
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# now parse the band data file created by bands.x
+open(INPUT,$input) or die "can't open '$input' for reading\n";
+open(OUTPUT,">$output") or die "can't open '$output' for writing\n";
+my $nbnd=-1;
+while (<INPUT>) {
+	last if (/^\s*cart\. coord\. in units 2pi\/a_0\s*$/);
+}
+
+while (<INPUT>) {
+	chomp;
+	last if (/^\s*$/);
+	if (/wk =\s*(\S+)$/) {
+		print OUTPUT "$1\n";
+	}
+}
+close INPUT;
+close OUTPUT;

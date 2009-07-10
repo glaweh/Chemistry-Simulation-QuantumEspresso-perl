@@ -1,0 +1,51 @@
+#!/usr/bin/perl
+use strict;
+
+die "usage: $0 <pwout.out> [tsvfile]\n" if (@ARGV < 1);
+my $input=$ARGV[0];
+my $output;
+if ($ARGV[1]) {
+	$output=$ARGV[1];
+} else {
+	$output="$input.ev.tsv";
+}
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# now parse the band data file created by bands.x
+open(INPUT,$input) or die "can't open '$input' for reading\n";
+open(OUTPUT,">$output") or die "can't open '$output' for writing\n";
+my $nbnd=-1;
+while (<INPUT>) {
+	if (/^\s*number of Kohn-Sham states\s*=\s*(\d+)\D*/) {
+		$nbnd=$1;
+		next;
+	}
+	last if (/End of .* calculation/);
+}
+print STDERR "hurgar\n";
+#   the data accumulator
+my @current_dataset  = ();
+while (<INPUT>) {
+	chomp;
+	next if (/^\s*$/);
+	#insert spaces in front of minus signs
+	s/(\S)(-)/$1 $2/g;
+
+	# write out our collected dataset if we
+	#   - found a new one
+	#   - are at the end of the file
+	if (/^\s*k =/ or /^\s*the Fermi energy is/) {
+		if (@current_dataset) {
+			my $weiter=1;
+			my @print_dataset=grep { $weiter and ($weiter=m/^[0-9.-]+$/) } @current_dataset;
+			print OUTPUT join("\t",@print_dataset) . "\n";
+		}
+		last if (/^\s*the Fermi energy is/);
+		@current_dataset=($1,$2,$3) if (m#^\s*k =\s*(\S+)\s+(\S+)\s+(\S+)#);
+		next;
+	}
+
+	push @current_dataset, split;
+}
+close INPUT;
+close OUTPUT;
