@@ -1,4 +1,4 @@
-package Chemistry::Simulation::QuantumEspressoParse;
+package Chemistry::Simulation::QuantumEspressoPw;
 use strict;
 use warnings;
 
