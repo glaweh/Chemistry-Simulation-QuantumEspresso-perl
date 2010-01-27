@@ -22,8 +22,8 @@ sub parse_pw_out {
 	}
 
 	my @data;
-	my $in_write_ns=0;
 	my $iter=0;
+	my $end_of_scf=0;
 
 	my $fh;
 
@@ -34,38 +34,42 @@ sub parse_pw_out {
 
 	while (<$fh>) {
 		chomp;
-		if (/iteration #\s*(\d+)\s*ecut=\s*(\d+\.\d+)\s*Ry\s*beta=\s*(\d+\.\d+)/) {
-			$iter=$1+1;
+		if (/iteration #\s*(\d+)\s*ecut=\s*(\S+)\s*Ry\s*beta=\s*(\S+)/) {
+			$iter=$1;
 			$data[$iter]->{ecut}=$2;
 			$data[$iter]->{beta}=$3;
 			next;
 		}
 		if (/     End of self-consistent calculation/) {
-			$iter=1;
+			$end_of_scf=1;
 			next;
 		}
 		if (/ enter write_ns/) {
-			$data[$iter]->{hubbard}=parse_write_ns($fh);
+			$data[$iter]->{hubbard}= parse_write_ns($fh);
 			next;
 		}
-		if (/^!?\s*total energy\s*=\s*(-?\d+.\d+) Ry$/) {
+		if (/^!?\s*total energy\s*=\s*(\S+)\s*Ry$/) {
 			$data[$iter]->{E_total}=$1;
 			next;
 		}
-		if (/^\s*total magnetization\s*=\s*(-?\d+.\d+) Bohr mag\/cell$/) {
+		if (/^\s*total magnetization\s*=\s*(\S+)\s*Bohr mag\/cell$/) {
 			$data[$iter]->{m_total}=$1;
 			next;
 		}
-		if (/^\s*absolute magnetization\s*=\s*(-?\d+.\d+) Bohr mag\/cell$/) {
+		if (/^\s*absolute magnetization\s*=\s*(\S+)\s*Bohr mag\/cell$/) {
 			$data[$iter]->{m_absolute}=$1;
 			next;
 		}
-		if (/^\s*total cpu time spent up to now is\s*(\d+\.\d+)\s*secs$/) {
+		if (/^\s*total cpu time spent up to now is\s*(\S+)\s*secs$/) {
 			$data[$iter]->{t_cpu}=$1;
 			next;
 		}
-		if (/^\s*the Fermi energy is\s*(\d+\.\d+)\s*ev$/) {
+		if (/^\s*the Fermi energy is\s*(\S+)\s*ev$/) {
 			$data[$iter]->{E_Fermi}=$1;
+			next;
+		}
+		if (/^\s*ethr =\s*(\S+),/) {
+			$data[$iter]->{ethr}=$1;
 			next;
 		}
 		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
@@ -89,24 +93,24 @@ sub parse_write_ns {
 		last if (/^ exit write_ns/);
 		if (/^U\(/) {
 			while (/U\(\s*(\d+)\)\s*=\s*(\d+\.\d+)/g) {
-				$atoms[$1-1]->{U}=$2;
+				$atoms[$1]->{U}=$2;
 			}
 			next;
 		}
 		if (/^alpha\(/) {
 			while (/alpha\(\s*(\d+)\)\s*=\s*(\d+\.\d+)/g) {
-				$atoms[$1-1]->{alpha}=$2;
+				$atoms[$1]->{alpha}=$2;
 			}
 			next;
 		}
 		if (/^atom\s*(\d+)\s*Tr\[ns\(na\)\]=\s*(\d+\.\d+)/) {
 			$in_occupations=0;
-			$atoms[$1-1]->{Trns}=$2;
+			$atoms[$1]->{Trns}=$2;
 			next;
 		}
 		if (/^atom\s*(\d+)\s*spin\s*(\d+)/) {
-			$atom=$1-1;
-			$spin=$2-1;
+			$atom=$1;
+			$spin=$2;
 			next;
 		}
 		if (s/^eigenvalues:\s*//) {
