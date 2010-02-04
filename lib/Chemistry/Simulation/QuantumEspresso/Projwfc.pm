@@ -80,7 +80,7 @@ sub parse_projwfc_out {
 		chomp;
 		if (/state #\s*(\d+): atom\s*(\d+)\s*\(\s*(\S+)\s*\), wfc\s*(\d+)\s*\(l=\s*(\d+)\s*m=\s*(\d+)\s*\)/) {
 			$data->{atoms}->[$2-1]=$3;
-			$projstates(:,$1-1) .= pdl(long,$2,$4,$5,$6)-1;
+			$projstates(:,$1-1) .= pdl(long,$2-1,$4-1,$5,$6);
 			next;
 		}
 		if (/^Lowdin Charges/) {
