@@ -20,7 +20,7 @@ sub parse_projwfc_out {
 	my $cachefile="$fname.cache.pdld";
 	my $options={
 		DEBUG=>0,
-		CACHE=>0
+		CACHE=>1
 	};
 	if (defined $user_opt) {
 		foreach (keys %{$user_opt}) {
