@@ -80,6 +80,19 @@ sub parse_pw_out {
 			$data[$iter]->{nbnd}=$1;
 			next;
 		}
+		if (/^\s*Program PWSCF v.(\S+)/) {
+			$data[$iter]->{version_string}=$1;
+			my @vers=split(/\./,$1);
+			my $vers_multiplier=1000000;
+			my $vers_num=0;
+			foreach my $v_part (@vers) {
+				$v_part=~/^(\d+)/;
+				$vers_num+=$vers_multiplier*$1;
+				$vers_multiplier/=1000;
+			}
+			$data[$iter]->{version}=$vers_num;
+			next;
+		}
 
 		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
