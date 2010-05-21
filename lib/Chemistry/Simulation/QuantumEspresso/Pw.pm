@@ -72,6 +72,15 @@ sub parse_pw_out {
 			$data[$iter]->{ethr}=$1;
 			next;
 		}
+		if (/^\s*number of k points=\s*(\d+)/) {
+			$data[$iter]->{nk}=$1;
+			next;
+		}
+		if (/^\s*number of Kohn-Sham states=\s*(\d+)/) {
+			$data[$iter]->{nbnd}=$1;
+			next;
+		}
+
 		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
 	close($fh);
