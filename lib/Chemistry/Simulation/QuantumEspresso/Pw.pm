@@ -102,6 +102,38 @@ sub parse_pw_out {
 			next;
 		}
 
+		if (/^\s*crystal axes: \(cart\. coord/) {
+			$data[$iter]->{amat}=zeroes(3,3);
+			for (my $i=0; $i<3 ; $i++) {
+				$_=<$fh>;
+				s/-/ -/g;
+				if (/^.*\(\s*([^\)]+)\s*\)/) {
+					$data[$iter]->{amat}->(:,$i;-) .= pdl(split /\s+/,$1);
+				}
+			}
+		}
+
+		if (/^\s*reciprocal axes: \(cart\. coord/) {
+			$data[$iter]->{bmat}=zeroes(3,3);
+			for (my $i=0; $i<3 ; $i++) {
+				$_=<$fh>;
+				s/-/ -/g;
+				if (/^.*\(\s*([^\)]+)\s*\)/) {
+					$data[$iter]->{bmat}->(:,$i;-) .= pdl(split /\s+/,$1);
+				}
+			}
+		}
+
+		if (/^\s*celldm/) {
+			$data[$iter]->{celldm}=zeroes(6) unless exists ($data[$iter]->{celldm});
+			my $celldm=$data[$iter]->{celldm};
+			s/celldm\((\d+)\)=/$1/g;
+			my @data=split;
+			for (my $i=0;$i<$#data+1;$i+=2) {
+				my $dm=$data[$i]-1;
+				$celldm->($dm).=$data[$i+1];
+			}
+		}
 
 		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
