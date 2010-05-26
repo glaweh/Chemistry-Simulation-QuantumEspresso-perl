@@ -1,6 +1,8 @@
 package Chemistry::Simulation::QuantumEspressoPw;
 use strict;
 use warnings;
+use PDL;
+use PDL::NiceSlice;
 
 BEGIN {
 	use Exporter ();
@@ -24,6 +26,7 @@ sub parse_pw_out {
 	my @data;
 	my $iter=0;
 	my $end_of_scf=0;
+	my $ik=0;
 
 	my $fh;
 
@@ -38,6 +41,7 @@ sub parse_pw_out {
 			$iter=$1;
 			$data[$iter]->{ecut}=$2;
 			$data[$iter]->{beta}=$3;
+			$ik=0;
 			next;
 		}
 		if (/     End of self-consistent calculation/) {
@@ -93,6 +97,11 @@ sub parse_pw_out {
 			$data[$iter]->{version}=$vers_num;
 			next;
 		}
+		if (/^\s*k =.* bands \(ev\):/) {
+			$data[$iter]->{bands}=parse_bands($fh,$data[0]->{nk},$data[0]->{nbnd},$_,$options);
+			next;
+		}
+
 
 		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
@@ -167,6 +176,46 @@ sub parse_write_ns {
 	}
 	$result->{atoms}=\@atoms;
 	return($result);
+}
+
+sub parse_bands {
+	my $fh=shift;
+	my $nk=shift;
+	my $nbnd=shift;
+	$_ = shift;
+	my $options=shift;
+	my $result;
+	my $ik=-1;
+	my @accum;
+	my $hot=0;
+	$result->{kvec}=zeroes(3,$nk);
+	$result->{npw}=zeroes(long,$nk);
+	$result->{ebnd}=zeroes($nbnd,$nk);
+	LINE: { do {{
+		chomp;
+		# insert spaces in front of minus signs to work around broken pw format strings
+		s/-/ -/g;
+		if ($hot and /^\s*$/) {
+			if ($options->{DEBUG}>2) {
+				print STDERR "$ik/$nk: $#accum\n";
+				print STDERR join(" ",@accum) . "\n";
+			}
+			$result->{ebnd}->(:,$ik;-).=pdl(@accum);
+			@accum=();
+			$hot=0;
+			last LINE if ($ik==$nk-1);
+		}
+		if (/^\s*k =\s*(.*) \(\s*(\d+) PWs\)   bands \(ev\):\s*$/) {
+			$ik++;
+			$result->{npw}->($ik).=$2;
+			$result->{kvec}->(:,$ik;-).=pdl(split /\s+/,$1);
+			$_=<$fh>;
+			$hot=1;
+			next;
+		}
+		push @accum,split if ($hot);
+	}} while (<$fh>) };
+	return $result;
 }
 
 1;
