@@ -2,6 +2,7 @@ package Chemistry::Simulation::QuantumEspressoPw;
 use strict;
 use warnings;
 use PDL;
+use PDL::IO::Dumper;
 use PDL::NiceSlice;
 
 BEGIN {
@@ -10,16 +11,28 @@ BEGIN {
 	@ISA=qw(Exporter);
 	@EXPORT=qw(&parse_pw_out);
 }
+my $parser_version=1.0;
 
 sub parse_pw_out {
 	my $fname=shift;
 	my $user_opt=shift;
+	my $cachefile="$fname.cache.pdld";
 	my $options={
-		DEBUG=>0
+		DEBUG=>0,
+		CACHE=>1
 	};
 	if (defined $user_opt) {
 		foreach (keys %{$user_opt}) {
 			$options->{$_}=$user_opt->{$_};
+		}
+	}
+
+	if (($options->{CACHE}>0) and (-s $cachefile)) {
+		my $cached_data=frestore($cachefile);
+		if ($cached_data->[0]->{parser_version}==$parser_version) {
+			$cached_data->[0]->{parser_cached}=1;
+			print STDERR "Read from cachefile $cachefile\n" if ($options->{DEBUG}>0);
+			return($cached_data);
 		}
 	}
 
@@ -30,6 +43,7 @@ sub parse_pw_out {
 
 	my $fh;
 
+	$data[0]->{parser_version}=$parser_version;
 	if (! open($fh,$fname)) {
 		print "couldn't open $fname\n" if ($options->{DEBUG}>0);
 		return(undef);
@@ -138,6 +152,11 @@ sub parse_pw_out {
 		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
 	close($fh);
+	if ($options->{CACHE}>0) {
+		if (fdump(\@data,$cachefile)) {
+			print STDERR "Written to cachefile $cachefile\n" if ($options->{DEBUG}>0);
+		}
+	}
 	return(\@data);
 }
 
