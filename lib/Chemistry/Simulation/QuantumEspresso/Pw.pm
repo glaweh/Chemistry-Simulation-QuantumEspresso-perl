@@ -149,6 +149,11 @@ sub parse_pw_out {
 			}
 		}
 
+		if (/\s*entering subroutine stress/) {
+			$data[$iter]->{stress}= parse_stress($fh);
+			next;
+		}
+
 		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
 	close($fh);
@@ -267,6 +272,31 @@ sub parse_bands {
 		push @accum,split if ($hot);
 	}} while (<$fh>) };
 	return $result;
+}
+
+sub parse_stress {
+	my $fh=shift;
+	my $result;
+	my $row=-1;
+	$result->{au}=zeroes(3,3);
+	$result->{kbar}=zeroes(3,3);
+	while (<$fh>) {
+		chomp;
+		if (/^\s*total\s*stress.*P=\s*(\S+)\s*$/) {
+			$row=0;
+			$result->{P}=$1;
+			next;
+		}
+		last if ($row>=0 and /^\s*$/);
+		if ($row>=0) {
+			my @line=split;
+			$result->{au}->(:,$row).=pdl(@line[0..2]);
+			$result->{kbar}->(:,$row).=pdl(@line[3..5]);
+			$row++;
+		}
+	}
+
+	return ($row > 2 ? $result : undef);
 }
 
 1;
