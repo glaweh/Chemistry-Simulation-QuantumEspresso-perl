@@ -40,7 +40,6 @@ sub parse_pw_out {
 
 	my @data;
 	my $iter=0;
-	my $end_of_scf=0;
 	my $ik=0;
 
 	my $fh;
@@ -62,7 +61,7 @@ sub parse_pw_out {
 			next;
 		}
 		if (/     End of self-consistent calculation/) {
-			$end_of_scf=1;
+			$data[$iter]->{end_of_scf}=1;
 			next;
 		}
 		if (/ enter write_ns/) {
