@@ -53,6 +53,7 @@ sub parse_pw_out {
 
 	while (<$fh>) {
 		chomp;
+		next if (/^\s*$/);
 		if (/iteration #\s*(\d+)\s*ecut=\s*(\S+)\s*Ry\s*beta=\s*(\S+)/) {
 			$iter=$1;
 			$data[$iter]->{ecut}=$2;
