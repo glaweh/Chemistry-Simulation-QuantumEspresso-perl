@@ -18,7 +18,9 @@ sub parse_pw_out {
 	my $user_opt=shift;
 	my $cachefile="$fname.cache.pdld";
 	my $options={
-		DEBUG=>0,
+		DEBUG_UNPARSED=>0,
+		DEBUG_BANDS_ACCUM=>0,
+		VERBOSE=>0,
 		CACHE=>1
 	};
 	if (defined $user_opt) {
@@ -31,7 +33,7 @@ sub parse_pw_out {
 		my $cached_data=frestore($cachefile);
 		if ($cached_data->[0]->{parser_version}==$parser_version) {
 			$cached_data->[0]->{parser_cached}=1;
-			print STDERR "Read from cachefile $cachefile\n" if ($options->{DEBUG}>0);
+			print STDERR "Read from cachefile $cachefile\n" if ($options->{VERBOSE}>0);
 			return($cached_data);
 		}
 	}
@@ -45,7 +47,7 @@ sub parse_pw_out {
 
 	$data[0]->{parser_version}=$parser_version;
 	if (! open($fh,$fname)) {
-		print "couldn't open $fname\n" if ($options->{DEBUG}>0);
+		print "couldn't open $fname\n" if ($options->{VERBOSE}>0);
 		return(undef);
 	}
 
@@ -156,12 +158,12 @@ sub parse_pw_out {
 			next;
 		}
 
-		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
+		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG_UNPARSED}>0);
 	}
 	close($fh);
 	if ($options->{CACHE}>0) {
 		if (fdump(\@data,$cachefile)) {
-			print STDERR "Written to cachefile $cachefile\n" if ($options->{DEBUG}>0);
+				print STDERR "Written to cachefile $cachefile\n" if ($options->{VERBOSE}>0);
 		}
 	}
 	return(\@data);
@@ -230,7 +232,7 @@ sub parse_write_ns {
 			push @{$atoms[$atom]->{spin}->[$spin]->{occupations}},\@line;
 			next;
 		}
-		print STDERR 'parse_write_ns unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
+		print STDERR 'parse_write_ns unparsed: ' . $_ . "\n" if ($options->{DEBUG_UNPARSED} > 0);
 	}
 	$result->{atoms}=\@atoms;
 	return($result);
@@ -254,7 +256,7 @@ sub parse_bands {
 		# insert spaces in front of minus signs to work around broken pw format strings
 		s/-/ -/g;
 		if ($hot and /^\s*$/) {
-			if ($options->{DEBUG}>2) {
+			if ($options->{DEBUG_BANDS_ACCUM}>0) {
 				print STDERR "$ik/$nk: $#accum\n";
 				print STDERR join(" ",@accum) . "\n";
 			}
