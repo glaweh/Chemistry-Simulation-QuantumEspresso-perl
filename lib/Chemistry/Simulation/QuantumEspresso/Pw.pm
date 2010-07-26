@@ -125,6 +125,7 @@ sub parse_pw_out {
 					$data[$iter]->{amat}->(:,$i;-) .= pdl(split /\s+/,$1);
 				}
 			}
+			next;
 		}
 
 		if (/^\s*reciprocal axes: \(cart\. coord/) {
@@ -136,6 +137,7 @@ sub parse_pw_out {
 					$data[$iter]->{bmat}->(:,$i;-) .= pdl(split /\s+/,$1);
 				}
 			}
+			next;
 		}
 
 		if (/^\s*celldm/) {
