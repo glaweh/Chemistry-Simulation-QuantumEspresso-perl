@@ -100,6 +100,19 @@ sub parse_pw_out {
 			$data[$iter]->{nbnd}=$1;
 			next;
 		}
+		## BEGIN stuff found in version 3.2
+		if (/^\s*nbndx\s*=\s*(\d+)\s*nbnd\s*=\s*(\d+)\s*natomwfc\s*=\s*(\d+)\s*npwx\s*=\s*(\d+)\s*$/) {
+			$data[$iter]->{_nbndx}=$1;
+			$data[$iter]->{nbnd}=$2;
+			$data[$iter]->{_natomwfc}=$3;
+			$data[$iter]->{_npwx}=$4;
+		}
+		if (/^\s*nelec\s*=\s*([0-9\.]+)\s*nkb\s*=\s*(\d+)\s*ngl\s*=\s*(\d+)\s*$/) {
+			$data[$iter]->{nelec}=$1;
+			$data[$iter]->{_nkb}=$2;
+			$data[$iter]->{_ngl}=$3;
+		}
+		## END stuff found in version 3.2
 		if (/^\s*Program PWSCF v.(\S+)/) {
 			$data[$iter]->{version_string}=$1;
 			my @vers=split(/\./,$1);
