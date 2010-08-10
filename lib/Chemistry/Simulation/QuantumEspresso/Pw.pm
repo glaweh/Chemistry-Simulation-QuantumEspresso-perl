@@ -11,12 +11,13 @@ BEGIN {
 	@ISA=qw(Exporter);
 	@EXPORT=qw(&parse_pw_out);
 }
-my $parser_version=1.0;
+my $parser_version_major=1;
+my $parser_version_minor=1;
 
 sub parse_pw_out {
 	my $fname=shift;
 	my $user_opt=shift;
-	my $cachefile="$fname.cache.pdld";
+	my $cachefile="$fname.cache.$parser_version_major.pdld";
 	my $options={
 		DEBUG_UNPARSED=>0,
 		DEBUG_BANDS_ACCUM=>0,
@@ -31,7 +32,7 @@ sub parse_pw_out {
 
 	if (($options->{CACHE}>0) and (-s $cachefile)) {
 		my $cached_data=frestore($cachefile);
-		if ($cached_data->[0]->{parser_version}==$parser_version) {
+		if ($cached_data->[0]->{parser_version_minor}==$parser_version_minor) {
 			$cached_data->[0]->{parser_cached}=1;
 			print STDERR "Read from cachefile $cachefile\n" if ($options->{VERBOSE}>0);
 			return($cached_data);
@@ -44,7 +45,8 @@ sub parse_pw_out {
 
 	my $fh;
 
-	$data[0]->{parser_version}=$parser_version;
+	$data[0]->{parser_version_major}=$parser_version_major;
+	$data[0]->{parser_version_minor}=$parser_version_minor;
 	if (! open($fh,$fname)) {
 		print "couldn't open $fname\n" if ($options->{VERBOSE}>0);
 		return(undef);
