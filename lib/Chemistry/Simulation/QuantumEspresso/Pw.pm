@@ -248,6 +248,18 @@ sub parse_bands {
 	my $ik=-1;
 	my @accum;
 	my $hot=0;
+
+	my $dimensions_unknown = 0;
+	if (! defined $nk) {
+		print STDERR "parse_bands: \$nk undefined!\n";
+		$dimensions_unknown = 1;
+	}
+	if (! defined $nbnd) {
+		print STDERR "parse_bands: \$nbnd undefined!\n";
+		$dimensions_unknown = 1;
+	}
+	return undef if ($dimensions_unknown);
+
 	$result->{kvec}=zeroes(3,$nk);
 	$result->{npw}=zeroes(long,$nk);
 	$result->{ebnd}=zeroes($nbnd,$nk);
