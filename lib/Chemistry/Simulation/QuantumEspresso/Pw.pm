@@ -100,6 +100,9 @@ sub parse_pw_out {
 			$data[$iter]->{nbnd}=$1;
 			next;
 		}
+		if (/^\s*number of electrons\s*=\s*([0-9\.]+)/) {
+			$data[$iter]->{nelec}=$1;
+		}
 		## BEGIN stuff found in version 3.2
 		if (/^\s*nbndx\s*=\s*(\d+)\s*nbnd\s*=\s*(\d+)\s*natomwfc\s*=\s*(\d+)\s*npwx\s*=\s*(\d+)\s*$/) {
 			$data[$iter]->{_nbndx}=$1;
