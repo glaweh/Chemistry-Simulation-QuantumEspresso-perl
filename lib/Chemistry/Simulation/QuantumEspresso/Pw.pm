@@ -298,6 +298,8 @@ sub parse_write_ns {
 		annotate_debug($annotated_debug_fh,'parse_write_ns',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
 	}
+	annotate_debug($annotated_debug_fh,'parse_write_ns',$fh_parsed,$fh_line)
+		if ($annotated_debug_fh and $fh_line);
 	$result->{atoms}=\@atoms;
 	return($result);
 }
@@ -349,10 +351,15 @@ sub parse_bands {
 			last if ($ik==$nk-1);
 		}
 		if (/^\s*k =\s*(.*) \(\s*(\d+) PWs\)   bands \(ev\):\s*$/) {
+			annotate_debug($annotated_debug_fh,'parse_bands',$fh_parsed,$fh_line)
+				if ($annotated_debug_fh);
 			$ik++;
 			$result->{npw}->($ik).=$2;
 			$result->{kvec}->(:,$ik;-).=pdl(split /\s+/,$1);
-			$_=<$fh>;
+			$fh_line=<$fh>;
+			annotate_debug($annotated_debug_fh,'parse_bands',$fh_parsed,$fh_line)
+				if ($annotated_debug_fh);
+			$fh_line='';
 			$hot=1;
 			next;
 		}
@@ -365,6 +372,8 @@ sub parse_bands {
 		annotate_debug($annotated_debug_fh,'parse_bands',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
 	};
+	annotate_debug($annotated_debug_fh,'parse_bands',$fh_parsed,$fh_line)
+		if ($annotated_debug_fh and $fh_line);
 	return $result;
 }
 
