@@ -154,9 +154,13 @@ sub parse_pw_out {
 		}
 
 		if (/^\s*crystal axes: \(cart\. coord/) {
+			print $annotated_debug_fh "parse_pw_out::\$_::  parsed::$fh_line" if ($annotated_debug_fh);
+			$fh_line='';
 			$data[$iter]->{amat}=zeroes(3,3);
 			for (my $i=0; $i<3 ; $i++) {
 				$_=<$fh>;
+				print $annotated_debug_fh "parse_pw_out::\$_::  parsed::$_" if ($annotated_debug_fh);
+				chomp;
 				s/-/ -/g;
 				if (/^.*\(\s*([^\)]+)\s*\)/) {
 					$data[$iter]->{amat}->(:,$i;-) .= pdl(split /\s+/,$1);
@@ -166,9 +170,13 @@ sub parse_pw_out {
 		}
 
 		if (/^\s*reciprocal axes: \(cart\. coord/) {
+			print $annotated_debug_fh "parse_pw_out::\$_::  parsed::$fh_line" if ($annotated_debug_fh);
+			$fh_line='';
 			$data[$iter]->{bmat}=zeroes(3,3);
 			for (my $i=0; $i<3 ; $i++) {
 				$_=<$fh>;
+				print $annotated_debug_fh "parse_pw_out::\$_::  parsed::$_" if ($annotated_debug_fh);
+				chomp;
 				s/-/ -/g;
 				if (/^.*\(\s*([^\)]+)\s*\)/) {
 					$data[$iter]->{bmat}->(:,$i;-) .= pdl(split /\s+/,$1);
@@ -186,6 +194,7 @@ sub parse_pw_out {
 				my $dm=$data[$i]-1;
 				$celldm->($dm).=$data[$i+1];
 			}
+			next;
 		}
 
 		if (/\s*entering subroutine stress/) {
