@@ -206,7 +206,9 @@ sub parse_pw_out {
 		}
 
 		if (/\s*entering subroutine stress/) {
-			$data[$iter]->{stress}= parse_stress($fh);
+			annotate_debug($annotated_debug_fh,'parse_pw_out',1,$fh_line) if ($annotated_debug_fh);
+			$data[$iter]->{stress}= parse_stress($fh,$options);
+			$fh_line='';
 			next;
 		}
 
