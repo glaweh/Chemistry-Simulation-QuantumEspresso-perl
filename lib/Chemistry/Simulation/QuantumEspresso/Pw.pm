@@ -225,10 +225,15 @@ sub parse_write_ns {
 	my @atoms;
 	my $in_occupations;
 	my $in_eigenvectors;
+	my $annotated_debug_fh=$options->{ANNOTATED_DEBUG_FH} if (exists $options->{ANNOTATED_DEBUG_FH});
+	my $fh_line='';
+	my $fh_parsed;
 	$in_occupations=$in_eigenvectors=0;
 	$atom=$spin=0;
 	while (<$fh>) {
+		$fh_line=$_;
 		chomp;
+		$fh_parsed=1;
 		last if (/^ exit write_ns/);
 		if (/^U\(/) {
 			while (/U\(\s*(\d+)\)\s*=\s*(\d+\.\d+)/g) {
@@ -280,7 +285,10 @@ sub parse_write_ns {
 			push @{$atoms[$atom]->{spin}->[$spin]->{occupations}},\@line;
 			next;
 		}
-		print STDERR 'parse_write_ns unparsed: ' . $_ . "\n" if ($options->{DEBUG_UNPARSED} > 0);
+		$fh_parsed=0;
+	} continue {
+		print $annotated_debug_fh 'parse_write_ns::$_::' . ( $fh_parsed ? '  parsed' : 'unparsed') . "::$fh_line"
+			if ($annotated_debug_fh and $fh_line);
 	}
 	$result->{atoms}=\@atoms;
 	return($result);
