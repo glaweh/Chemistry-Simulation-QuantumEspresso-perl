@@ -307,6 +307,9 @@ sub parse_bands {
 	my $nbnd=shift;
 	$_ = shift;
 	my $options=shift;
+	my $annotated_debug_fh=$options->{ANNOTATED_DEBUG_FH} if (exists $options->{ANNOTATED_DEBUG_FH});
+	my $fh_line='';
+	my $fh_parsed;
 	my $result;
 	my $ik=-1;
 	my @accum;
