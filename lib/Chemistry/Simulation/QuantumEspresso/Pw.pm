@@ -89,6 +89,8 @@ sub parse_pw_out {
 			next;
 		}
 		if (/ enter write_ns/) {
+			annotate_debug($annotated_debug_fh,'parse_pw_out',1,$fh_line) if ($annotated_debug_fh);
+			$fh_line='';
 			$data[$iter]->{hubbard}= parse_write_ns($fh,$options);
 			next;
 		}
