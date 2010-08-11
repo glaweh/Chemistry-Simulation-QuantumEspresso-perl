@@ -333,6 +333,7 @@ sub parse_bands {
 	while (((defined $firstline) ? ($_=$firstline) : ($_=<$fh>))) {
 		$firstline=undef;
 		$fh_line=$_;
+		$fh_parsed=1;
 		chomp;
 		# insert spaces in front of minus signs to work around broken pw format strings
 		s/-/ -/g;
@@ -354,8 +355,15 @@ sub parse_bands {
 			$hot=1;
 			next;
 		}
-		push @accum,split if ($hot);
-	}
+		if ($hot) {
+			push @accum,split;
+			next;
+		}
+		$fh_parsed=0;
+	} continue {
+		annotate_debug($annotated_debug_fh,'parse_bands',$fh_parsed,$fh_line)
+			if ($annotated_debug_fh and $fh_line);
+	};
 	return $result;
 }
 
