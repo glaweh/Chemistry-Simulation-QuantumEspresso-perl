@@ -176,7 +176,7 @@ sub parse_pw_out {
 			next;
 		}
 
-		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG_UNPARSED}>0);
+		print STDERR 'parse_pw_out::unparsed: ' . $_ . "\n" if ($options->{DEBUG_UNPARSED}>0);
 	}
 	close($fh);
 	if ($options->{CACHE}>0) {
