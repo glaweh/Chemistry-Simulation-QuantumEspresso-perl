@@ -65,8 +65,12 @@ sub parse_pw_out {
 		return(undef);
 	}
 
+	my $fh_line;
+	my $fh_parsed;
 	while (<$fh>) {
+		$fh_line=$_;
 		chomp;
+		$fh_parsed=1;
 		next if (/^\s*$/);
 		if (/iteration #\s*(\d+)\s*ecut=\s*(\S+)\s*Ry\s*beta=\s*(\S+)/) {
 			$iter=$1;
@@ -189,7 +193,10 @@ sub parse_pw_out {
 			next;
 		}
 
-		print STDERR 'parse_pw_out::unparsed: ' . $_ . "\n" if ($options->{DEBUG_UNPARSED}>0);
+		$fh_parsed=0;
+	} continue {
+		print $annotated_debug_fh 'parse_pw_out::$_::' . ( $fh_parsed ? '  parsed' : 'unparsed') . "::$fh_line"
+			if ($annotated_debug_fh and $fh_line);
 	}
 	close($fh);
 	close($options->{ANNOTATED_DEBUG_FH}) if ($options->{ANNOTATED_DEBUG_FILE});
