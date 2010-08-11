@@ -156,7 +156,8 @@ sub parse_pw_out {
 			next;
 		}
 		if (/^\s*k =.* bands \(ev\):/) {
-			$data[$iter]->{bands}=parse_bands($fh,$data[0]->{nk},$data[0]->{nbnd},$_,$options);
+			$data[$iter]->{bands}=parse_bands($fh,$data[0]->{nk},$data[0]->{nbnd},$fh_line,$options);
+			$fh_line='';
 			next;
 		}
 
