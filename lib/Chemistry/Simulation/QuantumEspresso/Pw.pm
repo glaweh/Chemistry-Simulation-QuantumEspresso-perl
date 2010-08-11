@@ -21,6 +21,7 @@ sub parse_pw_out {
 	my $options={
 		DEBUG_UNPARSED=>0,
 		DEBUG_BANDS_ACCUM=>0,
+		ANNOTATED_DEBUG_FILE=>'',
 		VERBOSE=>0,
 		CACHE=>1
 	};
@@ -37,6 +38,18 @@ sub parse_pw_out {
 			print STDERR "Read from cachefile $cachefile\n" if ($options->{VERBOSE}>0);
 			return($cached_data);
 		}
+	}
+	if ($options->{ANNOTATED_DEBUG_FILE} and (exists $options->{ANNOTATED_DEBUG_FH})) {
+		print STDERR "options ANNOTATED_DEBUG_FILE and ANNOTATED_DEBUG_FH are mutually exclusive\n";
+		return(undef);
+	}
+	my $annotated_debug_fh;
+	if ($options->{ANNOTATED_DEBUG_FILE}) {
+		if (! open($annotated_debug_fh,'>',$options->{ANNOTATED_DEBUG_FILE})) {
+			print "couldn't open annotated debug file $options->{ANNOTATED_DEBUG_FILE}\n" if ($options->{VERBOSE}>0);
+			return(undef);
+		}
+		$options->{ANNOTATED_DEBUG_FH}=$annotated_debug_fh;
 	}
 
 	my @data;
@@ -179,6 +192,7 @@ sub parse_pw_out {
 		print STDERR 'parse_pw_out::unparsed: ' . $_ . "\n" if ($options->{DEBUG_UNPARSED}>0);
 	}
 	close($fh);
+	close($options->{ANNOTATED_DEBUG_FH}) if ($options->{ANNOTATED_DEBUG_FILE});
 	if ($options->{CACHE}>0) {
 		if (fdump(\@data,$cachefile)) {
 				print STDERR "Written to cachefile $cachefile\n" if ($options->{VERBOSE}>0);
