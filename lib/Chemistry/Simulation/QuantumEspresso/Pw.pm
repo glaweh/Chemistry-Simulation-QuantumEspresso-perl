@@ -379,11 +379,16 @@ sub parse_bands {
 
 sub parse_stress {
 	my $fh=shift;
+	my $options=shift;
+	my $annotated_debug_fh=$options->{ANNOTATED_DEBUG_FH} if (exists $options->{ANNOTATED_DEBUG_FH});
+	my $fh_line='';
+	my $fh_parsed;
 	my $result;
 	my $row=-1;
 	$result->{au}=zeroes(3,3);
 	$result->{kbar}=zeroes(3,3);
 	while (<$fh>) {
+		$fh_line=$_;
 		chomp;
 		if (/^\s*total\s*stress.*P=\s*(\S+)\s*$/) {
 			$row=0;
@@ -397,7 +402,12 @@ sub parse_stress {
 			$result->{kbar}->(:,$row).=pdl(@line[3..5]);
 			$row++;
 		}
-	}
+	} continue {
+		annotate_debug($annotated_debug_fh,'parse_stress',$fh_parsed,$fh_line)
+			if ($annotated_debug_fh and $fh_line);
+	};
+	annotate_debug($annotated_debug_fh,'parse_stress',$fh_parsed,$fh_line)
+		if ($annotated_debug_fh and $fh_line);
 
 	return ($row > 2 ? $result : undef);
 }
