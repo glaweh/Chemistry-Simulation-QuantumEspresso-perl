@@ -305,7 +305,7 @@ sub parse_bands {
 	my $fh=shift;
 	my $nk=shift;
 	my $nbnd=shift;
-	$_ = shift;
+	my $firstline = shift;
 	my $options=shift;
 	my $annotated_debug_fh=$options->{ANNOTATED_DEBUG_FH} if (exists $options->{ANNOTATED_DEBUG_FH});
 	my $fh_line='';
@@ -329,7 +329,10 @@ sub parse_bands {
 	$result->{kvec}=zeroes(3,$nk);
 	$result->{npw}=zeroes(long,$nk);
 	$result->{ebnd}=zeroes($nbnd,$nk);
-	LINE: { do {{
+
+	while (((defined $firstline) ? ($_=$firstline) : ($_=<$fh>))) {
+		$firstline=undef;
+		$fh_line=$_;
 		chomp;
 		# insert spaces in front of minus signs to work around broken pw format strings
 		s/-/ -/g;
@@ -341,7 +344,7 @@ sub parse_bands {
 			$result->{ebnd}->(:,$ik;-).=pdl(@accum);
 			@accum=();
 			$hot=0;
-			last LINE if ($ik==$nk-1);
+			last if ($ik==$nk-1);
 		}
 		if (/^\s*k =\s*(.*) \(\s*(\d+) PWs\)   bands \(ev\):\s*$/) {
 			$ik++;
@@ -352,7 +355,7 @@ sub parse_bands {
 			next;
 		}
 		push @accum,split if ($hot);
-	}} while (<$fh>) };
+	}
 	return $result;
 }
 
