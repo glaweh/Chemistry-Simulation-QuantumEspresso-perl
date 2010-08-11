@@ -84,7 +84,7 @@ sub parse_pw_out {
 			next;
 		}
 		if (/ enter write_ns/) {
-			$data[$iter]->{hubbard}= parse_write_ns($fh);
+			$data[$iter]->{hubbard}= parse_write_ns($fh,$options);
 			next;
 		}
 		if (/^!?\s*total energy\s*=\s*(\S+)\s*Ry$/) {
