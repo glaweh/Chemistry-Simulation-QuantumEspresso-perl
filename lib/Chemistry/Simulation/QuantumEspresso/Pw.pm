@@ -14,6 +14,11 @@ BEGIN {
 my $parser_version_major=1;
 my $parser_version_minor=1;
 
+sub annotate_debug($$$$) {
+	my ($fh,$sub,$parsed,$data)=@_;
+	printf $fh '%14s::$_::%8s::%s',$sub,($parsed ? 'parsed' : 'unparsed'),$data;
+}
+
 sub parse_pw_out {
 	my $fname=shift;
 	my $user_opt=shift;
@@ -154,12 +159,12 @@ sub parse_pw_out {
 		}
 
 		if (/^\s*crystal axes: \(cart\. coord/) {
-			print $annotated_debug_fh "parse_pw_out::\$_::  parsed::$fh_line" if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse_pw_out',1,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$data[$iter]->{amat}=zeroes(3,3);
 			for (my $i=0; $i<3 ; $i++) {
 				$_=<$fh>;
-				print $annotated_debug_fh "parse_pw_out::\$_::  parsed::$_" if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse_pw_out',1,$_) if ($annotated_debug_fh);
 				chomp;
 				s/-/ -/g;
 				if (/^.*\(\s*([^\)]+)\s*\)/) {
@@ -170,12 +175,12 @@ sub parse_pw_out {
 		}
 
 		if (/^\s*reciprocal axes: \(cart\. coord/) {
-			print $annotated_debug_fh "parse_pw_out::\$_::  parsed::$fh_line" if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse_pw_out',1,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$data[$iter]->{bmat}=zeroes(3,3);
 			for (my $i=0; $i<3 ; $i++) {
 				$_=<$fh>;
-				print $annotated_debug_fh "parse_pw_out::\$_::  parsed::$_" if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse_pw_out',1,$_) if ($annotated_debug_fh);
 				chomp;
 				s/-/ -/g;
 				if (/^.*\(\s*([^\)]+)\s*\)/) {
@@ -204,7 +209,7 @@ sub parse_pw_out {
 
 		$fh_parsed=0;
 	} continue {
-		print $annotated_debug_fh 'parse_pw_out::$_::' . ( $fh_parsed ? '  parsed' : 'unparsed') . "::$fh_line"
+		annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
 	}
 	close($fh);
@@ -287,7 +292,7 @@ sub parse_write_ns {
 		}
 		$fh_parsed=0;
 	} continue {
-		print $annotated_debug_fh 'parse_write_ns::$_::' . ( $fh_parsed ? '  parsed' : 'unparsed') . "::$fh_line"
+		annotate_debug($annotated_debug_fh,'parse_write_ns',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
 	}
 	$result->{atoms}=\@atoms;
