@@ -16,7 +16,7 @@ my $parser_version_minor=1;
 
 sub annotate_debug($$$$) {
 	my ($fh,$sub,$parsed,$data)=@_;
-	printf $fh '%14s::$_::%8s::%s',$sub,($parsed ? 'parsed' : 'unparsed'),$data;
+	printf $fh '%14s::$_::%8s::%05d::%s',$sub,($parsed ? 'parsed' : 'unparsed'),$parsed,$data;
 }
 
 sub parse_pw_out {
@@ -75,9 +75,13 @@ sub parse_pw_out {
 	while (<$fh>) {
 		$fh_line=$_;
 		chomp;
-		$fh_parsed=1;
-		next if (/^\s*$/);
+		$fh_parsed=0;
+		if (/^\s*$/) {
+			$fh_parsed=__LINE__-1;
+			next;
+		}
 		if (/iteration #\s*(\d+)\s*ecut=\s*(\S+)\s*Ry\s*beta=\s*(\S+)/) {
+			$fh_parsed=__LINE__-1;
 			$iter=$1;
 			$data[$iter]->{ecut}=$2;
 			$data[$iter]->{beta}=$3;
@@ -85,64 +89,78 @@ sub parse_pw_out {
 			next;
 		}
 		if (/     End of self-consistent calculation/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{end_of_scf}=1;
 			next;
 		}
 		if (/ enter write_ns/) {
-			annotate_debug($annotated_debug_fh,'parse_pw_out',1,$fh_line) if ($annotated_debug_fh);
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$data[$iter]->{hubbard}= parse_write_ns($fh,$options);
 			next;
 		}
 		if (/^!?\s*total energy\s*=\s*(\S+)\s*Ry$/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{E_total}=$1;
 			next;
 		}
 		if (/^\s*total magnetization\s*=\s*(\S+)\s*Bohr mag\/cell$/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{m_total}=$1;
 			next;
 		}
 		if (/^\s*absolute magnetization\s*=\s*(\S+)\s*Bohr mag\/cell$/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{m_absolute}=$1;
 			next;
 		}
 		if (/^\s*total cpu time spent up to now is\s*(\S+)\s*secs$/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{t_cpu}=$1;
 			next;
 		}
 		if (/^\s*the Fermi energy is\s*(\S+)\s*ev$/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{E_Fermi}=$1;
 			next;
 		}
 		if (/^\s*ethr =\s*(\S+),/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{ethr}=$1;
 			next;
 		}
 		if (/^\s*number of k points=\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{nk}=$1;
 			next;
 		}
 		if (/^\s*number of Kohn-Sham states=\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{nbnd}=$1;
 			next;
 		}
 		if (/^\s*number of electrons\s*=\s*([0-9\.]+)/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{nelec}=$1;
 		}
 		## BEGIN stuff found in version 3.2
 		if (/^\s*nbndx\s*=\s*(\d+)\s*nbnd\s*=\s*(\d+)\s*natomwfc\s*=\s*(\d+)\s*npwx\s*=\s*(\d+)\s*$/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{_nbndx}=$1;
 			$data[$iter]->{nbnd}=$2;
 			$data[$iter]->{_natomwfc}=$3;
 			$data[$iter]->{_npwx}=$4;
 		}
 		if (/^\s*nelec\s*=\s*([0-9\.]+)\s*nkb\s*=\s*(\d+)\s*ngl\s*=\s*(\d+)\s*$/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{nelec}=$1;
 			$data[$iter]->{_nkb}=$2;
 			$data[$iter]->{_ngl}=$3;
 		}
 		## END stuff found in version 3.2
 		if (/^\s*Program PWSCF v.(\S+)/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{version_string}=$1;
 			my @vers=split(/\./,$1);
 			my $vers_multiplier=1000000;
@@ -156,18 +174,20 @@ sub parse_pw_out {
 			next;
 		}
 		if (/^\s*k =.* bands \(ev\):/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{bands}=parse_bands($fh,$data[0]->{nk},$data[0]->{nbnd},$fh_line,$options);
 			$fh_line='';
 			next;
 		}
 
 		if (/^\s*crystal axes: \(cart\. coord/) {
-			annotate_debug($annotated_debug_fh,'parse_pw_out',1,$fh_line) if ($annotated_debug_fh);
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$data[$iter]->{amat}=zeroes(3,3);
 			for (my $i=0; $i<3 ; $i++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',1,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				s/-/ -/g;
 				if (/^.*\(\s*([^\)]+)\s*\)/) {
@@ -178,12 +198,13 @@ sub parse_pw_out {
 		}
 
 		if (/^\s*reciprocal axes: \(cart\. coord/) {
-			annotate_debug($annotated_debug_fh,'parse_pw_out',1,$fh_line) if ($annotated_debug_fh);
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$data[$iter]->{bmat}=zeroes(3,3);
 			for (my $i=0; $i<3 ; $i++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',1,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				s/-/ -/g;
 				if (/^.*\(\s*([^\)]+)\s*\)/) {
@@ -194,6 +215,7 @@ sub parse_pw_out {
 		}
 
 		if (/^\s*celldm/) {
+			$fh_parsed=__LINE__-1;
 			$data[$iter]->{celldm}=zeroes(6) unless exists ($data[$iter]->{celldm});
 			my $celldm=$data[$iter]->{celldm};
 			s/celldm\((\d+)\)=/$1/g;
@@ -206,13 +228,12 @@ sub parse_pw_out {
 		}
 
 		if (/\s*entering subroutine stress/) {
-			annotate_debug($annotated_debug_fh,'parse_pw_out',1,$fh_line) if ($annotated_debug_fh);
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$data[$iter]->{stress}= parse_stress($fh,$options);
 			$fh_line='';
 			next;
 		}
-
-		$fh_parsed=0;
 	} continue {
 		annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
@@ -243,59 +264,71 @@ sub parse_write_ns {
 	while (<$fh>) {
 		$fh_line=$_;
 		chomp;
-		$fh_parsed=1;
-		last if (/^ exit write_ns/);
+		$fh_parsed=0;
+		if (/^ exit write_ns/) {
+			$fh_parsed=__LINE__-1;
+			last;
+		}
 		if (/^U\(/) {
+			$fh_parsed=__LINE__-1;
 			while (/U\(\s*(\d+)\)\s*=\s*(\d+\.\d+)/g) {
 				$atoms[$1]->{U}=$2;
 			}
 			next;
 		}
 		if (/^alpha\(/) {
+			$fh_parsed=__LINE__-1;
 			while (/alpha\(\s*(\d+)\)\s*=\s*(\d+\.\d+)/g) {
 				$atoms[$1]->{alpha}=$2;
 			}
 			next;
 		}
 		if (/^atom\s*(\d+)\s*Tr\[ns\(na\)\]=\s*(\d+\.\d+)/) {
+			$fh_parsed=__LINE__-1;
 			$in_occupations=0;
 			$atoms[$1]->{Trns}=$2;
 			next;
 		}
 		if (/^atom\s*(\d+)\s*spin\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
 			$atom=$1;
 			$spin=$2;
 			next;
 		}
 		if (s/^eigenvalues:\s*//) {
+			$fh_parsed=__LINE__-1;
 			@{$atoms[$atom]->{spin}->[$spin]->{eigenvalues}}=split;
 			next;
 		}
 		if (/^ occupations/) {
+			$fh_parsed=__LINE__-1;
 			$in_occupations=1;
 			$in_eigenvectors=0;
 			next;
 		}
 		if (/^ eigenvectors/) {
+			$fh_parsed=__LINE__-1;
 			$in_eigenvectors=1;
 			next;
 		}
 		if (/^nsum\s*=\s*(\d+\.\d+)/) {
+			$fh_parsed=__LINE__-1;
 			$in_occupations=0;
 			$result->{nsum}=$1;
 			next;
 		}
 		if ($in_eigenvectors) {
+			$fh_parsed=__LINE__-1;
 			my ($idx,@vec)=split;
 			@{$atoms[$atom]->{spin}->[$spin]->{eigenvectors}->[$idx-1]}=@vec;
 			next;
 		}
 		if ($in_occupations) {
+			$fh_parsed=__LINE__-1;
 			my (@line)=split;
 			push @{$atoms[$atom]->{spin}->[$spin]->{occupations}},\@line;
 			next;
 		}
-		$fh_parsed=0;
 	} continue {
 		annotate_debug($annotated_debug_fh,'parse_write_ns',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
@@ -338,11 +371,12 @@ sub parse_bands {
 	while (((defined $firstline) ? ($_=$firstline) : ($_=<$fh>))) {
 		$firstline=undef;
 		$fh_line=$_;
-		$fh_parsed=1;
+		$fh_parsed=0;
 		chomp;
 		# insert spaces in front of minus signs to work around broken pw format strings
 		s/-/ -/g;
 		if ($hot and /^\s*$/) {
+			$fh_parsed=__LINE__-1;
 			if ($options->{DEBUG_BANDS_ACCUM}>0) {
 				print STDERR "$ik/$nk: $#accum\n";
 				print STDERR join(" ",@accum) . "\n";
@@ -353,6 +387,7 @@ sub parse_bands {
 			last if ($ik==$nk-1);
 		}
 		if (/^\s*k =\s*(.*) \(\s*(\d+) PWs\)   bands \(ev\):\s*$/) {
+			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse_bands',$fh_parsed,$fh_line)
 				if ($annotated_debug_fh);
 			$ik++;
@@ -366,10 +401,10 @@ sub parse_bands {
 			next;
 		}
 		if ($hot) {
+			$fh_parsed=__LINE__-1;
 			push @accum,split;
 			next;
 		}
-		$fh_parsed=0;
 	} continue {
 		annotate_debug($annotated_debug_fh,'parse_bands',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
@@ -392,13 +427,19 @@ sub parse_stress {
 	while (<$fh>) {
 		$fh_line=$_;
 		chomp;
+		$fh_parsed=0;
 		if (/^\s*total\s*stress.*P=\s*(\S+)\s*$/) {
+			$fh_parsed=__LINE__-1;
 			$row=0;
 			$result->{P}=$1;
 			next;
 		}
-		last if ($row>=0 and /^\s*$/);
+		if ($row>=0 and /^\s*$/) {
+			$fh_parsed=__LINE__-1;
+			last;
+		}
 		if ($row>=0) {
+			$fh_parsed=__LINE__-1;
 			my @line=split;
 			$result->{au}->(:,$row).=pdl(@line[0..2]);
 			$result->{kbar}->(:,$row).=pdl(@line[3..5]);
