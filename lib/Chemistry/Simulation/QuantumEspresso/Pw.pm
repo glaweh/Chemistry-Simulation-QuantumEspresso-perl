@@ -353,6 +353,7 @@ sub parse_bands {
 	my $ik=-1;
 	my @accum;
 	my $hot=0;
+	my $expect_occupation=0;
 
 	my $dimensions_unknown = 0;
 	if (! defined $nk) {
@@ -382,10 +383,14 @@ sub parse_bands {
 				print STDERR "$ik/$nk: $#accum\n";
 				print STDERR join(" ",@accum) . "\n";
 			}
-			$result->{ebnd}->(:,$ik;-).=pdl(@accum);
+			if ($hot==1) {
+				$result->{ebnd}->(:,$ik;-).=pdl(@accum);
+			} elsif ($hot==2) {
+				$result->{occupation}->(:,$ik;-).=pdl(@accum);
+			}
 			@accum=();
 			$hot=0;
-			last if ($ik==$nk-1);
+			last if (($ik==$nk-1) and ($expect_occupation==0));
 		}
 		if (/^\s*k =\s*(.*) \(\s*(\d+) PWs\)   bands \(ev\):\s*$/) {
 			$fh_parsed=__LINE__-1;
@@ -399,6 +404,16 @@ sub parse_bands {
 				if ($annotated_debug_fh);
 			$fh_line='';
 			$hot=1;
+			next;
+		}
+		if (/^\s*occupation numbers\s*$/) {
+			$fh_parsed=__LINE__-1;
+			unless (exists $result->{occupation}) {
+				$expect_occupation=$nk;
+				$result->{occupation}=zeroes($nbnd,$nk);
+			}
+			$expect_occupation--;
+			$hot=2;
 			next;
 		}
 		if ($hot) {
