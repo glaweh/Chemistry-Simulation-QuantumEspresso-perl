@@ -82,7 +82,8 @@ sub parse_pw_out {
 		}
 		if (/iteration #\s*(\d+)\s*ecut=\s*(\S+)\s*Ry\s*beta=\s*(\S+)/) {
 			$fh_parsed=__LINE__-1;
-			$iter=$1;
+			$iter++;
+			$data[$iter]->{iteration}=$1;
 			$data[$iter]->{ecut}=$2;
 			$data[$iter]->{beta}=$3;
 			$ik=0;
