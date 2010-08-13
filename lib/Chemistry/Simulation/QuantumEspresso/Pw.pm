@@ -245,6 +245,36 @@ sub parse_pw_out {
 			$fh_line='';
 			next;
 		}
+		if (/\s*CELL_PARAMETERS\s*\(alat=\s*([0-9\.]+)/) {
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			$data[$iter]->{CELL_PARAMETERS_alat}=$1;
+			$data[$iter]->{CELL_PARAMETERS}=zeroes(3,3);
+			for (my $row=0;$row<3;$row++) {
+				$_=<$fh>;
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				chomp;
+				$data[$iter]->{CELL_PARAMETERS}->(:,$row;-).=pdl(split);
+			}
+			$fh_line='';
+			next;
+		}
+		if (/\s*ATOMIC_POSITIONS/) {
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			$data[$iter]->{ATOMIC_POSITIONS}=zeroes(3,$data[0]->{nat});
+			my $at_counter=0;
+			while (<$fh>) {
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				chomp;
+				last if (/^\s*$/);
+				my ($type,@position)=split;
+				$data[$iter]->{ATOMIC_POSITIONS}->(:,$at_counter;-).=pdl(@position);
+				$at_counter++;
+			}
+			$fh_line='';
+			next;
+		}
 	} continue {
 		annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
