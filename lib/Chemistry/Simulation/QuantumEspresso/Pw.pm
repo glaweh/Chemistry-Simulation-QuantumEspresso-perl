@@ -275,6 +275,11 @@ sub parse_pw_out {
 			$fh_line='';
 			next;
 		}
+		if (/^\s*from bfgs\s*:\s*error\s*#\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{bfgs_error}=$1;
+			next;
+		}
 	} continue {
 		annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
