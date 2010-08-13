@@ -263,14 +263,13 @@ sub parse_pw_out {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$data[$iter]->{ATOMIC_POSITIONS}=zeroes(3,$data[0]->{nat});
-			my $at_counter=0;
-			while (<$fh>) {
+			for (my $at_counter=0;$at_counter<$data[0]->{nat};$at_counter++) {
+				$_=<$fh>;
 				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				last if (/^\s*$/);
 				my ($type,@position)=split;
 				$data[$iter]->{ATOMIC_POSITIONS}->(:,$at_counter;-).=pdl(@position);
-				$at_counter++;
 			}
 			$fh_line='';
 			next;
