@@ -136,6 +136,16 @@ sub parse_pw_out {
 			$data[$iter]->{nk}=$1;
 			next;
 		}
+		if (/^\s*number of atoms\/cell\s*=\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{nat}=$1;
+			next;
+		}
+		if (/^\s*number of atomic types\s*=\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{ntyp}=$1;
+			next;
+		}
 		if (/^\s*number of Kohn-Sham states=\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$data[$iter]->{nbnd}=$1;
