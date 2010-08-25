@@ -274,9 +274,9 @@ sub parse_pw_out {
 			$fh_line='';
 			next;
 		}
-		if (/^\s*from bfgs\s*:\s*error\s*#\s*(\d+)/) {
+		if (/^\s*from (\S+)\s*:\s*error\s*#\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
-			$data[$iter]->{bfgs_error}=$1;
+			$data[$iter]->{error}->{$1}=$2;
 			next;
 		}
 	} continue {
