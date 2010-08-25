@@ -274,6 +274,11 @@ sub parse_pw_out {
 			$fh_line='';
 			next;
 		}
+		if (/^\s*Total force\s*=\s*([0-9\.]+)\s*/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{force_total}=$1;
+			next;
+		}
 		if (/^\s*from (\S+)\s*:\s*error\s*#\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$data[$iter]->{error}->{$1}=$2;
