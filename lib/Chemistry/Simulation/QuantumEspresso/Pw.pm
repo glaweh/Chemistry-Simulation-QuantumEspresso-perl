@@ -259,6 +259,52 @@ sub parse_pw_out {
 			}
 			next;
 		}
+		if (/\s*Cartesian axes/) {
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			$data[$iter]->{ATOMIC_POSITIONS_CARTESIAN}=zeroes(3,$data[0]->{nat});
+			$_=<$fh>;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			$_=<$fh>;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			for (my $at_counter=0;$at_counter<$data[0]->{nat};$at_counter++) {
+				$_=<$fh>;
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				chomp;
+				last if (/^\s*$/);
+				# match line:
+				#          1           Cu1 tau(  1) = (  -0.5000000   0.0000000  -0.2916537  )
+				if (/^\s*(\d+)\s+(\S+)\s+tau\(\s*(\d+)\)\s*=\s*\(\s*(\S+)\s+(\S+)\s+(\S+)\s*\)\s*$/) {
+					$data[$iter]->{ATOMIC_POSITIONS_CARTESIAN}->(:,$at_counter;-).=pdl($4,$5,$6);
+					$data[$iter]->{atom_species}->[$1]=$2;
+					push @{$data[$iter]->{species_atoms}->{$2}},$1;
+				}
+			}
+			$fh_line='';
+			next;
+		}
+		if (/\s*Crystallographic axes/) {
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			$data[$iter]->{ATOMIC_POSITIONS}=zeroes(3,$data[0]->{nat});
+			$_=<$fh>;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			$_=<$fh>;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			for (my $at_counter=0;$at_counter<$data[0]->{nat};$at_counter++) {
+				$_=<$fh>;
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				chomp;
+				last if (/^\s*$/);
+				# match line:
+				#          1           Cu1 tau(  1) = (  -0.5000000   0.0000000  -0.2916537  )
+				if (/^\s*(\d+)\s+(\S+)\s+tau\(\s*(\d+)\)\s*=\s*\(\s*(\S+)\s+(\S+)\s+(\S+)\s*\)\s*$/) {
+					$data[$iter]->{ATOMIC_POSITIONS}->(:,$at_counter;-).=pdl($4,$5,$6);
+				}
+			}
+			$fh_line='';
+			next;
+		}
 
 		if (/^\s*celldm/) {
 			$fh_parsed=__LINE__-1;
