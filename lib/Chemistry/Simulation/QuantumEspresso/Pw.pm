@@ -12,7 +12,7 @@ BEGIN {
 	@EXPORT=qw(&parse_pw_out);
 }
 my $parser_version_major=1;
-my $parser_version_minor=2;
+my $parser_version_minor=3;
 
 sub annotate_debug($$$$) {
 	my ($fh,$sub,$parsed,$data)=@_;
@@ -328,7 +328,7 @@ sub parse_write_ns {
 		}
 		if (/^alpha\(/) {
 			$fh_parsed=__LINE__-1;
-			while (/alpha\(\s*(\d+)\)\s*=\s*(\d+\.\d+)/g) {
+			while (/alpha\(\s*(\d+)\)\s*=\s*(-?\d+\.\d+)/g) {
 				$atoms[$1]->{alpha}=$2;
 			}
 			next;
