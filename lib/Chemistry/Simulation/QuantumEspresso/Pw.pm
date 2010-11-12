@@ -224,6 +224,41 @@ sub parse_pw_out {
 			}
 			next;
 		}
+		if (/^\s*atomic species   valence    mass     pseudopotential/) {
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			$fh_line='';
+			for (my $i=1; $i<$data[0]->{ntyp} ; $i++) {
+				$_=<$fh>;
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				chomp;
+				# nerv...
+				if (/^\s*(\S+)\s+(\S+)\s+(\S+)\s+(.*)\s*$/) {
+					$data[$iter]->{species_index}->{$1}=$i;
+					$data[$iter]->{species}->[$i]->{label}=$1;
+					$data[$iter]->{species}->[$i]->{valence}=$2;
+					$data[$iter]->{species}->[$i]->{mass}=$3;
+					$data[$iter]->{species}->[$i]->{pseudopotential}=$4;
+				}
+			}
+			next;
+		}
+		if (/^\s*Starting magnetic structure/) {
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			$fh_line='';
+			$_=<$fh>;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			for (my $i=1; $i<$data[0]->{ntyp} ; $i++) {
+				$_=<$fh>;
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				chomp;
+				if (/^\s*(\S+)\s+(\S+)\s*$/) {
+					$data[$iter]->{species}->[$i]->{starting_magnetization}=$2
+				}
+			}
+			next;
+		}
 
 		if (/^\s*celldm/) {
 			$fh_parsed=__LINE__-1;
