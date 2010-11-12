@@ -12,7 +12,7 @@ BEGIN {
 	@EXPORT=qw(&parse_pw_out);
 }
 my $parser_version_major=1;
-my $parser_version_minor=3;
+my $parser_version_minor=4;
 
 sub annotate_debug($$$$) {
 	my ($fh,$sub,$parsed,$data)=@_;
