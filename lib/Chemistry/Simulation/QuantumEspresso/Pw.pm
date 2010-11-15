@@ -104,6 +104,16 @@ sub parse_pw_out {
 			$data[$iter]->{convergence_achieved}=$1;
 			next;
 		}
+		if (/^\s*Starting wfc from file/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{starting_wfc}='file';
+			next;
+		}
+		if (/^\s*Starting wfc are.*atomic wfcs/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{starting_wfc}='atomic';
+			next;
+		}
 		if (/ enter write_ns/) {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
