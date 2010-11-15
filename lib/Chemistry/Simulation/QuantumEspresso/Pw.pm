@@ -384,7 +384,7 @@ sub parse_write_ns {
 	my $options=shift;
 	my ($atom,$spin);
 	my $result;
-	my (@atoms,@atom_kinds);
+	my (@atoms,@species);
 	my $in_occupations;
 	my $in_eigenvectors;
 	my $annotated_debug_fh=$options->{ANNOTATED_DEBUG_FH} if (exists $options->{ANNOTATED_DEBUG_FH});
@@ -403,14 +403,14 @@ sub parse_write_ns {
 		if (/^U\(/) {
 			$fh_parsed=__LINE__-1;
 			while (/U\(\s*(\d+)\)\s*=\s*(\d+\.\d+)/g) {
-				$atom_kinds[$1]->{U}=$2;
+				$species[$1]->{U}=$2;
 			}
 			next;
 		}
 		if (/^alpha\(/) {
 			$fh_parsed=__LINE__-1;
 			while (/alpha\(\s*(\d+)\)\s*=\s*(-?\d+\.\d+)/g) {
-				$atom_kinds[$1]->{alpha}=$2;
+				$species[$1]->{alpha}=$2;
 			}
 			next;
 		}
@@ -467,7 +467,7 @@ sub parse_write_ns {
 	annotate_debug($annotated_debug_fh,'parse_write_ns',$fh_parsed,$fh_line)
 		if ($annotated_debug_fh and $fh_line);
 	$result->{atoms}=\@atoms;
-	$result->{atom_kinds}=\@atom_kinds;
+	$result->{species}=\@species;
 	return($result);
 }
 
