@@ -114,6 +114,21 @@ sub parse_pw_out {
 			$data[$iter]->{starting_wfc}='atomic';
 			next;
 		}
+		if (/The initial density is read from file/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{starting_potential}='file';
+			next;
+		}
+		if (/Initial potential from superposition of free atoms/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{starting_potential}='atomic';
+			next;
+		}
+		if (/NEW-OLD atomic charge density approx\. for the potential/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{starting_potential}='new_old_atomic';
+			next;
+		}
 		if (/ enter write_ns/) {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
