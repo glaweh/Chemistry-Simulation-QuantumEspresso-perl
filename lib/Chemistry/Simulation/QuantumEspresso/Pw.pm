@@ -402,7 +402,20 @@ sub parse_pw_out {
 		}
 		if (/^\s*from (\S+)\s*:\s*error\s*#\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
-			$data[$iter]->{error}->{$1}=$2;
+			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			my ($err_name,$err_num)=($1,$2);
+			my @err_msg;
+			while (<$fh>) {
+				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				chomp;
+				last if (/%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%/);
+				s/^\s*//;
+				s/\s*$//;
+				push @err_msg,$_;
+			}
+			$data[$iter]->{error}->{$err_name}->[0]=$err_num;
+			$data[$iter]->{error}->{$err_name}->[1]=join("\n",@err_msg);
+			$fh_line='';
 			next;
 		}
 	} continue {
