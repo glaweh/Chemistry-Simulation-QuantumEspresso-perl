@@ -99,6 +99,11 @@ sub parse_pw_out {
 			$data[$iter]->{end_of_nscf}=1;
 			next;
 		}
+		if (/^\s*convergence NOT achieved after (\d+) iterations: stopping\s*/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{convergence_not_achieved}=$1;
+			next;
+		}
 		if (/^\s*convergence has been achieved in\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$data[$iter]->{convergence_achieved}=$1;
