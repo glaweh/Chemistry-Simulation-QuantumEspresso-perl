@@ -35,13 +35,17 @@ sub parse_pw_out {
 			$options->{$_}=$user_opt->{$_};
 		}
 	}
+	my $mtime_pwout = (stat($fname))[9];
 
 	if (($options->{CACHE}>0) and (-s $cachefile)) {
-		my $cached_data=frestore($cachefile);
-		if ($cached_data->[0]->{parser_version_minor}==$parser_version_minor) {
-			$cached_data->[0]->{parser_cached}=1;
-			print STDERR "Read from cachefile $cachefile\n" if ($options->{VERBOSE}>0);
-			return($cached_data);
+		my $mtime_cachefile = (stat($cachefile))[9];
+		if ($mtime_pwout == $mtime_cachefile) {
+			my $cached_data=frestore($cachefile);
+			if ($cached_data->[0]->{parser_version_minor}==$parser_version_minor) {
+				$cached_data->[0]->{parser_cached}=1;
+				print STDERR "Read from cachefile $cachefile\n" if ($options->{VERBOSE}>0);
+				return($cached_data);
+			}
 		}
 	}
 	if ($options->{ANNOTATED_DEBUG_FILE} and (exists $options->{ANNOTATED_DEBUG_FH})) {
@@ -65,6 +69,7 @@ sub parse_pw_out {
 
 	$data[0]->{parser_version_major}=$parser_version_major;
 	$data[0]->{parser_version_minor}=$parser_version_minor;
+	$data[0]->{mtime}=$mtime_pwout;
 	if (! open($fh,$fname)) {
 		print "couldn't open $fname\n" if ($options->{VERBOSE}>0);
 		return(undef);
@@ -432,6 +437,7 @@ sub parse_pw_out {
 	if ($options->{CACHE}>0) {
 		if (fdump(\@data,$cachefile)) {
 				print STDERR "Written to cachefile $cachefile\n" if ($options->{VERBOSE}>0);
+				utime time,$mtime_pwout,$cachefile;
 		}
 	}
 	return(\@data);
