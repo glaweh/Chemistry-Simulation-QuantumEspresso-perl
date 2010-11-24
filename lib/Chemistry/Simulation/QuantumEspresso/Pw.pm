@@ -418,6 +418,11 @@ sub parse_pw_out {
 			$fh_line='';
 			next;
 		}
+		if (/^\s+(\S+)\s+:\s*([0-9]+(?:.[0-9]+)?)s CPU/) {
+			$fh_parsed=__LINE__-1;
+			$data[$iter]->{profiling}->{$1}->{CPU}=$2;
+			next;
+		}
 	} continue {
 		annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
