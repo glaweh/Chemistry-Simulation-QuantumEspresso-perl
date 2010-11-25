@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Std;
+use PDL;
+use PDL::NiceSlice;
+use Chemistry::Simulation::QuantumEspressoPw;
+
+my $NAME='qe_pw-eval';
+if (@ARGV != 2) {
+	print STDERR "usage: $NAME <pw-out-file> <perl code>\n";
+	exit 2;
+}
+
+my $fname=$ARGV[0];
+my $code=$ARGV[1];
+my $iter=parse_pw_out($fname, {DEBUG=>0});
+
+my $a=eval $code;
+die "eval error: $@" if ($@);
+print "$a\n" if ($a);
