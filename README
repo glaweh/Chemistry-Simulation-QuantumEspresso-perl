@@ -1,0 +1,14 @@
+This is the README file for the QuantumEspresso perl module. It mainly consists
+of parsers for output files of various tools in the Quantum Espresso suite
+(http://www.quantum-espresso.org).
+
+Quantum ESPRESSO is an integrated suite of computer codes for
+electronic-structure calculations and materials modeling at the nanoscale. It
+is based on density-functional theory, plane waves, and pseudopotentials.
+
+Unfortunately, the information printed by the code are hard to parse by tools
+such as sed/awk/grep.
+
+These perl modules and utilities have been developed to ease that task a bit.
+
+Documentation and proper install scripts are still on my TODO-list.
