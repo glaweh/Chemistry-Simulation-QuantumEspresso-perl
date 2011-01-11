@@ -21,15 +21,9 @@ use warnings;
 use PDL;
 use PDL::NiceSlice;
 
-BEGIN {
-	use Exporter ();
-	our (@EXPORT,@ISA);
-	@ISA=qw(Exporter);
-	@EXPORT=qw(&parse_projwfc_out);
-}
 my $version=1.0;
 
-sub parse_projwfc_out {
+sub parse {
 	use Fcntl ":seek";
 	use PDL::IO::Dumper;
 	my $fname=shift;
