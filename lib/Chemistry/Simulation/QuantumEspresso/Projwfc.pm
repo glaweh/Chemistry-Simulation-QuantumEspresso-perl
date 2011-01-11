@@ -108,7 +108,7 @@ sub parse {
 			);
 			$nk++;
 		}
-		print STDERR 'parse_pw_out unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
+		print STDERR 'parse unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
 	close($fh);
 	if ($options->{CACHE}>0) {
