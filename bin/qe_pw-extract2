@@ -4,7 +4,7 @@ use warnings;
 use Chemistry::Simulation::QuantumEspresso::Pw;
 use Data::Dumper;
 
-my $data=parse_pw_out($ARGV[0]);
+my $data=Chemistry::Simulation::QuantumEspresso::Pw::parse($ARGV[0]);
 
 print Dumper($data);
 exit(0);

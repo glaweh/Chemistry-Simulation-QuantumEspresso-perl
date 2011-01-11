@@ -31,7 +31,7 @@ if (@ARGV != 2) {
 
 my $fname=$ARGV[0];
 my $code=$ARGV[1];
-my $iter=parse_pw_out($fname, {DEBUG=>0});
+my $iter=Chemistry::Simulation::QuantumEspresso::Pw::parse($fname, {DEBUG=>0});
 
 my $a=eval $code;
 die "eval error: $@" if ($@);

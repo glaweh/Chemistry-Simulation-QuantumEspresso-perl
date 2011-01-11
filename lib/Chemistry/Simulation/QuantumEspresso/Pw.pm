@@ -22,12 +22,6 @@ use PDL;
 use PDL::IO::Dumper;
 use PDL::NiceSlice;
 
-BEGIN {
-	use Exporter ();
-	our (@EXPORT,@ISA);
-	@ISA=qw(Exporter);
-	@EXPORT=qw(&parse_pw_out);
-}
 my $parser_version_major=1;
 my $parser_version_minor=5;
 
@@ -36,7 +30,7 @@ sub annotate_debug($$$$) {
 	printf $fh '%14s::$_::%8s::%05d::%s',$sub,($parsed ? 'parsed' : 'unparsed'),$parsed,$data;
 }
 
-sub parse_pw_out {
+sub parse {
 	my $fname=shift;
 	my $user_opt=shift;
 	my $cachefile="$fname.cache.$parser_version_major.pdld";
@@ -158,7 +152,7 @@ sub parse_pw_out {
 		}
 		if (/ enter write_ns/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$data[$iter]->{hubbard}= parse_write_ns($fh,$options);
 			next;
@@ -255,12 +249,12 @@ sub parse_pw_out {
 
 		if (/^\s*crystal axes: \(cart\. coord/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$data[$iter]->{amat}=zeroes(3,3);
 			for (my $i=0; $i<3 ; $i++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				s/-/ -/g;
 				if (/^.*\(\s*([^\)]+)\s*\)/) {
@@ -272,12 +266,12 @@ sub parse_pw_out {
 
 		if (/^\s*reciprocal axes: \(cart\. coord/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$data[$iter]->{bmat}=zeroes(3,3);
 			for (my $i=0; $i<3 ; $i++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				s/-/ -/g;
 				if (/^.*\(\s*([^\)]+)\s*\)/) {
@@ -288,11 +282,11 @@ sub parse_pw_out {
 		}
 		if (/^\s*atomic species   valence    mass     pseudopotential/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			for (my $i=1; $i<$data[0]->{ntyp} ; $i++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				# nerv...
 				if (/^\s*(\S+)\s+(\S+)\s+(\S+)\s+(.*)\s*$/) {
@@ -307,13 +301,13 @@ sub parse_pw_out {
 		}
 		if (/^\s*Starting magnetic structure/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
 			$_=<$fh>;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 			for (my $i=1; $i<$data[0]->{ntyp} ; $i++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				if (/^\s*(\S+)\s+(\S+)\s*$/) {
 					$data[$iter]->{species}->[$i]->{starting_magnetization}=$2
@@ -323,15 +317,15 @@ sub parse_pw_out {
 		}
 		if (/\s*Cartesian axes/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$data[$iter]->{ATOMIC_POSITIONS_CARTESIAN}=zeroes(3,$data[0]->{nat});
 			$_=<$fh>;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 			$_=<$fh>;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 			for (my $at_counter=0;$at_counter<$data[0]->{nat};$at_counter++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				last if (/^\s*$/);
 				# match line:
@@ -347,15 +341,15 @@ sub parse_pw_out {
 		}
 		if (/\s*Crystallographic axes/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$data[$iter]->{ATOMIC_POSITIONS}=zeroes(3,$data[0]->{nat});
 			$_=<$fh>;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 			$_=<$fh>;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 			for (my $at_counter=0;$at_counter<$data[0]->{nat};$at_counter++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				last if (/^\s*$/);
 				# match line:
@@ -383,19 +377,19 @@ sub parse_pw_out {
 
 		if (/\s*entering subroutine stress/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$data[$iter]->{stress}= parse_stress($fh,$options);
 			$fh_line='';
 			next;
 		}
 		if (/\s*CELL_PARAMETERS\s*\(alat=\s*([0-9\.]+)/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$data[$iter]->{CELL_PARAMETERS_alat}=$1;
 			$data[$iter]->{CELL_PARAMETERS}=zeroes(3,3);
 			for (my $row=0;$row<3;$row++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				$data[$iter]->{CELL_PARAMETERS}->(:,$row;-).=pdl(split);
 			}
@@ -404,11 +398,11 @@ sub parse_pw_out {
 		}
 		if (/\s*ATOMIC_POSITIONS/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$data[$iter]->{ATOMIC_POSITIONS}=zeroes(3,$data[0]->{nat});
 			for (my $at_counter=0;$at_counter<$data[0]->{nat};$at_counter++) {
 				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				last if (/^\s*$/);
 				my ($type,@position)=split;
@@ -424,11 +418,11 @@ sub parse_pw_out {
 		}
 		if (/^\s*from (\S+)\s*:\s*error\s*#\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			my ($err_name,$err_num)=($1,$2);
 			my @err_msg;
 			while (<$fh>) {
-				annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$_) if ($annotated_debug_fh);
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
 				last if (/%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%/);
 				s/^\s*//;
@@ -446,7 +440,7 @@ sub parse_pw_out {
 			next;
 		}
 	} continue {
-		annotate_debug($annotated_debug_fh,'parse_pw_out',$fh_parsed,$fh_line)
+		annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line)
 			if ($annotated_debug_fh and $fh_line);
 	}
 	close($fh);
