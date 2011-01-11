@@ -21,7 +21,7 @@ use warnings;
 use PDL;
 use PDL::NiceSlice;
 use PDL::IO::Dumper;
-use Chemistry::Simulation::QuantumEspressoPw;
+use Chemistry::Simulation::QuantumEspresso::Pw;
 
 if ($#ARGV<0) {
 	print STDERR "usage: $0 [-v <lvl>] <pw-out-file>\n";

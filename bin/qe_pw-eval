@@ -21,7 +21,7 @@ use warnings;
 use Getopt::Std;
 use PDL;
 use PDL::NiceSlice;
-use Chemistry::Simulation::QuantumEspressoPw;
+use Chemistry::Simulation::QuantumEspresso::Pw;
 
 my $NAME='qe_pw-eval';
 if (@ARGV != 2) {

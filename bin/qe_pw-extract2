@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Chemistry::Simulation::QuantumEspressoParse;
+use Chemistry::Simulation::QuantumEspresso::Pw;
 use Data::Dumper;
 
 my $data=parse_pw_out($ARGV[0]);
