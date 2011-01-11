@@ -467,11 +467,12 @@ sub parse_write_ns {
 	my $result;
 	my (@atoms,@species);
 	my $in_occupations;
+	my $in_background;
 	my $in_eigenvectors;
 	my $annotated_debug_fh=$options->{ANNOTATED_DEBUG_FH} if (exists $options->{ANNOTATED_DEBUG_FH});
 	my $fh_line='';
 	my $fh_parsed;
-	$in_occupations=$in_eigenvectors=0;
+	$in_occupations=$in_eigenvectors=$in_background=0;
 	$atom=$spin=0;
 	while (<$fh>) {
 		$fh_line=$_;
@@ -560,6 +561,7 @@ sub parse_write_ns {
 		if (/^nsum\s*=\s*(\d+\.\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$in_occupations=0;
+			$in_background=1;
 			$result->{nsum}=$1;
 			next;
 		}
