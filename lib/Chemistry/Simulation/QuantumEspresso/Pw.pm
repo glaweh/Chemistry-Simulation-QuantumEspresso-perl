@@ -502,6 +502,27 @@ sub parse_write_ns {
 			}
 			next;
 		}
+		if (/^U_back\(/) {
+			$fh_parsed=__LINE__-1;
+			while (/U_back\(\s*(\d+)\)\s*=\s*(\d+\.\d+)/g) {
+				$species[$1]->{U_back}=$2;
+			}
+			next;
+		}
+		if (/^alpha_back\(/) {
+			$fh_parsed=__LINE__-1;
+			while (/alpha_back\(\s*(\d+)\)\s*=\s*(-?\d+\.\d+)/g) {
+				$species[$1]->{alpha_back}=$2;
+			}
+			next;
+		}
+		if (/^beta_back\(/) {
+			$fh_parsed=__LINE__-1;
+			while (/beta_back\(\s*(\d+)\)\s*=\s*(-?\d+\.\d+)/g) {
+				$species[$1]->{beta_back}=$2;
+			}
+			next;
+		}
 		if (/^atom\s*(\d+)\s*Tr\[ns\(na\)\]=\s*(\d+\.\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$in_occupations=0;
