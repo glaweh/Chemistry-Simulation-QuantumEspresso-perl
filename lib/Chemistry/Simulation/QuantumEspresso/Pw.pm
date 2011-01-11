@@ -1,4 +1,4 @@
-package Chemistry::Simulation::QuantumEspressoPw;
+package Chemistry::Simulation::QuantumEspresso::Pw;
 # Parser for Quantum Espresso's pw.x output
 # Copyright (C) 2006-2010 Henning Glawe <glaweh@debian.org>
 #
