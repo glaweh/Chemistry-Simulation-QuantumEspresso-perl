@@ -563,6 +563,12 @@ sub parse_write_ns {
 			$result->{nsum}=$1;
 			next;
 		}
+		if (/^nsumb\s*=\s*(\d+\.\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$in_occupations=0;
+			$result->{nsumb}=$1;
+			next;
+		}
 		if ($in_eigenvectors) {
 			$fh_parsed=__LINE__-1;
 			my ($idx,@vec)=split;
