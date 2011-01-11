@@ -465,7 +465,7 @@ sub parse_write_ns {
 	my $options=shift;
 	my ($atom,$spin);
 	my $result;
-	my (@atoms,@species);
+	my (@atoms,@species,@atoms_background);
 	my $in_occupations;
 	my $in_background;
 	my $in_eigenvectors;
@@ -527,13 +527,21 @@ sub parse_write_ns {
 		if (/^atom\s*(\d+)\s*Tr\[ns\(na\)\]=\s*(\d+\.\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$in_occupations=0;
-			$atoms[$1]->{Trns}=$2;
+			if ($in_background) {
+				$atoms_background[$1]->{Trns}=$2;
+			} else {
+				$atoms[$1]->{Trns}=$2;
+			}
 			next;
 		}
 		if (/^atom\s*(\d+)\s*Mag\[ns\(na\)\]=\s*(\d+\.\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$in_occupations=0;
-			$atoms[$1]->{Mag_ns}=$2;
+			if ($in_background) {
+				$atoms_background[$1]->{Mag_ns}=$2;
+			} else {
+				$atoms[$1]->{Mag_ns}=$2;
+			}
 			next;
 		}
 		if (/^atom\s*(\d+)\s*spin\s*(\d+)/) {
@@ -544,7 +552,11 @@ sub parse_write_ns {
 		}
 		if (s/^eigenvalues:\s*//) {
 			$fh_parsed=__LINE__-1;
-			@{$atoms[$atom]->{spin}->[$spin]->{eigenvalues}}=split;
+			if ($in_background) {
+				@{$atoms_background[$atom]->{spin}->[$spin]->{eigenvalues}}=split;
+			} else {
+				@{$atoms[$atom]->{spin}->[$spin]->{eigenvalues}}=split;
+			}
 			next;
 		}
 		if (/^ occupations/) {
@@ -579,13 +591,21 @@ sub parse_write_ns {
 		if ($in_eigenvectors) {
 			$fh_parsed=__LINE__-1;
 			my ($idx,@vec)=split;
-			@{$atoms[$atom]->{spin}->[$spin]->{eigenvectors}->[$idx-1]}=@vec;
+			if ($in_background) {
+				@{$atoms_background[$atom]->{spin}->[$spin]->{eigenvectors}->[$idx-1]}=@vec;
+			} else {
+				@{$atoms[$atom]->{spin}->[$spin]->{eigenvectors}->[$idx-1]}=@vec;
+			}
 			next;
 		}
 		if ($in_occupations) {
 			$fh_parsed=__LINE__-1;
 			my (@line)=split;
-			push @{$atoms[$atom]->{spin}->[$spin]->{occupations}},\@line;
+			if ($in_background) {
+				push @{$atoms_background[$atom]->{spin}->[$spin]->{occupations}},\@line;
+			} else {
+				push @{$atoms[$atom]->{spin}->[$spin]->{occupations}},\@line;
+			}
 			next;
 		}
 	} continue {
@@ -595,6 +615,7 @@ sub parse_write_ns {
 	annotate_debug($annotated_debug_fh,'parse_write_ns',$fh_parsed,$fh_line)
 		if ($annotated_debug_fh and $fh_line);
 	$result->{atoms}=\@atoms;
+	$result->{atoms_background}=\@atoms_background;
 	$result->{species}=\@species;
 	return($result);
 }
