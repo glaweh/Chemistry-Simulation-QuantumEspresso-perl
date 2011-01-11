@@ -1,4 +1,4 @@
-package Chemistry::Simulation::QuantumEspressoProjwfc;
+package Chemistry::Simulation::QuantumEspresso::Projwfc;
 # Parser for Quantum Espresso's projwfc.x output
 # Copyright (C) 2010 Henning Glawe <glaweh@debian.org>
 #
