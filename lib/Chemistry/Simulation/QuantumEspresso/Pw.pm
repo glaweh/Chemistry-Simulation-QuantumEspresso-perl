@@ -569,6 +569,11 @@ sub parse_write_ns {
 			$result->{nsumb}=$1;
 			next;
 		}
+		if (/^Occ Reservoir\s*=\s*(\d+\.\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$result->{occ_reservoir}=$1;
+			next;
+		}
 		if ($in_eigenvectors) {
 			$fh_parsed=__LINE__-1;
 			my ($idx,@vec)=split;
