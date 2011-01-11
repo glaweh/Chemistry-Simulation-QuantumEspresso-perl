@@ -534,7 +534,7 @@ sub parse_write_ns {
 			}
 			next;
 		}
-		if (/^atom\s*(\d+)\s*Mag\[ns\(na\)\]=\s*(\d+\.\d+)/) {
+		if (/^atom\s*(\d+)\s*Mag\[ns\(na\)\]=\s*(-?\d+\.\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$in_occupations=0;
 			if ($in_background) {
