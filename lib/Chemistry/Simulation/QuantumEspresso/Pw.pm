@@ -501,6 +501,12 @@ sub parse_write_ns {
 			$atoms[$1]->{Trns}=$2;
 			next;
 		}
+		if (/^atom\s*(\d+)\s*Mag\[ns\(na\)\]=\s*(\d+\.\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$in_occupations=0;
+			$atoms[$1]->{Mag_ns}=$2;
+			next;
+		}
 		if (/^atom\s*(\d+)\s*spin\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$atom=$1;
