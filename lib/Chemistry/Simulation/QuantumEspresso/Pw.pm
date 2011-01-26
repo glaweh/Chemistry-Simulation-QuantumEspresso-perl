@@ -284,7 +284,7 @@ sub parse {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
 			$fh_line='';
-			for (my $i=1; $i<$data[0]->{ntyp} ; $i++) {
+			for (my $i=1; $i<=$data[0]->{ntyp} ; $i++) {
 				$_=<$fh>;
 				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
 				chomp;
