@@ -132,6 +132,11 @@ sub parse {
 			next;
 		}
 
+		if (/There are\s+(\d+)\s+irreducible representations/) {
+			$data->{n_irreps}=$1;
+			next;
+		}
+
 		if (/iteration #\s*(\d+)\s*ecut=\s*(\S+)\s*Ry\s*beta=\s*(\S+)/) {
 			$fh_parsed=__LINE__-1;
 			$iter++;
