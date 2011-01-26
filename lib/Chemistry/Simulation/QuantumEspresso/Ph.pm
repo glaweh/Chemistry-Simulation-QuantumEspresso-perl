@@ -375,47 +375,6 @@ sub parse {
 			next;
 		}
 
-		if (/\s*entering subroutine stress/) {
-			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
-			$data[$iter]->{stress}= parse_stress($fh,$options);
-			$fh_line='';
-			next;
-		}
-		if (/\s*CELL_PARAMETERS\s*\(alat=\s*([0-9\.]+)/) {
-			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
-			$data[$iter]->{CELL_PARAMETERS_alat}=$1;
-			$data[$iter]->{CELL_PARAMETERS}=zeroes(3,3);
-			for (my $row=0;$row<3;$row++) {
-				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
-				chomp;
-				$data[$iter]->{CELL_PARAMETERS}->(:,$row;-).=pdl(split);
-			}
-			$fh_line='';
-			next;
-		}
-		if (/\s*ATOMIC_POSITIONS/) {
-			$fh_parsed=__LINE__-1;
-			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
-			$data[$iter]->{ATOMIC_POSITIONS}=zeroes(3,$data[0]->{nat});
-			for (my $at_counter=0;$at_counter<$data[0]->{nat};$at_counter++) {
-				$_=<$fh>;
-				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
-				chomp;
-				last if (/^\s*$/);
-				my ($type,@position)=split;
-				$data[$iter]->{ATOMIC_POSITIONS}->(:,$at_counter;-).=pdl(@position);
-			}
-			$fh_line='';
-			next;
-		}
-		if (/^\s*Total force\s*=\s*([0-9\.]+)\s*/) {
-			$fh_parsed=__LINE__-1;
-			$data[$iter]->{force_total}=$1;
-			next;
-		}
 		if (/^\s*from (\S+)\s*:\s*error\s*#\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
