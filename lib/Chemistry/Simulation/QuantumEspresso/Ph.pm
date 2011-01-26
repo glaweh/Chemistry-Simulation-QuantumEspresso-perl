@@ -101,6 +101,16 @@ sub parse {
 			$fh_parsed=__LINE__-1;
 			next;
 		}
+		if (/Calculation of q =\s+(\S+)\s+(\S+)\s+(\S+)/) {
+			$fh_parsed=__LINE__-1;
+			$iq++;
+			$iter=0;
+			$iirr=0;
+			$data=\%{$data_accum[$iq]->[$iirr]->[$iter]};
+			$startup=$data;
+			$data->{q_vec}=[ $1, $2, $3 ];
+			next;
+		}
 
 		if (/iteration #\s*(\d+)\s*ecut=\s*(\S+)\s*Ry\s*beta=\s*(\S+)/) {
 			$fh_parsed=__LINE__-1;
