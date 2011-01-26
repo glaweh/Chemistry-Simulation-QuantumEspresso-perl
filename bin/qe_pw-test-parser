@@ -29,8 +29,7 @@ if ($#ARGV<0) {
 }
 
 my $fname=$ARGV[0];
-my $debugfname=$ARGV[1] || '';
+my $debugfname="$fname.test.annotate";
 my $pwo=Chemistry::Simulation::QuantumEspresso::Pw::parse($fname, {DEBUG_UNPARSED=>1, ANNOTATED_DEBUG_FILE=>$debugfname, CACHE=>0});
-# my $pwo=Chemistry::Simulation::QuantumEspresso::Pw::parse($fname, {DEBUG_UNPARSED=>1, CACHE=>0});
-fdump($pwo,'/tmp/testdump.pl');
+fdump($pwo,"$fname.test.pdld");
 exit 0;
