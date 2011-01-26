@@ -227,6 +227,7 @@ sub parse {
 		if (/^\s*number of electrons\s*=\s*([0-9\.]+)/) {
 			$fh_parsed=__LINE__-1;
 			$data->{nelec}=$1;
+			next;
 		}
 		## BEGIN stuff found in version 3.2
 		if (/^\s*nbndx\s*=\s*(\d+)\s*nbnd\s*=\s*(\d+)\s*natomwfc\s*=\s*(\d+)\s*npwx\s*=\s*(\d+)\s*$/) {
@@ -235,12 +236,14 @@ sub parse {
 			$data->{nbnd}=$2;
 			$data->{_natomwfc}=$3;
 			$data->{_npwx}=$4;
+			next;
 		}
 		if (/^\s*nelec\s*=\s*([0-9\.]+)\s*nkb\s*=\s*(\d+)\s*ngl\s*=\s*(\d+)\s*$/) {
 			$fh_parsed=__LINE__-1;
 			$data->{nelec}=$1;
 			$data->{_nkb}=$2;
 			$data->{_ngl}=$3;
+			next;
 		}
 		## END stuff found in version 3.2
 		if (/^\s*Program PHONON v.(\S+)/) {
