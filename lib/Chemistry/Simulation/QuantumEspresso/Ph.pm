@@ -101,6 +101,7 @@ sub parse {
 			$fh_parsed=__LINE__-1;
 			next;
 		}
+
 		if (/Calculation of q =\s+(\S+)\s+(\S+)\s+(\S+)/) {
 			$fh_parsed=__LINE__-1;
 			$iq++;
