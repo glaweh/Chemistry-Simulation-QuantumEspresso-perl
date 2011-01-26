@@ -1,6 +1,6 @@
-package Chemistry::Simulation::QuantumEspresso::Pw;
-# Parser for Quantum Espresso's pw.x output
-# Copyright (C) 2006-2010 Henning Glawe <glaweh@debian.org>
+package Chemistry::Simulation::QuantumEspresso::Ph;
+# Parser for Quantum Espresso's ph.x output
+# Copyright (C) 2010-2011 Henning Glawe <glaweh@debian.org>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
