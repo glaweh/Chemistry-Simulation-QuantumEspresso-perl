@@ -113,6 +113,25 @@ sub parse {
 			next;
 		}
 
+		if (/^\s+Representation\s+(\d+)\s+(\d+)\s+modes -(.*)$/) {
+			$fh_parsed=__LINE__-1;
+			$iter=0;
+			$iirr=$1;
+			$data=\%{$data_accum[$iq]->[$iirr]->[$iter]};
+			$data->{nmodes}=$2;
+			$data->{iirr}=$1;
+			$data->{status}='';
+			$data->{modes}=[];
+			my $modes_info=$3;
+			if ($modes_info=~s/\s+(Done|Not done in this run|To be done)$//) {
+				$data->{status}=$1;
+				push @{$data->{modes}},split(/\s+/,$modes_info);
+			} else {
+				$data->{modes_status_unparsed}=$modes_info;
+			}
+			next;
+		}
+
 		if (/iteration #\s*(\d+)\s*ecut=\s*(\S+)\s*Ry\s*beta=\s*(\S+)/) {
 			$fh_parsed=__LINE__-1;
 			$iter++;
