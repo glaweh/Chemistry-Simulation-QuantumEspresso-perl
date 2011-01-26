@@ -22,8 +22,8 @@ use PDL;
 use PDL::IO::Dumper;
 use PDL::NiceSlice;
 
-my $parser_version_major=1;
-my $parser_version_minor=5;
+my $parser_version_major=0;
+my $parser_version_minor=0;
 
 sub annotate_debug($$$$) {
 	my ($fh,$sub,$parsed,$data)=@_;
