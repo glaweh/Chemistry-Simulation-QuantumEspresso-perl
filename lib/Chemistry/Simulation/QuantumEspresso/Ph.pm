@@ -226,7 +226,7 @@ sub parse {
 			$data[$iter]->{_ngl}=$3;
 		}
 		## END stuff found in version 3.2
-		if (/^\s*Program PWSCF v.(\S+)/) {
+		if (/^\s*Program PHONON v.(\S+)/) {
 			$fh_parsed=__LINE__-1;
 			$data[$iter]->{version_string}=$1;
 			my @vers=split(/\./,$1);
