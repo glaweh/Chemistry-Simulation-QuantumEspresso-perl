@@ -101,6 +101,11 @@ sub parse {
 			$fh_parsed=__LINE__-1;
 			next;
 		}
+		if (/Dynamical matrices for \(\s*(\d+),\s*(\d+),\s*(\d+),?\)  uniform grid of q-points/) {
+			$fh_parsed=__LINE__-1;
+			$data->{q_grid}=[$1,$2,$3];
+			next;
+		}
 
 		if (/Calculation of q =\s+(\S+)\s+(\S+)\s+(\S+)/) {
 			$fh_parsed=__LINE__-1;
