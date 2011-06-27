@@ -118,7 +118,7 @@ sub parse {
 			$data->{end_of_nscf}=1;
 			next;
 		}
-		if (/^\s*convergence NOT achieved after (\d+) iterations: stopping\s*/) {
+		if (/^\s*convergence NOT achieved after\s*(\d+)\s*iterations: stopping\s*/) {
 			$fh_parsed=__LINE__-1;
 			$data->{convergence_not_achieved}=$1;
 			next;
