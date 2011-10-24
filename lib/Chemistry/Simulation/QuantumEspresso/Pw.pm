@@ -215,6 +215,18 @@ sub parse {
 			$data->{nelec}=$1;
 			next;
 		}
+		if (/^\s*(\d+) Sym.Ops. \(with inversion\)/) {
+			$data->{nsym}=$1;
+			$data->{sym_inversion}=1;
+		}
+		if (/^\s*(\d+) Sym.Ops. \(no inversion\)/) {
+			$data->{nsym}=$1;
+			$data->{sym_inversion}=0;
+		}
+		if (/^\s*No symmetry found/) {
+			$data->{nsym}=0;
+			$data->{sym_inversion}=0;
+		}
 		## BEGIN stuff found in version 3.2
 		if (/^\s*nbndx\s*=\s*(\d+)\s*nbnd\s*=\s*(\d+)\s*natomwfc\s*=\s*(\d+)\s*npwx\s*=\s*(\d+)\s*$/) {
 			$fh_parsed=__LINE__-1;
