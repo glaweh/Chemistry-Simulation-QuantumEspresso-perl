@@ -2,6 +2,7 @@ package Fortran::Namelist::Editor;
 use strict;
 use warnings;
 use Carp;
+use Data::Dumper;
 
 sub new {
 	my $class=shift;
