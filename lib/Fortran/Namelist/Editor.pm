@@ -41,7 +41,7 @@ sub init {
 sub find_comments_and_strings {
 	my $self = shift;
 	# find all fortran !-style comments and quoted strings
-	while ($data =~ m{
+	while ($self->{data} =~ m{
 			                   ## f90 comments start with !, end with EOL
 			(![^\n]*)\n        ## put into group1
 		|                      ## OR ! which are part of quoted strings
