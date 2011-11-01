@@ -1,7 +1,7 @@
 package Fortran::Namelist::Editor;
 use strict;
 use warnings;
-use carp;
+use Carp;
 
 sub new {
 	my $class=shift;
