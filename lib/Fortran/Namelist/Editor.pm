@@ -34,7 +34,9 @@ sub init {
 	}
 	if ($self->{data}) {
 		$self->{data_cs}=$self->find_comments_and_strings();
+		$self->find_groups();
 	}
+	return(1);
 }
 
 sub find_comments_and_strings {
@@ -79,4 +81,19 @@ sub find_comments_and_strings {
 	return($d);
 }
 
+sub find_groups {
+	my $self=shift;
+	while ($self->{data_cs} =~ m{(?:^|\n)\s*&(\S+)([^/]*)(/)}gs) {
+		push @{$self->{_groups}},{
+			name      => $1,
+			o_name_b  => $-[1],
+			o_name_e  => $+[1],
+			o_vars_b  => $-[2],
+			o_vars_e  => $+[2],
+			o_b       => $-[1]-1,  # group begins with &
+			o_e       => $+[3],    # end of NL group is /
+		};
+	}
+	return(1);
+}
 1;
