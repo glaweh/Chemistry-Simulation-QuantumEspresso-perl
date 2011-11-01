@@ -102,7 +102,6 @@ sub find_groups {
 sub find_vars {
 	my ($self,$offset_b,$offset_e)=@_;
 	my $data_n      = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
-	my $data_orig_n = substr($self->{data}   ,$offset_b,$offset_e-$offset_b);
 	my @vars;
 	# scan data_n for variables: name, optionally index, followed by '='
 	while ($data_n=~m{,?\s+         ## variable assignments are separated by whitespace, optionally with a preceeding comma
