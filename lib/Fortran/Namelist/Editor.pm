@@ -5,7 +5,7 @@ use Carp;
 
 sub new {
 	my $class=shift;
-	my %opts=%{pop()} if ($_[-1] and (ref $_[-1] eq 'hash');
+	my %opts=%{pop()} if ($_[-1] and (ref $_[-1] eq 'HASH'));
 	my $self={
 		filename    => undef,
 		data        => undef,
