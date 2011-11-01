@@ -25,7 +25,7 @@ sub init {
 	my $self=shift;
 	if (defined $self->{filename} and (! $self->{data})) {
 		# slurp in file
-		if open(my $fh,$self->{filename}) {
+		if (open(my $fh,$self->{filename})) {
 			local $/=undef;
 			$self->{data}=<$fh>;
 		} else {
