@@ -93,8 +93,53 @@ sub find_groups {
 			o_vars_e  => $+[2],
 			o_b       => $-[1]-1,  # group begins with &
 			o_e       => $+[3],    # end of NL group is /
+			vars      => $self->find_vars($-[2],$+[2]),
 		};
 	}
 	return(1);
+}
+
+sub find_vars {
+	my ($self,$offset_b,$offset_e)=@_;
+	my $data_n      = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
+	my $data_orig_n = substr($self->{data}   ,$offset_b,$offset_e-$offset_b);
+	my @vars;
+	# scan data_n for variables: name, optionally index, followed by '='
+	while ($data_n=~m{,?\s+         ## variable assignments are separated by whitespace, optionally with a preceeding comma
+			([a-zA-Z][^\(\s]+)      ## a fortran identifier starts with a letter
+			\s*((?:\([^\)]*\)\s*?)*)## there may be more than one index statement attached to each variable
+			\s*=\s*                 ## = separates variable and value, maybe enclosed by whitespace
+		}gsx) {
+		my %v = (
+			name      => $1,
+			o_name_b  => ($-[1]+$offset_b),
+			o_name_e  => ($+[1]+$offset_b),
+			index     => $2,
+			o_index_b => ($-[2]+$offset_b),
+			o_index_e => ($+[2]+$offset_b),
+			value     => undef,
+			o_value_b => ($+[0]+$offset_b),
+			o_value_e => undef,
+			o_decl_b  => ($-[0]+$offset_b),
+		);
+		push @vars,\%v;
+	}
+	if (@vars > 0) {
+		# fill the end offset of values
+		for (my $i=0; $i<$#vars; $i++) {
+			$vars[$i]->{o_value_e}=$vars[$i+1]->{o_decl_b};
+		}
+		$vars[$#vars]->{o_value_e}=$offset_e;
+		foreach my $v (@vars) {
+			my $val=substr($self->{data_cs},$v->{o_value_b},$v->{o_value_e}-$v->{o_value_b});
+			# strip whitespace at end of mask (originally comments), adjust offset accordingly
+			if ($val =~ /\s+$/) {
+				$v->{o_value_e}-=($+[0]-$-[0]);
+			}
+			# fill in the value
+			$v->{value}=substr($self->{data},$v->{o_value_b},$v->{o_value_e}-$v->{o_value_b});
+		}
+	}
+	return(\@vars);
 }
 1;
