@@ -13,7 +13,6 @@ sub new {
 		_strings    => [],
 		_groups     => [],
 		_groupless  => [],
-		_vars       => [],
 		%opts,
 	};
 	bless($self,$class);
