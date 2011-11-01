@@ -53,14 +53,14 @@ sub find_comments_and_strings {
 		}xsg) {
 		if (defined $2) {
 			my %string=(
-				o_b => $-[2];
-				o_e => $+[2];
+				o_b => $-[2],
+				o_e => $+[2],
 			);
 			push @{$self->{_strings}},\%string;
 		} else {
 			my %comment=(
-				o_b => $-[1];
-				o_e => $+[1];
+				o_b => $-[1],
+				o_e => $+[1],
 			);
 			push @{$self->{_comments}},\%comment;
 		}
@@ -70,7 +70,7 @@ sub find_comments_and_strings {
 	# replace comments by same-length sequence of space
 	foreach my $c (@{$self->{_comments}}) {
 		my $len=$c->{o_e}-$c->{o_b};
-		substr($d,$c->o_b,$len) = ' ' x $len;
+		substr($d,$c->{o_b},$len) = ' ' x $len;
 	}
 	# replace strings by same-length sequence of underscores
 	foreach my $s (@{$self->{_strings}}) {
