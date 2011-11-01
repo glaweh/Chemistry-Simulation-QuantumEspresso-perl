@@ -136,9 +136,76 @@ sub find_vars {
 				$v->{o_value_e}-=($+[0]-$-[0]);
 			}
 			# fill in the value
-			$v->{value}=substr($self->{data},$v->{o_value_b},$v->{o_value_e}-$v->{o_value_b});
+			$v->{value}=$self->find_value($v->{o_value_b},$v->{o_value_e});
 		}
 	}
 	return(\@vars);
+}
+
+sub find_value {
+	my ($self,$offset_b,$offset_e)=@_;
+	my $data_v      = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
+	# insert a comma into each group of spaces unless there is already one
+	# commas are optional in namelists, this will make it easier to parse
+	$data_v =~ s{
+		([^\s,])       # last char of a group of non-comma, non-space chars
+		\s             # a space, to be substituted by a comma
+		(\s*[^\s,])    # first char of the next group of non-comma, non-space chars
+		}{$1,$2}gsx;
+	my @value;
+	if ($data_v =~ m{\(}) {
+		# complex
+		confess "unimplemented: complex vars";
+	} else {
+		# re-implement split :(
+		# assumption: whitespace at beginning and end already stripped
+		my $old_e=$offset_b;
+		while ($data_v=~m{\s*,\s*}gsx) {
+			push @value,$self->parse_value($old_e,$-[0]+$offset_b);
+			$old_e=$+[0]+$offset_b;
+		}
+		push @value,$self->parse_value($old_e,$offset_e);
+	}
+	return(\@value);
+}
+
+sub parse_value {
+	my ($self,$offset_b,$offset_e)=@_;
+	my $data      = substr($self->{data},$offset_b,$offset_e-$offset_b);
+	my %value = (
+		type  => undef,
+		value => $data,
+		o_b   => $offset_b,
+		o_e   => $offset_e,
+	);
+	if ($data =~ /^["']/) {
+		$value{type}='string';
+	} elsif ($data =~ m{
+			(                     ## group 1: mantissa
+				[+-]?\d*          ## before decimal point
+				(\.\d+)           ##   group 2: decimal point and digits
+				|
+				\d+               ##   no decimal point
+			)
+			(?:
+				(?:[eE]|([dD]))   ##   group 3: [dD] for double precision
+				([+-]?\d+)        ##   group 4: exponent
+			)?}x) {
+		if (defined $3) {
+			$value{value}="$1e$4"; # perl does not understand fortrans 'd' notation
+			$value{type} ='double';
+		} elsif ((defined $2) or (defined $4)) {
+			$value{type} ='single';
+		} else {
+			$value{type} ='integer';
+		}
+	} elsif ($data =~ m/^\W*[tT]/) {
+		$value{type}  = 'logical';
+		$value{value} = 1;
+	} elsif ($data =~ m/^\W*[fF]/) {
+		$value{type}  = 'logical';
+		$value{value} = 0;
+	}
+	return(\%value);
 }
 1;
