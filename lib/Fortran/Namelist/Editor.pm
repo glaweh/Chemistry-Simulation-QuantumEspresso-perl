@@ -8,7 +8,7 @@ sub new {
 	my %opts=%{pop()} if ($_[-1] and (ref $_[-1] eq 'HASH'));
 	my $self={
 		filename    => undef,
-		data        => undef,
+		data        => '',
 		_comments   => [],
 		_strings    => [],
 		_groups     => [],
@@ -23,7 +23,7 @@ sub new {
 
 sub init {
 	my $self=shift;
-	if (defined $self->{filename} and (! defined $self->{data})) {
+	if (defined $self->{filename} and (! $self->{data})) {
 		# slurp in file
 		if open(my $fh,$self->{filename}) {
 			local $/=undef;
