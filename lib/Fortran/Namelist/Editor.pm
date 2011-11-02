@@ -139,7 +139,7 @@ sub find_vars {
 			name      => $1,
 			o_name_b  => ($-[1]+$offset_b),
 			o_name_e  => ($+[1]+$offset_b),
-			index     => $2,
+			index     => $self->parse_index($-[2]+$offset_b,$+[2]+$offset_b),
 			o_index_b => ($-[2]+$offset_b),
 			o_index_e => ($+[2]+$offset_b),
 			value     => undef,
@@ -233,5 +233,42 @@ sub parse_value {
 		$value{value} = 0;
 	}
 	return(\%value);
+}
+
+sub parse_index {
+	my ($self,$offset_b,$offset_e)=@_;
+	my $data      = substr($self->{data},$offset_b,$offset_e-$offset_b);
+	return(undef) if ($data=~m{^\s*$}); # no index
+	# remove enclosing brackets
+	if ((my $nbrackets = ($data =~ s{\(([^\)]+)\)}{ $1 }g)) != 1) {
+		confess "No enclosing brackets in '$data'" if ($nbrackets == 0);
+		confess "Subindexing is not supported '$data'";
+	}
+	# insert a comma into each group of spaces unless there is already one
+	# commas are optional in namelists, this will make it easier to parse
+	$data =~ s{
+		([^\s,:])       # last char of a group of non-comma, non-colon, non-space chars
+		\s              # a space, to be substituted by a comma
+		(\s*[^\s,:])    # first char of the next group of non-comma, non-colon, non-space chars
+		}{$1,$2}gsx;
+	print STDERR "data: '$data'\n";
+	if ($data =~ m{
+			(\d+)?\s*(:)\s*(\d+)?(?:\s*:\s*(\d+))?  ## if90 docs: [subscript] : [subscript] [: stride]
+		}xs) {
+		confess "Only explicit indexing is supported: '$data'";
+	}
+	if ($data !~ m{^[\s\d,]+$}) {
+		confess "Don't know how to parse '$data'";
+	}
+	my @index;
+	while ($data=~m{(\d+)}gxs) {
+		my %index_element=(
+			element     => $1,
+			o_element_b => $-[1]+$offset_b,
+			o_element_e => $+[1]+$offset_b,
+		);
+		push @index,\%index_element;
+	}
+	return(\@index);
 }
 1;
