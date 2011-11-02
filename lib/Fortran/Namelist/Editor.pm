@@ -344,4 +344,19 @@ sub as_hash {
 	return(\%h);
 }
 
+sub get {
+	my ($self,$group,$variable,$index)=@_;
+	return(undef) unless ((exists $self->{groups}->{$group}) and (exists $self->{groups}->{$group}->{vars}->{$variable}));
+	my $v=$self->{groups}->{$group}->{vars}->{$variable};
+	if ($v->{is_array}) {
+		if (defined $index) {
+			return($v->{values}->[$index]);
+		} else {
+			return($v->{values});
+		}
+	} else {
+		return($v->{value});
+	}
+}
+
 1;
