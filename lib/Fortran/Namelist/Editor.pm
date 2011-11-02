@@ -359,4 +359,12 @@ sub get {
 	}
 }
 
+sub save {
+	my ($self,$filename)=@_;
+	my $fh;
+	confess "cannot open file '$filename' for writing" unless (open($fh,'>',$filename));
+	print $fh $self->{data};
+	close($fh);
+}
+
 1;
