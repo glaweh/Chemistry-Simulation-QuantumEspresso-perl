@@ -328,4 +328,20 @@ sub parse_index {
 	}
 	return(\@index);
 }
+
+sub as_hash {
+	my $self=shift;
+	my %h;
+	while (my ($gname,$g) = each %{$self->{groups}}) {
+		while (my ($vname,$v) = each %{$g->{vars}}) {
+			if ($v->{is_array}) {
+				$h{$gname}->{$vname}=$v->{values};
+			} else {
+				$h{$gname}->{$vname}=$v->{value};
+			}
+		}
+	}
+	return(\%h);
+}
+
 1;
