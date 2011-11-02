@@ -103,7 +103,7 @@ sub find_groups {
 		my $name=$g->{name};
 		confess "group '$name' exists more than once" if (exists $self->{groups}->{$name});
 		$self->{groups}->{$name}=$g;
-		$g->{vars}=_varhash($g->{_vars});
+		$g->{vars}   = _varhash($g->{_vars});
 	}
 	return(1);
 }
