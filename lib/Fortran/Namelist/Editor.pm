@@ -36,6 +36,7 @@ sub init {
 	if ($self->{data}) {
 		$self->{data_cs}=$self->find_comments_and_strings();
 		$self->find_groups();
+		$self->find_groupless();
 	}
 	return(1);
 }
@@ -96,6 +97,31 @@ sub find_groups {
 			vars      => $self->find_vars($-[2],$+[2]),
 		};
 	}
+	return(1);
+}
+
+sub find_groupless {
+	my $self=shift;
+	my $o_last_end=0;
+	foreach my $g (@{$self->{_groups}}) {
+		$o_last_end=$g->{o_e} if ($g->{o_e} > $o_last_end);
+	}
+	$self->parse_groupless($o_last_end,length($self->{data}));
+	return(1);
+}
+
+sub parse_groupless {
+	my ($self,$offset_b,$offset_e)=@_;
+	my $gl_cs = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
+	if ($gl_cs =~ m{^\s*$}) {
+		return(undef);
+	}
+	my $gl   = substr($self->{data},$offset_b,$offset_e-$offset_b);
+	push @{$self->{_groupless}},{
+		o_b   => $offset_b,
+		o_e   => $offset_e,
+		value => $gl,
+	};
 	return(1);
 }
 
