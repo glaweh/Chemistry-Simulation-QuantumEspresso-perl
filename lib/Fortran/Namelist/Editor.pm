@@ -13,6 +13,7 @@ sub new {
 		_comments   => [],
 		_strings    => [],
 		_groups     => [],
+		groups      => {},
 		_groupless  => [],
 		%opts,
 	};
@@ -96,6 +97,11 @@ sub find_groups {
 			o_e       => $+[3],    # end of NL group is /
 			vars      => $self->find_vars($-[2],$+[2]),
 		};
+	}
+	foreach my $g (@{$self->{_groups}}) {
+		my $name=$g->{name};
+		confess "group '$name' exists more than once" if (exists $self->{groups}->{$name});
+		$self->{groups}->{$name}=$g;
 	}
 	return(1);
 }
