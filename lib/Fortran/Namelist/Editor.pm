@@ -309,7 +309,6 @@ sub parse_index {
 		\s              # a space, to be substituted by a comma
 		(\s*[^\s,:])    # first char of the next group of non-comma, non-colon, non-space chars
 		}{$1,$2}gsx;
-	print STDERR "data: '$data'\n";
 	if ($data =~ m{
 			(\d+)?\s*(:)\s*(\d+)?(?:\s*:\s*(\d+))?  ## if90 docs: [subscript] : [subscript] [: stride]
 		}xs) {
