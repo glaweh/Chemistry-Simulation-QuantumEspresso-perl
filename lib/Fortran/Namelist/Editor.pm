@@ -95,15 +95,27 @@ sub find_groups {
 			o_vars_e  => $+[2],
 			o_b       => $-[1]-1,  # group begins with &
 			o_e       => $+[3],    # end of NL group is /
-			vars      => $self->find_vars($-[2],$+[2]),
+			_vars     => $self->find_vars($-[2],$+[2]),
+			vars      => {},
 		};
 	}
 	foreach my $g (@{$self->{_groups}}) {
 		my $name=$g->{name};
 		confess "group '$name' exists more than once" if (exists $self->{groups}->{$name});
 		$self->{groups}->{$name}=$g;
+		$g->{vars}=_varhash($g->{_vars});
 	}
 	return(1);
+}
+
+sub _varhash {
+	my $vars_a=shift;
+	my %vars;
+	foreach my $v (@{$vars_a}) {
+		my $name = $v->{name};
+		push @{$vars{$name}},$v;
+	}
+	return(\%vars);
 }
 
 sub find_groupless {
