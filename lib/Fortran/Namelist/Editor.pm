@@ -113,7 +113,47 @@ sub _varhash {
 	my %vars;
 	foreach my $v (@{$vars_a}) {
 		my $name = $v->{name};
-		push @{$vars{$name}},$v;
+		push @{$vars{$name}->{instances}},$v;
+	}
+	while (my ($name,$desc) = each %vars) {
+		# check for/guess array-ness
+		$desc->{is_array} = 0;
+		foreach my $inst (@{$vars{$name}->{instances}}) {
+			if (defined $inst->{index}) {
+				print STDERR "interpreting var '$name' as array (reason: index)\n";
+				$desc->{is_array} = 1;
+			}
+			if ($#{$inst->{value}} > 0) {
+				print STDERR "interpreting var '$name' as array (reason: multiple values)\n";
+				$desc->{is_array} = 1;
+			}
+		}
+		if ($desc->{is_array}) {
+			$desc->{values}=[];
+			$desc->{values_source}=[];
+			foreach my $inst (@{$vars{$name}->{instances}}) {
+				if (defined $inst->{index}) {
+					if ($#{$inst->{index}} > 0) {
+						confess "only 1d-indices are implemented";
+					}
+					if ($#{$inst->{value}} > 0) {
+						confess "only 1d-values are implemented";
+					}
+					$desc->{values}->[$inst->{index}->[0]->{element}]=$inst->{value}->[0]->{value};
+					$desc->{values_source}->[$inst->{index}->[0]->{element}]=$inst->{value}->[0];
+				} else {
+					for (my $i=0;$i<=$#{$inst->{value}};$i++) {
+						$desc->{values}->[$i+1]=$inst->{value}->[$i]->{value};
+						$desc->{values_source}->[$i+1]=$inst->{value}->[$i];
+					}
+				}
+			}
+		} else {
+			foreach my $inst (@{$vars{$name}->{instances}}) {
+				$desc->{value}        = $inst->{value}->[0]->{value};
+				$desc->{value_source} = $inst->{value}->[0];
+			}
+		}
 	}
 	return(\%vars);
 }
