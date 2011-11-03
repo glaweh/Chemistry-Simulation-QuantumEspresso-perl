@@ -392,4 +392,21 @@ sub adjust_offsets {
 	}
 }
 
+sub _set_value {
+	my ($self,$val,$new_value)=@_;
+	my $new_length = length($new_value);
+	my $old_length = $val->{o_e}-$val->{o_b};
+	substr($self->{data},$val->{o_b},$old_length) = $new_value;
+	if ($new_value =~ /^['"]/) {
+		substr($self->{data_cs},$val->{o_b},$old_length) = '_' x $new_length;
+	} else {
+		substr($self->{data_cs},$val->{o_b},$old_length) = $new_value;
+	}
+	$val->{value}=$new_value;
+	my $delta_o = $new_length-$old_length;
+	if ($delta_o != 0) {
+		$self->adjust_offsets($val->{o_b}+1,$delta_o);
+	}
+}
+
 1;
