@@ -429,4 +429,42 @@ sub _set_value {
 	}
 }
 
+sub _add_new_scalar {
+	my ($self,$group_ref,$var,$value) = @_;	
+	my $offset_b=$group_ref->{o_vars_e};
+	my $to_insert = "$self->{indent}";
+	my %v;
+	$v{name}      = $var;
+	$v{o_decl_b}  = 0;
+	$v{o_name_b}  = length($to_insert);
+	$to_insert.=$var;
+	$v{o_name_e}  = length($to_insert);
+	$v{index}     = undef;
+	$v{o_index_b} = $v{o_name_e};
+	$v{o_index_e} = $v{o_name_e};
+	$to_insert.=' = ';
+	$v{o_value_b} = length($to_insert);
+	my $to_insert_cs=$to_insert . ($value =~ /^["']/ ? '_' x length($value) : $value) . "\n";
+	$to_insert.=$value . "\n";
+	$v{o_value_e} = length($to_insert);
+	map { $v{$_}+=$offset_b } grep { /^o_.*[be]$/ } keys %v;
+	my %val = (
+		type  => undef,
+		value => $value,
+		o_b   => $v{o_value_b},
+		o_e   => $v{o_value_e},
+	);
+	$v{value} = [ \%val ];
+	my %desc = (
+		is_array     => 0,
+		value        => $value,
+		value_source => \%val,
+	);
+	substr($self->{data},$v{o_decl_b},0)=$to_insert;
+	substr($self->{data_cs},$v{o_decl_b},0)=$to_insert_cs;
+	$self->adjust_offsets($v{o_decl_b},length($to_insert));
+	push @{$group_ref->{_vars}},\%v;
+	$group_ref->{vars}->{$var}=\%desc;
+}
+
 1;
