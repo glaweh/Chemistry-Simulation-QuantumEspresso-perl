@@ -16,7 +16,7 @@ sub new {
 		_groups     => [],
 		groups      => {},
 		_groupless  => [],
-		indent      => 0,
+		indent      => '',
 		%opts,
 	};
 	bless($self,$class);
@@ -113,18 +113,19 @@ sub find_groups {
 
 sub find_indent {
 	my $self=shift;
-	my $indent=0;
-	my $lines=0;
+	my %indent;
 	foreach my $g (@{$self->{_groups}}) {
 		# detect indentation within groups
 		my $gs = substr($self->{data_cs},$g->{o_vars_b},$g->{o_vars_e}-$g->{o_vars_b});
 		while ($gs =~ m{(?:^|\n)([ \t]*)\S}gs) {
-			$lines++;
-			$indent+=($+[1]-$-[1]);
+			$indent{$1}++;
 		}
 	}
-	if ($lines > 0) {
-		$self->{indent}=sprintf('%.0f',$indent/$lines);
+	if (%indent) {
+		my @indentations=keys %indent;
+		my @votes=values %indent;
+		my @idx=sort { $votes[$b] <=> $votes[$a] } 0 .. $#votes;
+		$self->{indent}=$indentations[$idx[0]];
 	}
 }
 
