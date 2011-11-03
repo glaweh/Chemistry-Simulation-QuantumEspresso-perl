@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Carp;
 use Data::Dumper;
+use Scalar::Util qw(reftype);
 
 sub new {
 	my $class=shift;
@@ -365,6 +366,30 @@ sub save {
 	confess "cannot open file '$filename' for writing" unless (open($fh,'>',$filename));
 	print $fh $self->{data};
 	close($fh);
+}
+
+sub adjust_offsets {
+	my ($self,$start,$delta) = @_;
+	my @stack=($self);
+	my %adjusted;
+	while ($#stack >= 0) {
+		my $h=pop @stack;
+		next unless (defined $h);
+		next if ($adjusted{$h});
+		$adjusted{$h}=1;
+		next unless ((defined reftype($h)) and (reftype($h) eq 'HASH'));
+		foreach my $key (keys %{$h}) {
+			if (defined (my $r = reftype($h->{$key}))) {
+				if ($r eq 'ARRAY') {
+					push @stack,@{$h->{$key}};
+				} elsif ($r eq 'HASH') {
+					push @stack,$h->{$key};
+				}
+			} elsif (($key =~ /^o_.*[be]$/) and ($h->{$key} >= $start)) {
+				$h->{$key}+=$delta;
+			}
+		}
+	}
 }
 
 1;
