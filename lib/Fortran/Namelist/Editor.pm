@@ -467,4 +467,38 @@ sub _add_new_scalar {
 	$group_ref->{vars}->{$var}=\%desc;
 }
 
+sub set {
+	my ($self,$group,@settings)=@_;
+	unless (exists $self->{groups}->{$group}) {
+		confess "cannot add new groups";
+	}
+	my $g=$self->{groups}->{$group};
+	foreach my $setting (@settings) {
+		confess "Needs array ref" unless (ref $setting eq 'ARRAY');
+		my $var=shift @{$setting};
+		my $v = $g->{vars}->{$var} if (exists $g->{vars}->{$var});
+		if ($#{$setting} == 0) {
+			my $new_value  = $setting->[0];
+			if (defined $v) {
+				# scalar var
+				confess "variable '$var' is classified as array, not scalar" if ($v->{is_array});
+				my $val        = $v->{instances}->[-1]->{value}->[0];
+				$self->_set_value($val,$new_value);
+			} else {
+				$self->_add_new_scalar($g,$var,$new_value);
+			}
+		} elsif ($#{$setting} == 1) {
+			confess "cannot add new array vars" unless defined ($v);
+			# array with index
+			confess "variable '$var' is classified as scalar, not array" unless ($v->{is_array});
+			my ($index,$new_value) = @{$setting};
+			if (defined (my $val = $v->{values_source}->[$index])) {
+				$self->_set_value($val,$new_value);
+			} else {
+				confess "no pre-existing setting for '$var', index $index";
+			}
+		}
+	}
+}
+
 1;
