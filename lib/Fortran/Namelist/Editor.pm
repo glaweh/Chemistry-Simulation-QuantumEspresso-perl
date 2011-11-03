@@ -16,6 +16,7 @@ sub new {
 		_groups     => [],
 		groups      => {},
 		_groupless  => [],
+		indent      => 0,
 		%opts,
 	};
 	bless($self,$class);
@@ -39,6 +40,7 @@ sub init {
 		$self->{data_cs}=$self->find_comments_and_strings();
 		$self->find_groups();
 		$self->find_groupless();
+		$self->find_indent();
 	}
 	return(1);
 }
@@ -107,6 +109,23 @@ sub find_groups {
 		$g->{vars}   = _varhash($g->{_vars});
 	}
 	return(1);
+}
+
+sub find_indent {
+	my $self=shift;
+	my $indent=0;
+	my $lines=0;
+	foreach my $g (@{$self->{_groups}}) {
+		# detect indentation within groups
+		my $gs = substr($self->{data_cs},$g->{o_vars_b},$g->{o_vars_e}-$g->{o_vars_b});
+		while ($gs =~ m{(?:^|\n)([ \t]*)\S}gs) {
+			$lines++;
+			$indent+=($+[1]-$-[1]);
+		}
+	}
+	if ($lines > 0) {
+		$self->{indent}=sprintf('%.0f',$indent/$lines);
+	}
 }
 
 sub _varhash {
