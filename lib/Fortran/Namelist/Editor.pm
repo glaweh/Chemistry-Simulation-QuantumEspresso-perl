@@ -276,7 +276,14 @@ sub find_value {
 
 sub parse_value {
 	my ($self,$offset_b,$offset_e)=@_;
-	my $data      = substr($self->{data},$offset_b,$offset_e-$offset_b);
+	my $data;
+	if (ref $self) {
+		$data=substr($self->{data},$offset_b,$offset_e-$offset_b);
+	} else {
+		$data=$self;
+		$offset_b=0 unless (defined $offset_b);
+		$offset_e=$offset_b + length($data) unless (defined $offset_e);
+	}
 	my %value = (
 		type  => undef,
 		value => $data,
