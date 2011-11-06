@@ -431,7 +431,6 @@ sub _set_value {
 	my $var_desc = $group_ref->{vars}->{$var};
 	unless (defined $var_desc) {
 		# variable does not yet exist
-		warn "fuck";
 		return(0);
 	}
 	# take the new value
