@@ -420,9 +420,14 @@ sub adjust_offsets {
 }
 
 sub _set_value {
-	my ($self,$group_ref,$var,$value) = @_;
+	my ($self,$group_ref,$var,$value,$index) = @_;
 	my $new_length = length($value);
-	my $val=$group_ref->{vars}->{$var}->{value_source};
+	my $val;
+	if (defined $index) {
+		$val=$group_ref->{vars}->{$var}->{values_source}->[$index];
+	} else {
+		$val=$group_ref->{vars}->{$var}->{value_source};
+	}
 	my $old_length = $val->{o_e}-$val->{o_b};
 	substr($self->{data},$val->{o_b},$old_length) = $value;
 	if ($value =~ /^['"]/) {
@@ -435,7 +440,11 @@ sub _set_value {
 	if ($delta_o != 0) {
 		$self->adjust_offsets($val->{o_b}+1,$delta_o);
 	}
-	$group_ref->{vars}->{$var}->{value}=$val->{value};
+	if (defined $index) {
+		$group_ref->{vars}->{$var}->{values}->[$index]=$val->{value};
+	} else {
+		$group_ref->{vars}->{$var}->{value}=$val->{value};
+	}
 }
 
 sub _add_new_scalar {
@@ -503,7 +512,7 @@ sub set {
 			confess "variable '$var' is classified as scalar, not array" unless ($v->{is_array});
 			my ($index,$new_value) = @{$setting};
 			if (defined (my $val = $v->{values_source}->[$index])) {
-				$self->_set_value($val,$new_value);
+				$self->_set_value($g,$var,$new_value,$index);
 			} else {
 				confess "no pre-existing setting for '$var', index $index";
 			}
