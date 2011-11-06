@@ -420,20 +420,22 @@ sub adjust_offsets {
 }
 
 sub _set_value {
-	my ($self,$val,$new_value)=@_;
-	my $new_length = length($new_value);
+	my ($self,$group_ref,$var,$value) = @_;
+	my $new_length = length($value);
+	my $val=$group_ref->{vars}->{$var}->{value_source};
 	my $old_length = $val->{o_e}-$val->{o_b};
-	substr($self->{data},$val->{o_b},$old_length) = $new_value;
-	if ($new_value =~ /^['"]/) {
+	substr($self->{data},$val->{o_b},$old_length) = $value;
+	if ($value =~ /^['"]/) {
 		substr($self->{data_cs},$val->{o_b},$old_length) = '_' x $new_length;
 	} else {
-		substr($self->{data_cs},$val->{o_b},$old_length) = $new_value;
+		substr($self->{data_cs},$val->{o_b},$old_length) = $value;
 	}
-	$val->{value}=$new_value;
+	$val->{value}=$value;
 	my $delta_o = $new_length-$old_length;
 	if ($delta_o != 0) {
 		$self->adjust_offsets($val->{o_b}+1,$delta_o);
 	}
+	$group_ref->{vars}->{$var}->{value}=$val->{value};
 }
 
 sub _add_new_scalar {
@@ -491,8 +493,7 @@ sub set {
 			if (defined $v) {
 				# scalar var
 				confess "variable '$var' is classified as array, not scalar" if ($v->{is_array});
-				my $val        = $v->{instances}->[-1]->{value}->[0];
-				$self->_set_value($val,$new_value);
+				$self->_set_value($g,$var,$new_value);
 			} else {
 				$self->_add_new_scalar($g,$var,$new_value);
 			}
