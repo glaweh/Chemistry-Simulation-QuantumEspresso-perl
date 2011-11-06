@@ -422,7 +422,11 @@ sub adjust_offsets {
 sub _set_value {
 	# modify an existing input variable
 	#   return codes
+	#     1: setting successfull
 	#     0: variable does not yet exist
+	#     2: array element does not yet exist
+	#     3: setting with index, but variable was classified as scalar
+	#     4: setting without index, but variable was classified as array
 	my ($self,$group_ref,$setting) = @_;
 	# setting: var [,index1,...], value
 	my @index    = @{$setting};
@@ -438,20 +442,26 @@ sub _set_value {
 	# and look for the existing value
 	my ($val,$val_ref);
 	if ($#index >= 0) {
-		confess "variable '$var' is classified as scalar, not array" unless ($var_desc->{is_array});
+		unless ($var_desc->{is_array}) {
+			carp "variable '$var' is classified as scalar, not array";
+			return(3);
+		}
 		$val=$var_desc->{values_source};
 		$val_ref=$var_desc->{values};
 		my $last_index = shift @index;
 		while (my $dim=pop @index) {
 			$val=$val->[$dim];
 			$val_ref=$var_desc->{values}->[$dim];
-			return(0) unless (defined $val);
+			return(2) unless (defined $val);
 		}
 		$val=$val->[$last_index];
 		$val_ref=\$val_ref->[$last_index];
-		return(0) unless (defined $val);
+		return(2) unless (defined $val);
 	} else {
-		confess "variable '$var' is classified as array, not scalar" if ($var_desc->{is_array});
+		if ($var_desc->{is_array}) {
+			carp "variable '$var' is classified as array, not scalar";
+			return(4);
+		}
 		$val=$var_desc->{value_source};
 		$val_ref=\$var_desc->{value};
 	}
@@ -528,6 +538,7 @@ sub set {
 		confess "Needs array ref" unless (ref $setting_o eq 'ARRAY');
 		my $set_result=$self->_set_value($g,$setting_o);
 		next if ($set_result == 1); # value successfully modified
+		confess "Do not know how to continue" unless (($set_result == 0) or ($set_result == 2));
 		if ($#{$setting_o} ==1) {
 			$self->_add_new_scalar($g,$setting_o);
 		} else {
