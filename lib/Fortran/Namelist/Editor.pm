@@ -427,7 +427,6 @@ sub _set_value {
 		# variable does not yet exist
 		return(0);
 	}
-	my $new_length = length($value);
 	my ($val,$val_ref);
 	if (defined $index) {
 		$val=$var_desc->{values_source}->[$index];
@@ -436,6 +435,8 @@ sub _set_value {
 		$val=$var_desc->{value_source};
 		$val_ref=\$var_desc->{value};
 	}
+	# actually set the variable
+	my $new_length = length($value);
 	my $old_length = $val->{o_e}-$val->{o_b};
 	substr($self->{data},$val->{o_b},$old_length) = $value;
 	if ($value =~ /^['"]/) {
