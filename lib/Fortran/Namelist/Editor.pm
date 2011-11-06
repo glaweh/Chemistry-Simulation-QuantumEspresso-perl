@@ -449,6 +449,7 @@ sub _set_value {
 		$self->adjust_offsets($val->{o_b}+1,$delta_o);
 	}
 	${$val_ref}=$val->{value};
+	return(1);
 }
 
 sub _add_new_scalar {
