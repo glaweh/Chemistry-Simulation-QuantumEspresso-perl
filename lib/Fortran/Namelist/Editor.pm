@@ -428,11 +428,13 @@ sub _set_value {
 		return(0);
 	}
 	my $new_length = length($value);
-	my $val;
+	my ($val,$val_ref);
 	if (defined $index) {
 		$val=$var_desc->{values_source}->[$index];
+		$val_ref=\$var_desc->{values}->[$index];
 	} else {
 		$val=$var_desc->{value_source};
+		$val_ref=\$var_desc->{value};
 	}
 	my $old_length = $val->{o_e}-$val->{o_b};
 	substr($self->{data},$val->{o_b},$old_length) = $value;
@@ -446,11 +448,7 @@ sub _set_value {
 	if ($delta_o != 0) {
 		$self->adjust_offsets($val->{o_b}+1,$delta_o);
 	}
-	if (defined $index) {
-		$var_desc->{values}->[$index]=$val->{value};
-	} else {
-		$var_desc->{value}=$val->{value};
-	}
+	${$val_ref}=$val->{value};
 }
 
 sub _add_new_scalar {
