@@ -499,8 +499,9 @@ sub set {
 		confess "cannot add new groups";
 	}
 	my $g=$self->{groups}->{$group};
-	foreach my $setting (@settings) {
-		confess "Needs array ref" unless (ref $setting eq 'ARRAY');
+	foreach my $setting_o (@settings) {
+		confess "Needs array ref" unless (ref $setting_o eq 'ARRAY');
+		my $setting = [ @{$setting_o} ];
 		my $var=shift @{$setting};
 		my $v = $g->{vars}->{$var} if (exists $g->{vars}->{$var});
 		if ($#{$setting} == 0) {
