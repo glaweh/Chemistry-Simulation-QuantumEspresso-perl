@@ -538,11 +538,16 @@ sub set {
 		confess "Needs array ref" unless (ref $setting_o eq 'ARRAY');
 		my $set_result=$self->_set_value($g,$setting_o);
 		next if ($set_result == 1); # value successfully modified
-		confess "Do not know how to continue" unless (($set_result == 0) or ($set_result == 2));
-		if ($#{$setting_o} ==1) {
-			$self->_add_new_scalar($g,$setting_o);
+		if ($set_result == 0) {
+			if ($#{$setting_o} ==1) {
+				$self->_add_new_scalar($g,$setting_o);
+			} else {
+				$self->_add_new_array($g,$setting_o);
+			}
+		} elsif ($set_result == 2) {
+			$self->_add_new_array_field($g,$setting_o);
 		} else {
-			confess "cannot add new array vars";
+			confess "Do not know how to continue";
 		}
 	}
 }
