@@ -421,12 +421,18 @@ sub adjust_offsets {
 
 sub _set_value {
 	my ($self,$group_ref,$var,$value,$index) = @_;
+	# get the description
+	my $var_desc = $group_ref->{vars}->{$var};
+	unless (defined $var_desc) {
+		# variable does not yet exist
+		return(0);
+	}
 	my $new_length = length($value);
 	my $val;
 	if (defined $index) {
-		$val=$group_ref->{vars}->{$var}->{values_source}->[$index];
+		$val=$var_desc->{values_source}->[$index];
 	} else {
-		$val=$group_ref->{vars}->{$var}->{value_source};
+		$val=$var_desc->{value_source};
 	}
 	my $old_length = $val->{o_e}-$val->{o_b};
 	substr($self->{data},$val->{o_b},$old_length) = $value;
@@ -441,9 +447,9 @@ sub _set_value {
 		$self->adjust_offsets($val->{o_b}+1,$delta_o);
 	}
 	if (defined $index) {
-		$group_ref->{vars}->{$var}->{values}->[$index]=$val->{value};
+		$var_desc->{values}->[$index]=$val->{value};
 	} else {
-		$group_ref->{vars}->{$var}->{value}=$val->{value};
+		$var_desc->{value}=$val->{value};
 	}
 }
 
