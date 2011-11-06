@@ -474,7 +474,12 @@ sub _set_value {
 }
 
 sub _add_new_scalar {
-	my ($self,$group_ref,$var,$value) = @_;	
+	my ($self,$group_ref,$setting) = @_;
+	# setting: var [,index1,...], value
+	my @index     = @{$setting};
+	my $var       = shift @index;
+	# take the new value
+	my $value     = pop @index;
 	# compute insertion into data_cs
 	my $value_cs  = ($value =~ /^["']/ ? '_' x length($value) : $value);
 	# insert the line to be inserted into data and data_cs
@@ -521,28 +526,12 @@ sub set {
 	my $g=$self->{groups}->{$group};
 	foreach my $setting_o (@settings) {
 		confess "Needs array ref" unless (ref $setting_o eq 'ARRAY');
-		my $setting = [ @{$setting_o} ];
-		my $var=shift @{$setting};
-		my $v = $g->{vars}->{$var} if (exists $g->{vars}->{$var});
-		if ($#{$setting} == 0) {
-			my $new_value  = $setting->[0];
-			if (defined $v) {
-				# scalar var
-				confess "variable '$var' is classified as array, not scalar" if ($v->{is_array});
-				$self->_set_value($g,$setting_o);
-			} else {
-				$self->_add_new_scalar($g,$var,$new_value);
-			}
-		} elsif ($#{$setting} == 1) {
-			confess "cannot add new array vars" unless defined ($v);
-			# array with index
-			confess "variable '$var' is classified as scalar, not array" unless ($v->{is_array});
-			my ($index,$new_value) = @{$setting};
-			if (defined (my $val = $v->{values_source}->[$index])) {
-				$self->_set_value($g,$setting_o);
-			} else {
-				confess "no pre-existing setting for '$var', index $index";
-			}
+		my $set_result=$self->_set_value($g,$setting_o);
+		next if ($set_result == 1); # value successfully modified
+		if ($#{$setting_o} ==1) {
+			$self->_add_new_scalar($g,$setting_o);
+		} else {
+			confess "cannot add new array vars";
 		}
 	}
 }
