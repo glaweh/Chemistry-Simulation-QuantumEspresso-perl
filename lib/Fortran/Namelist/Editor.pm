@@ -438,6 +438,7 @@ sub _set_value {
 	# and look for the existing value
 	my ($val,$val_ref);
 	if ($#index >= 0) {
+		confess "variable '$var' is classified as scalar, not array" unless ($var_desc->{is_array});
 		$val=$var_desc->{values_source};
 		$val_ref=$var_desc->{values};
 		my $last_index = shift @index;
@@ -450,6 +451,7 @@ sub _set_value {
 		$val_ref=\$val_ref->[$last_index];
 		return(0) unless (defined $val);
 	} else {
+		confess "variable '$var' is classified as array, not scalar" if ($var_desc->{is_array});
 		$val=$var_desc->{value_source};
 		$val_ref=\$var_desc->{value};
 	}
