@@ -7,26 +7,27 @@ use Scalar::Util qw(reftype);
 
 sub new {
 	my $class=shift;
-	my %opts=%{pop()} if ($_[-1] and (ref $_[-1] eq 'HASH'));
-	my $self={
-		filename    => undef,
-		data        => '',
-		_comments   => [],
-		_strings    => [],
-		_groups     => [],
-		groups      => {},
-		_groupless  => [],
-		indent      => '',
-		%opts,
-	};
+	my $self={};
 	bless($self,$class);
-	return(undef) unless $self->init();
+	return(undef) unless $self->init(@_);
 	return($self);
 }
 
 sub init {
 	my $self=shift;
-	if (defined $self->{filename} and (! $self->{data})) {
+	my %opts=%{pop()} if ($_[-1] and (ref $_[-1] eq 'HASH'));
+	$self->{filename}    = $opts{filename};
+	$self->{data}        = $opts{data};
+
+	# internal data structures
+	$self->{_comments}   = [];
+	$self->{_strings}    = [];
+	$self->{_groups}     = [];
+	$self->{groups}      = {};
+	$self->{_groupless}  = [];
+	$self->{indent}      = '';
+
+	if (defined $self->{filename} and (! defined $self->{data})) {
 		# slurp in file
 		if (open(my $fh,$self->{filename})) {
 			local $/=undef;
