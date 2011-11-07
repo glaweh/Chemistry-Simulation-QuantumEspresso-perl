@@ -446,16 +446,9 @@ sub _set_value {
 			carp "variable '$var' is classified as scalar, not array";
 			return(3);
 		}
-		$val=$var_desc->{values_source};
-		$val_ref=$var_desc->{values};
-		my $last_index = pop @index;
-		while (my $dim=shift @index) {
-			$val=$val->[$dim];
-			$val_ref=$var_desc->{values}->[$dim];
-			return(2) unless (defined $val);
-		}
-		$val=$val->[$last_index];
-		$val_ref=\$val_ref->[$last_index];
+		my $md_index=join('',map { "->[$_]" } @index);
+		eval "\$val_ref = \\\$var_desc->{values}$md_index;";
+		eval "\$val = \$var_desc->{values_source}$md_index;";
 		return(2) unless (defined $val);
 	} else {
 		if ($var_desc->{is_array}) {
