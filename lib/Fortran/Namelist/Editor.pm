@@ -448,8 +448,8 @@ sub _set_value {
 		}
 		$val=$var_desc->{values_source};
 		$val_ref=$var_desc->{values};
-		my $last_index = shift @index;
-		while (my $dim=pop @index) {
+		my $last_index = pop @index;
+		while (my $dim=shift @index) {
 			$val=$val->[$dim];
 			$val_ref=$var_desc->{values}->[$dim];
 			return(2) unless (defined $val);
