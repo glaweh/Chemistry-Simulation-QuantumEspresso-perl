@@ -96,7 +96,7 @@ sub find_groups {
 			o_name_e  => $+[1],
 			o_vars_b  => $-[2],
 			o_vars_e  => $+[2],
-			o_b       => $-[1]-1,  # group begins with &
+			o_b       => $-[0],  # group begins with &
 			o_e       => $+[3],    # end of NL group is /
 			_vars     => $self->find_vars($-[2],$+[2]),
 			vars      => {},
