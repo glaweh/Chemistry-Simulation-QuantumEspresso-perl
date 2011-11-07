@@ -564,6 +564,39 @@ sub _add_new_setting {
 	}
 }
 
+sub add_group {
+	my ($self,$group_name,$after)=@_;
+	return(2) if (exists $self->{groups}->{$group_name});
+	my $after_index = $#{$self->{_groups}};
+	if (defined $after) {
+		if ($after =~ /^\d+$/) {
+			$after_index=$after if ($after < $after_index);
+		} elsif (exists $self->{groups}->{$after}) {
+			$after_index = grep { $self->{_groups}->[$_]->{name} eq $after } 0 .. $#{$self->{_groups}};
+			$after_index--;
+		}
+	}
+	my $offset_b    = $self->{_groups}->[$after_index]->{o_e};
+	my $insert      = "\n&$group_name\n/";
+	substr($self->{data},$offset_b,0)=$insert;
+	substr($self->{data_cs},$offset_b,0)=$insert;
+	$self->adjust_offsets($offset_b+1,length($insert));
+	my %group = (
+			name      => lc($group_name),
+			o_name_b  => 1,
+			o_name_e  => length($group_name)+1,
+			o_vars_b  => length($group_name)+3,
+			o_vars_e  => length($group_name)+3,
+			o_b       => 0,                     # group begins with &
+			o_e       => length($group_name)+4, # end of NL group is /
+			_vars     => [],
+			vars      => {},
+	);
+	adjust_offsets(\%group,0,$offset_b);
+	splice(@{$self->{_groups}},$after_index+1,0,\%group);
+	$self->{groups}->{$group_name}=\%group;
+}
+
 sub set {
 	my ($self,$group,@settings)=@_;
 	unless (exists $self->{groups}->{$group}) {
