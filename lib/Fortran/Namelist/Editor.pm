@@ -549,6 +549,7 @@ sub _add_new_setting {
 			is_array     => 0,
 			value        => $val->{value},
 			value_source => $val,
+			instances    => [ $val ],
 		);
 		$group_ref->{vars}->{$var}=\%desc;
 	} else {
@@ -556,6 +557,7 @@ sub _add_new_setting {
 		unless (defined $desc) {
 			# new array
 			$group_ref->{vars}->{$var}->{is_array}=1;
+			$group_ref->{vars}->{$var}->{instances}=[ $val ];
 			$desc=$group_ref->{vars}->{$var};
 		}
 		my $md_index=join('',map { "->[$_]" } @index);
