@@ -608,6 +608,21 @@ sub add_group {
 	$self->{groups}->{$group_name}=\%group;
 }
 
+sub remove_group {
+	my ($self,$group_name)=@_;
+	return(2) unless (exists $self->{groups}->{$group_name});
+	my $group_ref = $self->{groups}->{$group_name};
+	@{$self->{_groups}} = grep { $_ != $group_ref } @{$self->{_groups}};
+	delete($self->{groups}->{$group_name});
+	@{$self->{_comments}} = grep { ! (($_->{o_b} > $group_ref->{o_b}) and ($_->{o_e} < $group_ref->{o_e})) }
+		@{$self->{_comments}};
+	@{$self->{_strings}} = grep { ! (($_->{o_b} > $group_ref->{o_b}) and ($_->{o_e} < $group_ref->{o_e})) }
+		@{$self->{_strings}};
+	substr($self->{data},$group_ref->{o_b},$group_ref->{o_e}-$group_ref->{o_b})='';
+	substr($self->{data_cs},$group_ref->{o_b},$group_ref->{o_e}-$group_ref->{o_b})='';
+	$self->adjust_offsets($group_ref->{o_b},$group_ref->{o_b}-$group_ref->{o_e});
+}
+
 sub set {
 	my ($self,$group,@settings)=@_;
 	unless (exists $self->{groups}->{$group}) {
