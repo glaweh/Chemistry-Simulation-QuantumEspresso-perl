@@ -617,4 +617,21 @@ sub set {
 	}
 }
 
+sub _remove_instance {
+	my ($self,$instance) = @_;
+	my $offset_b=$instance->{o_decl_b};
+	my $length=$instance->{o_value_e}-$offset_b;
+	my $replacement='';
+	# check if there is data in the same line
+	pos($self->{data})=$instance->{o_value_e};
+	if ($self->{data} =~ /\G(,[ \t]*)([^\n]*)\n/gs) {
+		$length+=$+[1]-$-[1];
+		$replacement="\n$self->{indent}";
+	}
+	# remove the string from data/data_cs
+	substr($self->{data},$offset_b,$length)=$replacement;
+	substr($self->{data_cs},$offset_b,$length)=$replacement;
+	$self->adjust_offsets($offset_b,length($replacement)-$length);
+}
+
 1;
