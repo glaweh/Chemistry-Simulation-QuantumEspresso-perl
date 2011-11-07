@@ -89,7 +89,7 @@ sub find_comments_and_strings {
 
 sub find_groups {
 	my $self=shift;
-	while ($self->{data_cs} =~ m{(?:^|\n)\s*&(\S+)([^/]*)(/)}gs) {
+	while ($self->{data_cs} =~ m{(?:^|\n)[ \t]*&(\S+)([^/]*)(/)}gs) {
 		push @{$self->{_groups}},{
 			name      => $1,
 			o_name_b  => $-[1],
