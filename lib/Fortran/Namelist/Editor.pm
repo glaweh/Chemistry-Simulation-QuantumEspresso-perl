@@ -214,11 +214,18 @@ sub find_vars {
 			\s*((?:\([^\)]*\)\s*?)*)## there may be more than one index statement attached to each variable
 			\s*=\s*                 ## = separates variable and value, maybe enclosed by whitespace
 		}gsx) {
+		my $index      = $self->parse_index($-[2]+$offset_b,$+[2]+$offset_b);
+		my $index_perl;
+		if (defined $index) {
+			my @elems = map { $_->{element} } @{$index};
+			$index_perl=join('',map { "->[$_]" } @elems);
+		}
 		my %v = (
 			name      => $1,
 			o_name_b  => ($-[1]+$offset_b),
 			o_name_e  => ($+[1]+$offset_b),
-			index     => $self->parse_index($-[2]+$offset_b,$+[2]+$offset_b),
+			index     => $index,
+			index_perl=> $index_perl,
 			o_index_b => (($2 ? $-[2] : $+[1]) + $offset_b),
 			o_index_e => (($2 ? $+[2] : $+[1]) + $offset_b),
 			value     => undef,
@@ -488,10 +495,12 @@ sub _add_new_setting {
 	# variables for dealing with arrays
 	my $index_str = '';
 	my $index_ref = undef;
+	my $index_perl = undef;
 	# deal with the index
 	if ($#index>=0) {
 		# stringify index
 		$index_str = '(' . join(',',@index) . ')';
+		$index_perl=join('',map { "->[$_]" } @index);
 		# setup index data structure
 		my $position=1;
 		foreach my $element (@index) {
@@ -534,6 +543,7 @@ sub _add_new_setting {
 		o_name_b   => length($self->{indent}),
 		o_name_e   => $name_end,
 		index      => $index_ref,
+		index_perl => $index_perl,
 		o_index_b  => $name_end,
 		o_index_e  => $index_end,
 		o_value_b  => $val->{o_b},
@@ -560,9 +570,8 @@ sub _add_new_setting {
 			$group_ref->{vars}->{$var}->{instances}=[ $val ];
 			$desc=$group_ref->{vars}->{$var};
 		}
-		my $md_index=join('',map { "->[$_]" } @index);
-		eval "\$desc->{values}$md_index = $val->{value};";
-		eval "\$desc->{values_source}$md_index = \$val;";
+		eval "\$desc->{values}$index_perl = $val->{value};";
+		eval "\$desc->{values_source}$index_perl = \$val;";
 	}
 }
 
