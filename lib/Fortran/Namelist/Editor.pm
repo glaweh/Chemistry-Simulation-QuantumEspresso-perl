@@ -600,7 +600,7 @@ sub add_group {
 sub set {
 	my ($self,$group,@settings)=@_;
 	unless (exists $self->{groups}->{$group}) {
-		confess "cannot add new groups";
+		$self->add_group($group);
 	}
 	my $g=$self->{groups}->{$group};
 	foreach my $setting_o (@settings) {
