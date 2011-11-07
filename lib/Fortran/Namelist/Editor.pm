@@ -643,4 +643,54 @@ sub _remove_instance {
 	$self->adjust_offsets($offset_b,length($replacement)-$length);
 }
 
+sub _unset {
+	my ($self,$group_ref,$setting)=@_;
+	# setting: var [,index1,...]
+	my @index     = @{$setting};
+	my $var       = shift @index;
+	return(2) unless (exists $group_ref->{vars}->{$var});
+	my $desc = $group_ref->{vars}->{$var};
+	my $index_perl;
+	if ($#index >= 0) {
+		$index_perl=join('',map { "->[$_]" } @index);
+		my $val_test;
+		eval "\$val_test = \$desc->{values}$index_perl;";
+		return(2) unless (defined $val_test);
+	}
+	my %instance_removed;
+	foreach my $instance (@{$desc->{instances}}) {
+		if ($index_perl) {
+			next unless ($instance->{index_perl} eq $index_perl);
+		}
+		$instance_removed{$instance}=1;
+		$self->_remove_instance($instance);
+	}
+	# kill the reference from the group_ref
+	@{$group_ref->{_vars}} = grep { ! $instance_removed{$_} } @{$group_ref->{_vars}};
+	if ($index_perl) {
+		# clean up array descriptor
+		@{$desc->{instances}} = grep { ! $instance_removed{$_} } @{$desc->{instances}};
+		if ($#{$desc->{instances}}<0) {
+			# empty, delete altogether
+			delete ($group_ref->{vars}->{$var});
+		} else {
+			# stamp out elements
+			eval "\$desc->{values}$index_perl = undef;";
+			eval "\$desc->{values_source}$index_perl = undef;";
+		}
+	}
+	delete ($group_ref->{vars}->{$var});
+}
+
+sub unset {
+	my ($self,$group,@settings)=@_;
+	unless (exists $self->{groups}->{$group}) {
+		return(2);
+	}
+	my $g=$self->{groups}->{$group};
+	foreach my $setting (@settings) {
+		confess "Needs array ref" unless (ref $setting eq 'ARRAY');
+		my $unset_result=$self->_unset($g,$setting);
+	}
+}
 1;
