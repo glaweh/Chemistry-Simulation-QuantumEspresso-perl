@@ -483,7 +483,7 @@ sub _set_value {
 	return(1);
 }
 
-sub _add_new_scalar {
+sub _add_new_setting {
 	my ($self,$group_ref,$setting) = @_;
 	# setting: var [,index1,...], value
 	my @index     = @{$setting};
@@ -582,7 +582,7 @@ sub set {
 		my $set_result=$self->_set_value($g,$setting_o);
 		next if ($set_result == 1); # value successfully modified
 		if (($set_result == 0) or ($set_result == 2)) {
-			$self->_add_new_scalar($g,$setting_o);
+			$self->_add_new_setting($g,$setting_o);
 		} else {
 			confess "Do not know how to continue";
 		}
