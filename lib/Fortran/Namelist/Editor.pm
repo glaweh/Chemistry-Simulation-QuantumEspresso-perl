@@ -490,13 +490,13 @@ sub _add_new_scalar {
 	my $var       = shift @index;
 	# take the new value
 	my $value     = pop @index;
+	# insert at end of group's data section
+	my $offset_b  = $group_ref->{o_vars_e};
 	# compute insertion into data_cs
 	my $value_cs  = ($value =~ /^["']/ ? '_' x length($value) : $value);
 	# insert the line to be inserted into data and data_cs
 	my $insert    = "$self->{indent}$var = $value\n";
 	my $insert_cs = "$self->{indent}$var = $value_cs\n";
-	# insert at end of group's data section
-	my $offset_b  = $group_ref->{o_vars_e};
 	substr($self->{data}   ,$offset_b,0)=$insert;
 	substr($self->{data_cs},$offset_b,0)=$insert_cs;
 	# update old offsets
