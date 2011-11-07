@@ -495,6 +495,32 @@ sub _add_new_scalar {
 	# variables for dealing with arrays
 	my $index_str = '';
 	my $index_ref = undef;
+	# deal with the index
+	if ($#index>=0) {
+		# stringify index
+		$index_str = '(' . join(',',@index) . ')';
+		# setup index data structure
+		my $position=1;
+		foreach my $element (@index) {
+			push @{$index_ref},{
+				element     => $element,
+				o_element_b => $position,
+				o_element_e => $position+length($element),
+			};
+			$position=$index_ref->[-1]->{o_element_e}+1;
+		}
+		# in case of a pre-existing array, find insertion point
+		if (exists $group_ref->{vars}->{$var}) {
+			# simple solution: put after the last occurrance
+			my $last_e=$group_ref->{vars}->{$var}->{instances}->[-1]->{o_value_e};
+			# find newline
+			pos($self->{data_cs})=$last_e;
+			while ($self->{data_cs} =~ m{\n}gs) {
+				$offset_b=$+[0] if ($+[0] < $offset_b);
+				last;
+			}
+		}
+	}
 	# compute insertion into data_cs
 	my $value_cs  = ($value =~ /^["']/ ? '_' x length($value) : $value);
 	# insert the line to be inserted into data and data_cs
@@ -522,14 +548,27 @@ sub _add_new_scalar {
 		value      => [ $val ],
 	);
 	adjust_offsets(\%v,0,$offset_b);
-
-	my %desc = (
-		is_array     => 0,
-		value        => $val->{value},
-		value_source => $val,
-	);
 	push @{$group_ref->{_vars}},\%v;
-	$group_ref->{vars}->{$var}=\%desc;
+	# setup description
+	if ($#index < 0) {
+		# no array
+		my %desc = (
+			is_array     => 0,
+			value        => $val->{value},
+			value_source => $val,
+		);
+		$group_ref->{vars}->{$var}=\%desc;
+	} else {
+		my $desc=$group_ref->{vars}->{$var};
+		unless (defined $desc) {
+			# new array
+			$group_ref->{vars}->{$var}->{is_array}=1;
+			$desc=$group_ref->{vars}->{$var};
+		}
+		my $md_index=join('',map { "->[$_]" } @index);
+		eval "\$desc->{values}$md_index = $val->{value};";
+		eval "\$desc->{values_source}$md_index = \$val;";
+	}
 }
 
 sub set {
@@ -542,14 +581,8 @@ sub set {
 		confess "Needs array ref" unless (ref $setting_o eq 'ARRAY');
 		my $set_result=$self->_set_value($g,$setting_o);
 		next if ($set_result == 1); # value successfully modified
-		if ($set_result == 0) {
-			if ($#{$setting_o} ==1) {
-				$self->_add_new_scalar($g,$setting_o);
-			} else {
-				$self->_add_new_array($g,$setting_o);
-			}
-		} elsif ($set_result == 2) {
-			$self->_add_new_array_field($g,$setting_o);
+		if (($set_result == 0) or ($set_result == 2)) {
+			$self->_add_new_scalar($g,$setting_o);
 		} else {
 			confess "Do not know how to continue";
 		}
