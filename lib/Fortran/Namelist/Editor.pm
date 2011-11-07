@@ -492,11 +492,14 @@ sub _add_new_scalar {
 	my $value     = pop @index;
 	# insert at end of group's data section
 	my $offset_b  = $group_ref->{o_vars_e};
+	# variables for dealing with arrays
+	my $index_str = '';
+	my $index_ref = undef;
 	# compute insertion into data_cs
 	my $value_cs  = ($value =~ /^["']/ ? '_' x length($value) : $value);
 	# insert the line to be inserted into data and data_cs
-	my $insert    = "$self->{indent}$var = $value\n";
-	my $insert_cs = "$self->{indent}$var = $value_cs\n";
+	my $insert    = "$self->{indent}$var$index_str = $value\n";
+	my $insert_cs = "$self->{indent}$var$index_str = $value_cs\n";
 	substr($self->{data}   ,$offset_b,0)=$insert;
 	substr($self->{data_cs},$offset_b,0)=$insert_cs;
 	# update old offsets
@@ -504,15 +507,16 @@ sub _add_new_scalar {
 
 	# create data structures
 	my $name_end  = length($self->{indent})+length($var);
-	my $val       = parse_value($value,$name_end+3);
+	my $index_end = $name_end+length($index_str);
+	my $val       = parse_value($value,$index_end+3);
 	my %v=(
 		name       => $var,
 		o_decl_b   => 0,
 		o_name_b   => length($self->{indent}),
 		o_name_e   => $name_end,
-		index      => undef,
+		index      => $index_ref,
 		o_index_b  => $name_end,
-		o_index_e  => $name_end,
+		o_index_e  => $index_end,
 		o_value_b  => $val->{o_b},
 		o_value_e  => $val->{o_e},
 		value      => [ $val ],
