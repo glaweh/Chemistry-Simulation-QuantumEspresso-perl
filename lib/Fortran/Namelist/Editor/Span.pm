@@ -36,6 +36,15 @@ sub get {
 	return($self->_get());
 }
 
+package Fortran::Namelist::Editor::Container;
+use strict;
+use warnings;
+@Fortran::Namelist::Editor::Container::ISA=qw{Fortran::Namelist::Editor::Span};
+sub as_hash {
+	my $self=shift;
+	return({});
+}
+
 package Fortran::Namelist::Editor::Token;
 use strict;
 use warnings;
