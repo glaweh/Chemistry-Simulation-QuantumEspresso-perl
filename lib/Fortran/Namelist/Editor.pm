@@ -369,6 +369,7 @@ sub as_hash {
 	my $self=shift;
 	my %h;
 	while (my ($gname,$g) = each %{$self->{groups}}) {
+		$h{$gname}={};
 		while (my ($vname,$v) = each %{$g->{vars}}) {
 			if ($v->{is_array}) {
 				$h{$gname}->{$vname}=$v->{values};
