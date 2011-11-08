@@ -421,7 +421,7 @@ sub adjust_offsets {
 				} elsif ($r eq 'HASH') {
 					push @stack,$h->{$key};
 				}
-			} elsif (($key =~ /^o_.*[be]$/) and ($h->{$key} >= $start)) {
+			} elsif (($key =~ /^o_.*[be]$/) and (defined $h->{$key}) and ($h->{$key} >= $start)) {
 				$h->{$key}+=$delta;
 			}
 		}
