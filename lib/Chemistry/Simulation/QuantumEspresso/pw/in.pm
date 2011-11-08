@@ -130,4 +130,20 @@ sub _parse_atomic_positions {
 	return($i);
 }
 
+package Chemistry::Simulation::QuantumEspresso::pw::in::card;
+use strict;
+use warnings;
+@Chemistry::Simulation::QuantumEspresso::pw::in::card::ISA=qw{Fortran::Namelist::Editor::Container};
+sub init {
+	my ($self,$container,$lines,$lines_cs,$o_lines,$i)=@_;
+	$self->SUPER::init($container,$o_lines->[$i]);
+	$self->{name}      = undef;
+	return($i,$self);
+}
+
+sub parse {
+	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	return($i,$self);
+}
+
 1;
