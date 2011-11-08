@@ -98,21 +98,21 @@ sub _parse_atomic_positions {
 		$i++;
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
-		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) 
-			my %species=(
-				label               => $1,
-				mass                => $2,
-				pseudopotential     => $3,
-				o_label_b           => $-[1],
-				o_label_e           => $+[1],
-				o_mass_b            => $-[2],
-				o_mass_e            => $+[2],
-				o_pseudopotential_b => $-[3],
-				o_pseudopotential_e => $+[3],
+		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) {
+			my %atom=(
+				species             => $1,
+				position            => [ $2, $3, $4 ],
+				o_position_b        => [ $-[2], $-[3], $-[4] ],
+				p_position_e        => [ $+[2], $+[3], $+[4] ],
+				if_pos              => [ $5, $6, $7 ],
+				o_if_pos_b          => [ $-[5], $-[6], $-[7] ],
+				p_if_pos_e          => [ $+[5], $+[6], $+[7] ],
+				o_b                 => $o_lines->[$i],
+				o_e                 => $o_lines->[$i+1]-1,
 			);
-			Fortran::Namelist::Editor::adjust_offsets(\%species,0,$o_lines->[$i]);
-			$card{species}->{$species{label}}=\%species;
-			push @{$card{_species}},\%species;
+			Fortran::Namelist::Editor::adjust_offsets(\%atom,0,$o_lines->[$i]);
+			push @{$card{atom}->{$atom{species}}},\%atom;
+			push @{$card{_atom}},\%atom;
 		}
 	}
 	$card{o_e}=$o_lines->[$i+1]-1;
