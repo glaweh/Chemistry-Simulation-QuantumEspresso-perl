@@ -415,14 +415,25 @@ sub adjust_offsets {
 		$adjusted{$h}=1;
 		next unless ((defined reftype($h)) and (reftype($h) eq 'HASH'));
 		foreach my $key (keys %{$h}) {
-			if (defined (my $r = reftype($h->{$key}))) {
+			my $r=reftype($h->{$key});
+			if ($key =~ /^o_.*[be]$/) {
+				if (defined $r) {
+					if ($r eq 'ARRAY') {
+						foreach (@{$h->{$key}}) {
+							next unless defined;
+							next unless ($_ >= $start);
+							$_+=$delta
+						}
+					}
+				} elsif ((defined $h->{$key}) and ($h->{$key} >= $start)) {
+					$h->{$key}+=$delta;
+				}
+			} elsif (defined $r) {
 				if ($r eq 'ARRAY') {
 					push @stack,@{$h->{$key}};
 				} elsif ($r eq 'HASH') {
 					push @stack,$h->{$key};
 				}
-			} elsif (($key =~ /^o_.*[be]$/) and (defined $h->{$key}) and ($h->{$key} >= $start)) {
-				$h->{$key}+=$delta;
 			}
 		}
 	}
