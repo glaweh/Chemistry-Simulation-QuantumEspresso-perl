@@ -24,7 +24,6 @@ sub parse_cards {
 	my @o_lines  = map { my $o_line_b = $offset_c; $offset_c+=length($_); $o_line_b } @lines_cs;
 	push @o_lines,$self->{_groupless}->[0]->{o_e};
 	my @lines    = map { substr($self->{data},$o_lines[$_],$o_lines[$_+1]-$o_lines[$_]) } 0 .. $#lines_cs;
-	pop @o_lines;
 	for (my $i=0;$i<=$#lines;$i++) {
 		# skip empty lines
 		next if ($lines_cs[$i] =~ /^\s*$/) ;
