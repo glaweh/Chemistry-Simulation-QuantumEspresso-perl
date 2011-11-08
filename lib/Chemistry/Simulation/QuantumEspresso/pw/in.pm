@@ -24,7 +24,9 @@ sub parse_cards {
 	my @o_lines  = map { my $o_line_b = $offset_c; $offset_c+=length($_); $o_line_b } @lines_cs;
 	push @o_lines,$self->{_groupless}->[0]->{o_e};
 	my @lines    = map { substr($self->{data},$o_lines[$_],$o_lines[$_+1]-$o_lines[$_]) } 0 .. $#lines_cs;
-	for (my $i=0;$i<=$#lines;$i++) {
+	my $i=0;
+	my $card;
+	while ($i<=$#lines) {
 		# skip empty lines
 		next if ($lines_cs[$i] =~ /^\s*$/) ;
 		if ($lines_cs[$i] =~ /^\s*atomic_species/i) {
@@ -34,6 +36,13 @@ sub parse_cards {
 		if ($lines_cs[$i] =~ /^\s*atomic_positions/i) {
 			$i=$self->_parse_atomic_positions(\@lines,\@lines_cs,\@o_lines,$i);
 		}
+	} continue {
+		if (defined $card) {
+			push @{$self->{_cards}},$card;
+			$self->{cards}->{$card->{name}}=$card;
+			$card=undef;
+		}
+		$i++;
 	}
 }
 
