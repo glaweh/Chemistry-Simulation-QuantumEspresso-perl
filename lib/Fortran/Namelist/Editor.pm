@@ -4,6 +4,8 @@ use warnings;
 use Carp;
 use Data::Dumper;
 use Scalar::Util qw(reftype);
+use Fortran::Namelist::Editor::Span;
+use Fortran::Namelist::Editor::Value;
 
 sub new {
 	my $class=shift;
@@ -721,4 +723,5 @@ sub unset {
 		my $unset_result=$self->_unset($g,$setting);
 	}
 }
+
 1;
