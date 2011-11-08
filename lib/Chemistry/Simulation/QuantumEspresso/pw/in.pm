@@ -30,7 +30,7 @@ sub parse_cards {
 		# skip empty lines
 		next if ($lines_cs[$i] =~ /^\s*$/) ;
 		if ($lines_cs[$i] =~ /^\s*atomic_species/i) {
-			$i=$self->_parse_atomic_species(\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species->new($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*atomic_positions/i) {
@@ -44,42 +44,6 @@ sub parse_cards {
 		}
 		$i++;
 	}
-}
-
-sub _parse_atomic_species {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
-	my %card = (
-		name     => 'atomic_species',
-		o_b      => $o_lines->[$i],
-		o_e      => undef,
-		species  => {},
-		_species => [ undef ],        # fortran counts from 1, so leave 0 empty
-	);
-	my $ntyp=$self->{groups}->{system}->{vars}->{ntyp}->{value};
-	while ($#{$card{_species}} < $ntyp) {
-		$i++;
-		next if ($lines_cs->[$i] =~ /^\s*$/);
-		if ($lines_cs->[$i] =~ /^\s*(\S+)\s*(\S+)\s*(\S+)/) {
-			my %species=(
-				label               => $1,
-				mass                => $2,
-				pseudopotential     => $3,
-				o_label_b           => $-[1],
-				o_label_e           => $+[1],
-				o_mass_b            => $-[2],
-				o_mass_e            => $+[2],
-				o_pseudopotential_b => $-[3],
-				o_pseudopotential_e => $+[3],
-			);
-			Fortran::Namelist::Editor::adjust_offsets(\%species,0,$o_lines->[$i]);
-			$card{species}->{$species{label}}=\%species;
-			push @{$card{_species}},\%species;
-		}
-	}
-	$card{o_e}=$o_lines->[$i+1]-1;
-	push @{$self->{_cards}},\%card;
-	$self->{cards}->{$card{name}}=\%card;
-	return($i);
 }
 
 sub _parse_atomic_positions {
@@ -143,6 +107,43 @@ sub init {
 
 sub parse {
 	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	return($i,$self);
+}
+
+package Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species;
+use strict;
+use warnings;
+@Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
+sub init {
+	my ($self,$container,@args)=@_;
+	$self->SUPER::init($container,@args);
+	$self->{name}='atomic_species';
+	$self->{species}  = {};
+	$self->{_species} = [ undef ]; # fortran counts from 1, so leave 0 empty
+	if ($#args >= 0) {
+		return($self->parse(@args));
+	}
+	return(undef,$self);
+}
+
+sub parse {
+	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	$self->{o_b} = $o_lines->[$i];
+	my $ntyp=$self->{container}->{groups}->{system}->{vars}->{ntyp}->{value};
+	while ($#{$self->{_species}} < $ntyp) {
+		$i++;
+		next if ($lines_cs->[$i] =~ /^\s*$/);
+		my $o_line = $o_lines->[$i];
+		if ($lines_cs->[$i] =~ /^\s*(\S+)\s*(\S+)\s*(\S+)/) {
+			my $species=Fortran::Namelist::Editor::Container->new($self->{container},$o_line,$o_lines->[$i+1]-1);
+			$species->{label}           = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
+			$species->{mass}            = Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[2],$o_line+$+[2]);
+			$species->{pseudopotential} = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[3],$o_line+$+[3]);
+			$self->{species}->{$species->{label}->get}=$species;
+			push @{$self->{_species}},$species;
+		}
+	}
+	$self->{o_e}=$o_lines->[$i+1]-1;
 	return($i,$self);
 }
 
