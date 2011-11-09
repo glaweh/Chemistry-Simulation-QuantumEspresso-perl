@@ -44,7 +44,7 @@ sub parse_cards {
 	} continue {
 		if (defined $card) {
 			push @{$self->{_cards}},$card;
-			$self->{cards}->{$card->{name}}=$card;
+			$self->{cards}->{$card->name}=$card;
 			$card=undef;
 		} else {
 			$i++;
