@@ -35,6 +35,19 @@ sub get {
 	my ($self) = @_;
 	return($self->_get());
 }
+sub insert {
+	my ($class,$container,$offset,$value,$separator)=@_;
+	$separator=' ' unless (defined $separator);
+	my $sep_length=length($separator);
+	if ($sep_length) {
+		substr($container->{data},$offset,0)    = $separator;
+		substr($container->{data_cs},$offset,0) = $separator;
+		$container->adjust_offsets($offset,$sep_length);
+	}
+	my $self=$class->new($container,$offset+$sep_length,$offset+$sep_length);
+	$self->set($value);
+	return($self);
+}
 
 package Fortran::Namelist::Editor::Container;
 use strict;
