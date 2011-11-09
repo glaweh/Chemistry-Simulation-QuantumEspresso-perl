@@ -41,8 +41,9 @@ sub parse_cards {
 			push @{$self->{_cards}},$card;
 			$self->{cards}->{$card->{name}}=$card;
 			$card=undef;
+		} else {
+			$i++;
 		}
-		$i++;
 	}
 }
 
@@ -130,8 +131,10 @@ sub parse {
 	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
 	$self->{o_b} = $o_lines->[$i];
 	my $ntyp=$self->{container}->{groups}->{system}->{vars}->{ntyp}->{value};
-	while ($#{$self->{_species}} < $ntyp) {
+	while (1) {
 		$i++;
+		last if ($#{$self->{_species}} >= $ntyp);
+		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
 		if ($lines_cs->[$i] =~ /^\s*(\S+)\s*(\S+)\s*(\S+)/) {
