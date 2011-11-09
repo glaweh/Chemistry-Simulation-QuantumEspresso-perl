@@ -65,6 +65,16 @@ package Fortran::Namelist::Editor::Container;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::Container::ISA=qw{Fortran::Namelist::Editor::Span};
+sub init {
+	my ($self,$container,$o_b,$o_e) = @_;
+	$self->SUPER::init($container,$o_b,$o_e);
+	@{$self->{_get_ignore_patterns}} = (
+		qr/^o_.*[eb]$/,
+		qr/^container$/,
+		qr/^_get_ignore_patterns$/,
+	);
+	return($self);
+}
 sub as_hash {
 	my $self=shift;
 	return({});
