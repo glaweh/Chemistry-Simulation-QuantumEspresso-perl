@@ -303,7 +303,7 @@ sub parse {
 	while ($title =~ /__+/) {
 		substr($title,$-[0],$+[0]-$-[0])=substr($lines->[$i],$-[0],$+[0]-$-[0]);
 	}
-	if ($title =~ /^\s*(cell_parameters)(\s+\S*(cubic|hexagonal)\S*)?/i) {
+	if ($title =~ /^\s*(cell_parameters)(?:\s+\S*(cubic|hexagonal)\S*)?/i) {
 		my $o_line = $o_lines->[$i];
 		$self->{name}=Fortran::Namelist::Editor::Token->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
 		if (defined $2) {
