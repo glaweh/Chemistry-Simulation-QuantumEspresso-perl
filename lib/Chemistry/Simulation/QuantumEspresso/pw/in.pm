@@ -97,7 +97,10 @@ sub init {
 
 sub parse {
 	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
-	$self->{o_b} = $o_lines->[$i];
+	my $o_line = $self->{o_b} = $o_lines->[$i];
+	if ($lines_cs->[$i] =~ /^\s*(atomic_species)/i) {
+		$self->{name}=Fortran::Namelist::Editor::Token->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
+	}
 	my $ntyp=$self->{container}->{groups}->{system}->{vars}->{ntyp}->{value};
 	while (1) {
 		$i++;
