@@ -225,7 +225,7 @@ sub parse {
 		my $o_line = $o_lines->[$i];
 		$self->{name}=Fortran::Namelist::Editor::Token->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
 		if (defined $2) {
-			$self->{symmetry}=Fortran::Namelist::Editor::Token->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
+			$self->{symmetry}=Fortran::Namelist::Editor::Token->new($self->{container},$o_line+$-[2],$o_line+$+[2]);
 		} else {
 			substr($lines->[$i],$+[1],0) = ' cubic';
 			substr($lines_cs->[$i],$+[1],0) = ' cubic';
