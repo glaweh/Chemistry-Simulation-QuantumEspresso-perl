@@ -75,9 +75,16 @@ sub init {
 	);
 	return($self);
 }
-sub as_hash {
+sub get {
 	my $self=shift;
-	return({});
+	my %h;
+	foreach my $key (keys %{$self}) {
+		next if (grep { $key =~ $_ } @{$self->{_get_ignore_patterns}});     # skip offset fields
+		my $val;
+		eval { $val = $self->{$key}->get }; # try to use childs get method
+		$h{$key}=$val if (defined $val);
+	}
+	return(\%h);
 }
 
 package Fortran::Namelist::Editor::Token;
