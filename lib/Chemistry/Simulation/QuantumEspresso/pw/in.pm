@@ -68,6 +68,17 @@ sub parse {
 	return($i,$self);
 }
 
+sub name {
+	my $self=shift;
+	my $name;
+	if (defined $self->{name}) {
+		eval { $name=$self->{name}->get; };
+		$name=$self->{name} unless (defined $name);
+		return($name);
+	}
+	return($name);
+}
+
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species;
 use strict;
 use warnings;
