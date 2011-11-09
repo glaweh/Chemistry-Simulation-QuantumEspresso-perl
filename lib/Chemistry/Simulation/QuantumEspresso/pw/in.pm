@@ -136,6 +136,15 @@ sub parse {
 	return($i,$self);
 }
 
+sub get {
+	my $self = shift;
+	my $h = $self->SUPER::get();
+	for my $species (@{$self->{_species}}) {
+		push @{$h->{species}},$species->get;
+	}
+	return($h);
+}
+
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions;
 use strict;
 use warnings;
