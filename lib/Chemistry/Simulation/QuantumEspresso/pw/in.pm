@@ -69,6 +69,7 @@ sub init {
 	my ($self,$container,$lines,$lines_cs,$o_lines,$i)=@_;
 	$self->SUPER::init($container,$o_lines->[$i]);
 	$self->{name}      = undef;
+	push @{$self->{_get_ignore_patterns}},qr/^name$/;
 	return($i,$self);
 }
 
