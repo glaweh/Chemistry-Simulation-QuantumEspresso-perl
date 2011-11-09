@@ -266,4 +266,13 @@ sub parse {
 	}
 	return($i,$self);
 }
+
+sub get {
+	my $self = shift;
+	my $h = $self->SUPER::get();
+	for my $vec (@{$self->{v}}) {
+		push @{$h->{v}}, [ map { $_->get } @{$vec} ];
+	}
+	return($h);
+}
 1;
