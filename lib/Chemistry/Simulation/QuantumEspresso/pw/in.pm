@@ -98,7 +98,7 @@ sub init {
 	$self->SUPER::init($container,@args);
 	$self->{name}='atomic_species';
 	$self->{species}  = {};
-	$self->{_species} = [ undef ]; # fortran counts from 1, so leave 0 empty
+	$self->{_species} = [];
 	if ($#args >= 0) {
 		return($self->parse(@args));
 	}
@@ -114,7 +114,7 @@ sub parse {
 	my $ntyp=$self->{container}->{groups}->{system}->{vars}->{ntyp}->{value};
 	while (1) {
 		$i++;
-		last if ($#{$self->{_species}} >= $ntyp);
+		last if ($#{$self->{_species}} >= $ntyp-1);
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
@@ -130,7 +130,7 @@ sub parse {
 		}
 	}
 	$self->{o_e}=$o_lines->[$i];
-	if ($#{$self->{_species}} < $ntyp) {
+	if ($#{$self->{_species}} < $ntyp-1) {
 		warn "Card 'atomic_species' incomplete";
 	}
 	return($i,$self);
@@ -146,7 +146,7 @@ sub init {
 	$self->{name}  ='atomic_positions';
 	$self->{units} = undef;
 	$self->{atom}  = {};
-	$self->{_atom} = [ undef ]; # fortran counts from 1, so leave 0 empty
+	$self->{_atom} = [ ];
 	if ($#args >= 0) {
 		return($self->parse(@args));
 	}
@@ -178,7 +178,7 @@ sub parse {
 	my $nat=$self->{container}->{groups}->{system}->{vars}->{nat}->{value};
 	while (1) {
 		$i++;
-		last if ($#{$self->{_atom}} >= $nat);
+		last if ($#{$self->{_atom}} >= $nat-1);
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
@@ -198,10 +198,11 @@ sub parse {
 				];
 			}
 			push @{$self->{_atom}},$atom;
+			push @{$self->{atom}->{$atom->{species}->get}},$atom;
 		}
 	}
 	$self->{o_e}=$o_lines->[$i];
-	if ($#{$self->{_atom}} < $nat) {
+	if ($#{$self->{_atom}} < $nat-1) {
 		warn "Card 'atomic_positions' incomplete";
 	}
 	return($i,$self);
@@ -216,7 +217,7 @@ sub get_species {
 			return(undef);
 		}
 	} else {
-		my @species = map { (defined $_ ? $_->{species}->get : undef) } @{$self->{_atom}};
+		my @species = map { $_->{species}->get } @{$self->{_atom}};
 		return(\@species);
 	}
 }
@@ -233,10 +234,6 @@ sub get_position {
 	} else {
 		my @position;
 		foreach my $atom (@{$self->{_atom}}) {
-			unless (defined $atom) {
-				push @position,undef;
-				next;
-			}
 			push @position,[ map { $_->get } @{$atom->{position}} ];
 		}
 		return(\@position);
@@ -255,11 +252,11 @@ sub get_if_pos {
 	} else {
 		my @if_pos;
 		foreach my $atom (@{$self->{_atom}}) {
-			unless (defined $atom and defined $atom->{if_pos}) {
-				push @if_pos,undef;
-				next;
+			if (defined $atom->{if_pos}) {
+				push @if_pos,[ map { $_->get } @{$atom->{if_pos}} ];
+			} else {
+				push @if_pos,[ 1, 1, 1];
 			}
-			push @if_pos,[ map { $_->get } @{$atom->{if_pos}} ];
 		}
 		return(\@if_pos);
 	}
