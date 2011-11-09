@@ -52,6 +52,15 @@ sub parse_cards {
 	}
 }
 
+sub as_hash {
+	my ($self)=@_;
+	my $h=$self->SUPER::as_hash;
+	foreach my $card (keys %{$self->{cards}}) {
+		$h->{$card}=$self->{cards}->{$card}->get;
+	}
+	return($h);
+}
+
 package Chemistry::Simulation::QuantumEspresso::pw::in::card;
 use strict;
 use warnings;
