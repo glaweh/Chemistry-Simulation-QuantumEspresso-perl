@@ -14,6 +14,10 @@ sub init {
 	$self->{o_e}       = $o_e;
 	return($self);
 }
+sub is_between {
+	my ($self,$o_b,$o_e) = @_;
+	return(($self->{o_b}>=$o_b) and ($self->{o_e} <=$o_e));
+}
 sub _set {
 	my ($self,$new_value,$new_value_cs) = @_;
 	my $old_length = $self->{o_e}-$self->{o_b};
