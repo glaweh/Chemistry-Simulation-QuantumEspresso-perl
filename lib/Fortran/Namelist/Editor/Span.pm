@@ -92,20 +92,9 @@ package Fortran::Namelist::Editor::Token;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::Token::ISA=qw{Fortran::Namelist::Editor::Span};
-sub init {
-	my ($self,$container,$o_b,$o_e) = @_;
-	$self->SUPER::init($container,$o_b,$o_e);
-	$self->{perl}      = lc(substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}));
-	return($self);
-}
-sub set {
-	my ($self,$new_value) = @_;
-	$self->{perl} = lc($new_value);
-	return($self->_set($new_value,$new_value));
-}
 sub get {
 	my $self=shift;
-	return($self->{perl});
+	return(lc(substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b})));
 }
 
 package Fortran::Namelist::Editor::CaseSensitiveToken;
