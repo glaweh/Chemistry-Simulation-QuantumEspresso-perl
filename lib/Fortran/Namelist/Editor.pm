@@ -407,9 +407,10 @@ sub save {
 }
 
 sub adjust_offsets {
-	my ($self,$start,$delta) = @_;
+	my ($self,$start,$delta,@skip) = @_;
 	my @stack=($self);
 	my %adjusted;
+	map { $adjusted{$_}=1 } @skip;
 	while ($#stack >= 0) {
 		my $h=pop @stack;
 		next unless (defined $h);
