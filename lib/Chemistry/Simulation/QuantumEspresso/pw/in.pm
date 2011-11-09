@@ -185,13 +185,13 @@ sub parse {
 		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) {
 			my $atom=Fortran::Namelist::Editor::Container->new($self->{container},$o_line,$o_lines->[$i+1]-1);
 			$atom->{species}         = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
-			@{$atom->{position}}     = [
+			$atom->{position}        = [
 				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[2],$o_line+$+[2]),
 				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[3],$o_line+$+[3]),
 				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[4],$o_line+$+[4]),
 			];
 			if (defined $5) {
-				@{$atom->{if_pos}}     = [
+				$atom->{if_pos}      = [
 					Fortran::Namelist::Editor::Value::integer->new($self->{container},$o_line+$-[5],$o_line+$+[5]),
 					Fortran::Namelist::Editor::Value::integer->new($self->{container},$o_line+$-[6],$o_line+$+[6]),
 					Fortran::Namelist::Editor::Value::integer->new($self->{container},$o_line+$-[7],$o_line+$+[7]),
