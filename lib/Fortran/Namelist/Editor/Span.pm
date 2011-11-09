@@ -52,6 +52,14 @@ sub insert {
 	$self->set($value);
 	return($self);
 }
+sub delete {
+	my ($self)=@_;
+	substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}) = '';
+	substr($self->{container}->{data_cs},$self->{o_b},$self->{o_e}-$self->{o_b}) = '';
+#	$self->{container}->remove_refs_between($self->{o_b},$self->{o_e});
+	$self->{container}->adjust_offsets($self->{o_b},$self->{o_b}-$self->{o_e});
+	return($self);
+}
 
 package Fortran::Namelist::Editor::Container;
 use strict;
