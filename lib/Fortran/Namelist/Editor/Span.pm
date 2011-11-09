@@ -24,7 +24,8 @@ sub _set {
 	my $new_length = length($new_value);
 	substr($self->{container}->{data},$self->{o_b},$old_length)    = $new_value;
 	substr($self->{container}->{data_cs},$self->{o_b},$old_length) = $new_value_cs;
-	$self->{container}->adjust_offsets($self->{o_b},$new_length-$old_length) if ($new_length != $old_length);
+	$self->{container}->adjust_offsets($self->{o_b},$new_length-$old_length,$self) if ($new_length != $old_length);
+	$self->{o_e}+=length($value);
 	return(1);
 }
 sub set {
