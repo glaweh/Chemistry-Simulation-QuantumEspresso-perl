@@ -207,6 +207,73 @@ sub parse {
 	return($i,$self);
 }
 
+sub get_species {
+	my ($self,$index)=@_;
+	if (defined $index) {
+		if (defined $self->{_atom}->[$index]) {
+			return($self->{_atom}->[$index]->{species}->get);
+		} else {
+			return(undef);
+		}
+	} else {
+		my @species = map { (defined $_ ? $_->{species}->get : undef) } @{$self->{_atom}};
+		return(\@species);
+	}
+}
+
+sub get_position {
+	my ($self,$index)=@_;
+	if (defined $index) {
+		if (defined $self->{_atom}->[$index]) {
+			my @position=map { $_->get } @{$self->{_atom}->[$index]->{position}};
+			return(\@position);
+		} else {
+			return(undef);
+		}
+	} else {
+		my @position;
+		foreach my $atom (@{$self->{_atom}}) {
+			unless (defined $atom) {
+				push @position,undef;
+				next;
+			}
+			push @position,[ map { $_->get } @{$atom->{position}} ];
+		}
+		return(\@position);
+	}
+}
+
+sub get_if_pos {
+	my ($self,$index)=@_;
+	if (defined $index) {
+		if (defined $self->{_atom}->[$index] and defined $self->{_atom}->[$index]->{if_pos}) {
+			my @if_pos=map { $_->get } @{$self->{_atom}->[$index]->{if_pos}};
+			return(\@if_pos);
+		} else {
+			return(undef);
+		}
+	} else {
+		my @if_pos;
+		foreach my $atom (@{$self->{_atom}}) {
+			unless (defined $atom and defined $atom->{if_pos}) {
+				push @if_pos,undef;
+				next;
+			}
+			push @if_pos,[ map { $_->get } @{$atom->{if_pos}} ];
+		}
+		return(\@if_pos);
+	}
+}
+
+sub get {
+	my $self=shift;
+	my $h=$self->SUPER::get();
+	$h->{species}  = $self->get_species;
+	$h->{position} = $self->get_position;
+	$h->{if_pos}   = $self->get_if_pos;
+	return($h);
+}
+
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::cell_parameters;
 use strict;
 use warnings;
