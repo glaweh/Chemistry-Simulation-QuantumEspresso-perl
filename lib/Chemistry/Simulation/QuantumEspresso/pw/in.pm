@@ -182,7 +182,6 @@ sub parse {
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
 		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) {
-			warn 'da';
 			my $atom=Fortran::Namelist::Editor::Container->new($self->{container},$o_line,$o_lines->[$i+1]-1);
 			$atom->{species}         = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
 			@{$atom->{position}}     = [
@@ -252,7 +251,6 @@ sub parse {
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
 		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)/) {
-			warn 'da';
 			my $vec = [
 				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[1],$o_line+$+[1]),
 				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[2],$o_line+$+[2]),
