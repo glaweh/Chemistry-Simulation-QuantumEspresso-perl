@@ -34,7 +34,9 @@ sub parse_cards {
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*atomic_positions/i) {
-			$i=$self->_parse_atomic_positions(\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			next;
+		}
 		}
 	} continue {
 		if (defined $card) {
@@ -45,54 +47,6 @@ sub parse_cards {
 			$i++;
 		}
 	}
-}
-
-sub _parse_atomic_positions {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
-	my %card = (
-		name      => 'atomic_positions',
-		o_b       => $o_lines->[$i],
-		o_e       => undef,
-		units     => 'alat',
-		o_units_b => undef,
-		o_units_e => undef,
-		atom      => {},
-		_atom     => [ undef ],        # fortran counts from 1, so leave 0 empty
-	);
-	# check for units
-	my $title = $lines_cs->[$i];
-	while ($title =~ /__+/) {
-		substr($title,$-[0],$+[0]-$-[0])=substr($lines->[$i],$-[0],$+[0]-$-[0]);
-	}
-	if ($title =~ /^\s*atomic_positions\s+\S*(alat|bohr|angstrom|crystal)\S*/i) {
-		$card{units}=lc($1);
-	}
-	my $nat=$self->{groups}->{system}->{vars}->{nat}->{value};
-	while ($#{$card{_atom}} < $nat) {
-		$i++;
-		last if ($i > $#{$lines});
-		next if ($lines_cs->[$i] =~ /^\s*$/);
-		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) {
-			my %atom=(
-				species             => $1,
-				position            => [ $2, $3, $4 ],
-				o_position_b        => [ $-[2], $-[3], $-[4] ],
-				p_position_e        => [ $+[2], $+[3], $+[4] ],
-				if_pos              => [ $5, $6, $7 ],
-				o_if_pos_b          => [ $-[5], $-[6], $-[7] ],
-				p_if_pos_e          => [ $+[5], $+[6], $+[7] ],
-				o_b                 => $o_lines->[$i],
-				o_e                 => $o_lines->[$i+1]-1,
-			);
-			Fortran::Namelist::Editor::adjust_offsets(\%atom,0,$o_lines->[$i]);
-			push @{$card{atom}->{$atom{species}}},\%atom;
-			push @{$card{_atom}},\%atom;
-		}
-	}
-	$card{o_e}=$o_lines->[$i+1]-1;
-	push @{$self->{_cards}},\%card;
-	$self->{cards}->{$card{name}}=\%card;
-	return($i);
 }
 
 package Chemistry::Simulation::QuantumEspresso::pw::in::card;
@@ -137,17 +91,93 @@ sub parse {
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
-		if ($lines_cs->[$i] =~ /^\s*(\S+)\s*(\S+)\s*(\S+)/) {
+		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)/) {
 			my $species=Fortran::Namelist::Editor::Container->new($self->{container},$o_line,$o_lines->[$i+1]-1);
 			$species->{label}           = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
 			$species->{mass}            = Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[2],$o_line+$+[2]);
 			$species->{pseudopotential} = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[3],$o_line+$+[3]);
 			$self->{species}->{$species->{label}->get}=$species;
 			push @{$self->{_species}},$species;
+		} else {
+			last;
 		}
 	}
-	$self->{o_e}=$o_lines->[$i+1]-1;
+	$self->{o_e}=$o_lines->[$i];
+	if ($#{$self->{_species}} < $ntyp) {
+		warn "Card 'atomic_species' incomplete";
+	}
 	return($i,$self);
 }
 
+package Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions;
+use strict;
+use warnings;
+@Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
+sub init {
+	my ($self,$container,@args)=@_;
+	$self->SUPER::init($container,@args);
+	$self->{name}  ='atomic_positions';
+	$self->{units} = undef;
+	$self->{atom}  = {};
+	$self->{_atom} = [ undef ]; # fortran counts from 1, so leave 0 empty
+	if ($#args >= 0) {
+		return($self->parse(@args));
+	}
+	return(undef,$self);
+}
+
+sub parse {
+	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	# check for units
+	my $title = $lines_cs->[$i];
+	while ($title =~ /__+/) {
+		substr($title,$-[0],$+[0]-$-[0])=substr($lines->[$i],$-[0],$+[0]-$-[0]);
+	}
+	if ($title =~ /^\s*(atomic_positions)(\s+\S*(alat|bohr|angstrom|crystal)\S*)?/i) {
+		my $o_line = $o_lines->[$i];
+		$self->{name}=Fortran::Namelist::Editor::Token->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
+		if (defined $2) {
+			$self->{units}=Fortran::Namelist::Editor::Token->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
+		} else {
+			substr($lines->[$i],$+[1],0) = ' alat';
+			substr($lines_cs->[$i],$+[1],0) = ' alat';
+			foreach (@{$o_lines}) {
+				$_+=5 if ($_ > $o_line);
+			}
+			$self->{units}=Fortran::Namelist::Editor::Token->insert($self->{container},$o_line+$+[1],'alat');
+		}
+	}
+
+	my $nat=$self->{container}->{groups}->{system}->{vars}->{nat}->{value};
+	while (1) {
+		$i++;
+		last if ($#{$self->{_atom}} >= $nat);
+		last if ($i > $#{$lines});
+		next if ($lines_cs->[$i] =~ /^\s*$/);
+		my $o_line = $o_lines->[$i];
+		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) {
+			warn 'da';
+			my $atom=Fortran::Namelist::Editor::Container->new($self->{container},$o_line,$o_lines->[$i+1]-1);
+			$atom->{species}         = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
+			@{$atom->{position}}     = [
+				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[2],$o_line+$+[2]),
+				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[3],$o_line+$+[3]),
+				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[4],$o_line+$+[4]),
+			];
+			if (defined $5) {
+				@{$atom->{if_pos}}     = [
+					Fortran::Namelist::Editor::Value::integer->new($self->{container},$o_line+$-[5],$o_line+$+[5]),
+					Fortran::Namelist::Editor::Value::integer->new($self->{container},$o_line+$-[6],$o_line+$+[6]),
+					Fortran::Namelist::Editor::Value::integer->new($self->{container},$o_line+$-[7],$o_line+$+[7]),
+				];
+			}
+			push @{$self->{_atom}},$atom;
+		}
+	}
+	$self->{o_e}=$o_lines->[$i];
+	if ($#{$self->{_atom}} < $nat) {
+		warn "Card 'atomic_positions' incomplete";
+	}
+	return($i,$self);
+}
 1;
