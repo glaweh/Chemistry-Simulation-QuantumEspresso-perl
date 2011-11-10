@@ -12,6 +12,7 @@ sub init {
 	$self->{container} = $container;
 	$self->{o_b}       = $o_b;
 	$self->{o_e}       = $o_e;
+	$self->{_adjusted} = 0;
 	return($self);
 }
 sub is_between {
@@ -60,6 +61,15 @@ sub delete {
 #	$self->{container}->remove_refs_between($self->{o_b},$self->{o_e});
 	$self->{container}->adjust_offsets($self->{o_b},$self->{o_b}-$self->{o_e});
 	return($self);
+}
+sub _adjust_offsets {
+	my ($self,$start,$delta,$adjust_id) = @_;
+	$adjust_id=int(rand(424242424)) unless (defined $adjust_id);
+	return(0) if ($self->{_adjusted} == $adjust_id);
+	$self->{_adjusted}=$adjust_id;
+	$self->{o_b}+=$delta if ($self->{o_b} >= $start);
+	$self->{o_e}+=$delta if ($self->{o_e} >= $start);
+	return(1);
 }
 
 package Fortran::Namelist::Editor::Container;
