@@ -371,8 +371,12 @@ sub as_hash {
 	my $self=shift;
 	my %h;
 	while (my ($gname,$g) = each %{$self->{groups}}) {
+		my $r=reftype($g);
+		next unless (defined $r and ($r eq 'HASH'));
 		$h{$gname}={};
 		while (my ($vname,$v) = each %{$g->{vars}}) {
+			my $r=reftype($v);
+			next unless (defined $r and ($r eq 'HASH'));
 			if ($v->{is_array}) {
 				$h{$gname}->{$vname}=$v->{values};
 			} else {
@@ -409,15 +413,13 @@ sub save {
 sub adjust_offsets {
 	my ($self,$start,$delta,@skip) = @_;
 	my @stack=($self);
-	my %adjusted;
-	map { $adjusted{$_}=1 } @skip;
 	my $adjust_id = int(rand(4242424));
 	while ($#stack >= 0) {
 		my $h=pop @stack;
 		next unless (defined $h);
-		next if ($adjusted{$h});
-		$adjusted{$h}=1;
 		next unless ((defined reftype($h)) and (reftype($h) eq 'HASH'));
+		next if ((defined $h->{_adjusted}) and ($h->{_adjusted} == $adjust_id));
+		$h->{_adjusted}=$adjust_id;
 		foreach my $key (keys %{$h}) {
 			my $r=reftype($h->{$key});
 			if ($key =~ /^o_.*[be]$/) {

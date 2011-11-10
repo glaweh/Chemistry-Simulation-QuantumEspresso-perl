@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Carp;
 use Fortran::Namelist::Editor;
+use Scalar::Util qw(blessed);
 @Chemistry::Simulation::QuantumEspresso::pw::in::ISA=('Fortran::Namelist::Editor');
 
 sub init {
@@ -56,6 +57,7 @@ sub as_hash {
 	my ($self)=@_;
 	my $h=$self->SUPER::as_hash;
 	foreach my $card (keys %{$self->{cards}}) {
+		next unless (blessed($self->{cards}->{$card}) and $self->{cards}->{$card}->can('get'));
 		$h->{$card}=$self->{cards}->{$card}->get;
 	}
 	return($h);
