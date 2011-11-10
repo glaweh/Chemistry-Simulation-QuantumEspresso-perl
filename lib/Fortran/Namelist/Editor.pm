@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Carp;
 use Data::Dumper;
-use Scalar::Util qw(reftype);
+use Scalar::Util qw(reftype blessed);
 use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Value;
 
@@ -411,6 +411,7 @@ sub adjust_offsets {
 	my @stack=($self);
 	my %adjusted;
 	map { $adjusted{$_}=1 } @skip;
+	my $adjust_id = int(rand(4242424));
 	while ($#stack >= 0) {
 		my $h=pop @stack;
 		next unless (defined $h);
@@ -432,7 +433,9 @@ sub adjust_offsets {
 					$h->{$key}+=$delta;
 				}
 			} elsif (defined $r) {
-				if ($r eq 'ARRAY') {
+				if (blessed($h->{$key}) and $h->{$key}->can('_adjust_offsets')) {
+					$h->{$key}->_adjust_offsets($start,$delta,$adjust_id);
+				} elsif ($r eq 'ARRAY') {
 					push @stack,@{$h->{$key}};
 				} elsif ($r eq 'HASH') {
 					push @stack,$h->{$key};
