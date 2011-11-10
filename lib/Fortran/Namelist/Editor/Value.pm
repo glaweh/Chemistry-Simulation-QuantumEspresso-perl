@@ -110,5 +110,12 @@ sub get {
 	return(undef) unless ($value=~/^\W*([tTfF])/);
 	return(lc($1) eq 'f' ? 0 : 1);
 }
+sub set {
+	my ($self,$new_value) = @_;
+	my $old_value = $self->get;
+	return(1) if (defined $old_value and ($old_value == $new_value));
+	my $value = ($new_value ? '.TRUE.' : '.FALSE.');
+	$self->SUPER::set($value);
+}
 
 1;
