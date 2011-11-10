@@ -19,8 +19,9 @@ sub is_between {
 	my ($self,$o_b,$o_e) = @_;
 	return(($self->{o_b}>=$o_b) and ($self->{o_e} <=$o_e));
 }
-sub _set {
+sub set {
 	my ($self,$new_value,$new_value_cs) = @_;
+	$new_value_cs = $new_value unless (defined $new_value_cs);
 	my $old_length = $self->{o_e}-$self->{o_b};
 	my $new_length = length($new_value);
 	substr($self->{container}->{data},$self->{o_b},$old_length)    = $new_value;
@@ -29,17 +30,9 @@ sub _set {
 	$self->{o_e}+=$new_length-$old_length;
 	return(1);
 }
-sub set {
-	my ($self,$new_value) = @_;
-	return($self->_set($new_value,$new_value));
-}
-sub _get {
-	my ($self) = @_;
-	return(substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}));
-}
 sub get {
 	my ($self) = @_;
-	return($self->_get());
+	return(substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}));
 }
 sub insert {
 	my ($class,$container,$offset,$value,$separator)=@_;
