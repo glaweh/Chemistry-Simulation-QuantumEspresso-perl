@@ -6,8 +6,10 @@ use Fortran::Namelist::Editor::Span;
 sub init {
 	my ($self,$container,$o_b,$o_e) = @_;
 	$self->SUPER::init($container,$o_b,$o_e);
-	$self->{fortran}   = substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b});
-	$self->{perl}      = substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b});
+	if ($o_e-$o_b>0) {
+		# try to parse the string
+		return(undef) unless (defined $self->get);
+	}
 	return($self);
 }
 sub subclass {
@@ -27,91 +29,86 @@ sub subclass {
 	return($obj) if (defined $obj);
 	return(undef);
 }
-sub get {
-	my $self=shift;
-	return($self->{perl});
-}
 
 package Fortran::Namelist::Editor::Value::string;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::Value::string::ISA=qw{Fortran::Namelist::Editor::Value};
-sub init {
-	my ($self,$container,$o_b,$o_e,$unquoted) = @_;
-	$self->SUPER::init($container,$o_b,$o_e);
-	if ($o_e-$o_b>0) {
-		return(undef) unless ($self->{fortran}=~/^['"]/);
+sub get {
+	my $self=shift;
+	my $val=$self->SUPER::get;
+	if ($val =~ s/^'(.*)'$/$1/) {
+		$val =~ s/''/'/g;
+	} elsif ($val =~ s/^"(.*)"$/$1/) {
+		$val =~ s/""/"/g;
 	}
-	return($self);
+	return($val);
+}
+sub set {
+	my ($self,$value)=@_;
+	$value =~ s/'/''/g;
+	$value = "'$value'";
+	return($self->SUPER::set($value));
 }
 
 package Fortran::Namelist::Editor::Value::integer;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::Value::integer::ISA=qw{Fortran::Namelist::Editor::Value};
-sub init {
-	my ($self,$container,$o_b,$o_e,$data) = @_;
-	$self->SUPER::init($container,$o_b,$o_e);
-	if ($o_e-$o_b>0) {
-		return(undef) unless ($self->{fortran}=~/^[+-]?\d+$/);
-	}
-	return($self);
+sub get {
+	my $self=shift;
+	my $value=$self->SUPER::get;
+	return(undef) unless ($value=~/^[+-]?\d+$/);
+	return($value);
 }
 
 package Fortran::Namelist::Editor::Value::double;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::Value::double::ISA=qw{Fortran::Namelist::Editor::Value};
-sub init {
-	my ($self,$container,$o_b,$o_e) = @_;
-	$self->SUPER::init($container,$o_b,$o_e);
-	if ($o_e-$o_b>0) {
-		return(undef) unless ($self->{fortran}=~m{
-			(                     ## group1: mantissa
-				[+-]?             ##    optional sign
-				(?:\d*\.\d+       ##    with decimal point
-				|
-				\d+)              ##    without decimal point
-			)
-			[dD]([+-]?\d+)        ## group 2: exponent with optional sign
-			}x);
-		$self->{perl}="$1e$2";
-	}
-	return($self);
+sub get {
+	my $self=shift;
+	my $value=$self->SUPER::get;
+	return(undef) unless ($value=~m{
+		(                     ## group1: mantissa
+			[+-]?             ##    optional sign
+			(?:\d*\.\d+       ##    with decimal point
+			|
+			\d+)              ##    without decimal point
+		)
+		[dD]([+-]?\d+)        ## group 2: exponent with optional sign
+		}x);
+	return("$1e$2");
 }
 
 package Fortran::Namelist::Editor::Value::single;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::Value::single::ISA=qw{Fortran::Namelist::Editor::Value};
-sub init {
-	my ($self,$container,$o_b,$o_e) = @_;
-	$self->SUPER::init($container,$o_b,$o_e);
-	if ($o_e-$o_b>0) {
-		return(undef) unless ($self->{fortran}=~m{
-			(                     ## group1: mantissa
-				[+-]?             ##    optional sign
-				(?:\d*(\.\d+)     ##    group 2: decimal point and digits
-				|
-				\d+)              ##    without decimal point
-			)
-			(?:[eE]([+-]?\d+))?   ## group3: exponent with optional sign
-			}x);
-	}
-	return($self);
+sub get {
+	my $self=shift;
+	my $value=$self->SUPER::get;
+	return(undef) unless ($value=~m{
+		(                     ## group1: mantissa
+			[+-]?             ##    optional sign
+			(?:\d*(\.\d+)     ##    group 2: decimal point and digits
+			|
+			\d+)              ##    without decimal point
+		)
+		(?:[eE]([+-]?\d+))?   ## group3: exponent with optional sign
+		}x);
+	return($value);
 }
 
 package Fortran::Namelist::Editor::Value::logical;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::Value::logical::ISA=qw{Fortran::Namelist::Editor::Value};
-sub init {
-	my ($self,$container,$o_b,$o_e) = @_;
-	$self->SUPER::init($container,$o_b,$o_e);
-	if ($o_e-$o_b>0) {
-		return(undef) unless ($self->{fortran}=~/^\W*([tTfF])/);
-		$self->{perl} = (lc($1) eq 'f' ? 0 : 1);
-	}
-	return($self);
+sub get {
+	my $self=shift;
+	my $value=$self->SUPER::get();
+	return(undef) unless ($value=~/^\W*([tTfF])/);
+	return(lc($1) eq 'f' ? 0 : 1);
 }
+
 1;
