@@ -97,6 +97,20 @@ sub get {
 	}
 	return(\%h);
 }
+sub _adjust_offsets {
+	my ($self,$start,$delta,$adjust_id) = @_;
+	return(0) unless ($self->SUPER::_adjust_offsets($start,$delta,$adjust_id));
+	$adjust_id = $self->{_adjusted};
+	my @stack=values %{$self};
+	while ($#stack >= 0) {
+		my $elem=pop @stack;
+		if (ref $elem eq 'ARRAY') {
+			push @stack,@{$elem};
+		} else {
+			eval { $elem->_adjust_offsets($start,$delta,$adjust_id); }
+		}
+	}
+}
 
 package Fortran::Namelist::Editor::Token;
 use strict;
