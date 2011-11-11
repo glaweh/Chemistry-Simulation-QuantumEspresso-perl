@@ -158,19 +158,24 @@ sub _varhash {
 					if ($#{$inst->{value}} > 0) {
 						confess "only 1d-values are implemented";
 					}
-					$desc->{values}->[$inst->{index}->[0]->{element}]=$inst->{value}->[0]->{value};
+					$desc->{values}->[$inst->{index}->[0]->{element}]=$inst->{value}->[0]->get;
 					$desc->{values_source}->[$inst->{index}->[0]->{element}]=$inst->{value}->[0];
 				} else {
 					for (my $i=0;$i<=$#{$inst->{value}};$i++) {
-						$desc->{values}->[$i+1]=$inst->{value}->[$i]->{value};
+						$desc->{values}->[$i+1]=$inst->{value}->[$i]->get;
 						$desc->{values_source}->[$i+1]=$inst->{value}->[$i];
 					}
 				}
 			}
 		} else {
 			foreach my $inst (@{$vars{$name}->{instances}}) {
-				$desc->{value}        = $inst->{value}->[0]->{value};
-				$desc->{value_source} = $inst->{value}->[0];
+				if (blessed $inst->{value}->[0] and $inst->{value}->[0]->can('get')) {
+					$desc->{value}        = $inst->{value}->[0]->get;
+					$desc->{value_source} = $inst->{value}->[0];
+				} else {
+					$desc->{value}        = undef;
+					$desc->{value_source} = undef;
+				}
 			}
 		}
 	}
@@ -261,62 +266,15 @@ sub find_value {
 		# assumption: whitespace at beginning and end already stripped
 		my $old_e=$offset_b;
 		while ($data_v=~m{\s*,\s*}gsx) {
-			push @value,$self->parse_value($old_e,$-[0]+$offset_b);
+			push @value,Fortran::Namelist::Editor::Value::subclass($self,$old_e,$-[0]+$offset_b);
 			$old_e=$+[0]+$offset_b;
 		}
 		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /\s*$/) {
 			$offset_e -= $+[0] - $-[0];
 		}
-		push @value,$self->parse_value($old_e,$offset_e);
+		push @value,Fortran::Namelist::Editor::Value::subclass($self,$old_e,$offset_e);
 	}
 	return(\@value);
-}
-
-sub parse_value {
-	my ($self,$offset_b,$offset_e)=@_;
-	my $data;
-	if (ref $self) {
-		$data=substr($self->{data},$offset_b,$offset_e-$offset_b);
-	} else {
-		$data=$self;
-		$offset_b=0 unless (defined $offset_b);
-		$offset_e=$offset_b + length($data) unless (defined $offset_e);
-	}
-	my %value = (
-		type  => undef,
-		value => $data,
-		o_b   => $offset_b,
-		o_e   => $offset_e,
-	);
-	if ($data =~ /^["']/) {
-		$value{type}='string';
-	} elsif ($data =~ m{
-			(                     ## group 1: mantissa
-				[+-]?\d*          ## before decimal point
-				(\.\d+)           ##   group 2: decimal point and digits
-				|
-				\d+               ##   no decimal point
-			)
-			(?:
-				(?:[eE]|([dD]))   ##   group 3: [dD] for double precision
-				([+-]?\d+)        ##   group 4: exponent
-			)?}x) {
-		if (defined $3) {
-			$value{value}="$1e$4"; # perl does not understand fortrans 'd' notation
-			$value{type} ='double';
-		} elsif ((defined $2) or (defined $4)) {
-			$value{type} ='single';
-		} else {
-			$value{type} ='integer';
-		}
-	} elsif ($data =~ m/^\W*[tT]/) {
-		$value{type}  = 'logical';
-		$value{value} = 1;
-	} elsif ($data =~ m/^\W*[fF]/) {
-		$value{type}  = 'logical';
-		$value{value} = 0;
-	}
-	return(\%value);
 }
 
 sub parse_index {
@@ -475,20 +433,8 @@ sub _set_value {
 		$val_ref=\$var_desc->{value};
 	}
 	# actually set the variable
-	my $new_length = length($value);
-	my $old_length = $val->{o_e}-$val->{o_b};
-	substr($self->{data},$val->{o_b},$old_length) = $value;
-	if ($value =~ /^['"]/) {
-		substr($self->{data_cs},$val->{o_b},$old_length) = '_' x $new_length;
-	} else {
-		substr($self->{data_cs},$val->{o_b},$old_length) = $value;
-	}
-	$val->{value}=$value;
-	my $delta_o = $new_length-$old_length;
-	if ($delta_o != 0) {
-		$self->adjust_offsets($val->{o_b}+1,$delta_o);
-	}
-	${$val_ref}=$val->{value};
+	$val->set($value);
+	${$val_ref}=$value;
 	return(1);
 }
 
@@ -545,7 +491,7 @@ sub _add_new_setting {
 	# create data structures
 	my $name_end  = length($self->{indent})+length($var)+$offset_b;
 	my $index_end = $name_end+length($index_str);
-	my $val       = parse_value($value,$index_end+3);
+	my $val       = Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value));
 	my %v=(
 		name       => $var,
 		o_decl_b   => $offset_b,
@@ -563,7 +509,7 @@ sub _add_new_setting {
 		# no array
 		my %desc = (
 			is_array     => 0,
-			value        => $val->{value},
+			value        => $val->get,
 			value_source => $val,
 			instances    => [ $val ],
 		);
@@ -576,7 +522,7 @@ sub _add_new_setting {
 			$group_ref->{vars}->{$var}->{instances}=[ $val ];
 			$desc=$group_ref->{vars}->{$var};
 		}
-		eval "\$desc->{values}$index_perl = $val->{value};";
+		eval "\$desc->{values}$index_perl = $val->get;";
 		eval "\$desc->{values_source}$index_perl = \$val;";
 	}
 }
