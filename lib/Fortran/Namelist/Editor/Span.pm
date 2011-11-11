@@ -30,9 +30,13 @@ sub set {
 	$self->{o_e}+=$new_length-$old_length;
 	return(1);
 }
-sub get {
+sub _get_raw {
 	my ($self) = @_;
 	return(substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}));
+}
+sub get {
+	my $self=shift;
+	return($self->_get_raw(@_));
 }
 sub insert {
 	my ($class,$container,$offset,$value,$separator)=@_;
