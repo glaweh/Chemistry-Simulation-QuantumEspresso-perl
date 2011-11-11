@@ -158,12 +158,12 @@ sub _varhash {
 					if ($#{$inst->{value}} > 0) {
 						confess "only 1d-values are implemented";
 					}
-					$desc->{values}->[$inst->{index}->[0]->{element}]=$inst->{value}->[0]->get;
-					$desc->{values_source}->[$inst->{index}->[0]->{element}]=$inst->{value}->[0];
+					$desc->{values}->[$inst->{index}->[0]->{element}-1]=$inst->{value}->[0]->get;
+					$desc->{values_source}->[$inst->{index}->[0]->{element}-1]=$inst->{value}->[0];
 				} else {
 					for (my $i=0;$i<=$#{$inst->{value}};$i++) {
-						$desc->{values}->[$i+1]=$inst->{value}->[$i]->get;
-						$desc->{values_source}->[$i+1]=$inst->{value}->[$i];
+						$desc->{values}->[$i]=$inst->{value}->[$i]->get;
+						$desc->{values_source}->[$i]=$inst->{value}->[$i];
 					}
 				}
 			}
