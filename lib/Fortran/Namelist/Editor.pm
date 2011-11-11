@@ -23,7 +23,6 @@ sub init {
 
 	# internal data structures
 	$self->{_comments}   = [];
-	$self->{_strings}    = [];
 	$self->{_groups}     = [];
 	$self->{groups}      = {};
 	$self->{_groupless}  = [];
@@ -50,6 +49,7 @@ sub init {
 
 sub find_comments_and_strings {
 	my $self = shift;
+	my @strings;
 	# find all fortran !-style comments and quoted strings
 	while ($self->{data} =~ m{
 			                   ## f90 comments start with !, end with EOL
@@ -66,7 +66,7 @@ sub find_comments_and_strings {
 				o_b => $-[2],
 				o_e => $+[2],
 			);
-			push @{$self->{_strings}},\%string;
+			push @strings,\%string;
 		} else {
 			my %comment=(
 				o_b => $-[1],
@@ -83,7 +83,7 @@ sub find_comments_and_strings {
 		substr($d,$c->{o_b},$len) = ' ' x $len;
 	}
 	# replace strings by same-length sequence of underscores
-	foreach my $s (@{$self->{_strings}}) {
+	foreach my $s (@strings) {
 		my $len=$s->{o_e}-$s->{o_b};
 		substr($d,$s->{o_b},$len) = '_' x $len;
 	}
@@ -637,8 +637,6 @@ sub remove_group {
 	delete($self->{groups}->{$group_name});
 	@{$self->{_comments}} = grep { ! (($_->{o_b} > $group_ref->{o_b}) and ($_->{o_e} < $group_ref->{o_e})) }
 		@{$self->{_comments}};
-	@{$self->{_strings}} = grep { ! (($_->{o_b} > $group_ref->{o_b}) and ($_->{o_e} < $group_ref->{o_e})) }
-		@{$self->{_strings}};
 	substr($self->{data},$group_ref->{o_b},$group_ref->{o_e}-$group_ref->{o_b})='';
 	substr($self->{data_cs},$group_ref->{o_b},$group_ref->{o_e}-$group_ref->{o_b})='';
 	$self->adjust_offsets($group_ref->{o_b},$group_ref->{o_b}-$group_ref->{o_e});
