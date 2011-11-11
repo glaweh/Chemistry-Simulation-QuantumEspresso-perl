@@ -64,6 +64,10 @@ sub _adjust_offsets {
 	$self->{o_e}+=$delta if ($self->{o_e} >= $start);
 	return(1);
 }
+sub length {
+	my ($self)=@_;
+	return($self->{o_e}-$self->{o_b});
+}
 
 package Fortran::Namelist::Editor::Container;
 use strict;
