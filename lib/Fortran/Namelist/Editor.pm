@@ -228,8 +228,6 @@ sub find_vars {
 			o_index_b => (($2 ? $-[2] : $+[1]) + $offset_b),
 			o_index_e => (($2 ? $+[2] : $+[1]) + $offset_b),
 			value     => undef,
-			o_value_b => undef,
-			o_value_e => undef,
 			o_decl_b  => ($-[0]+$offset_b),
 		);
 		push @vars,\%v;
@@ -238,9 +236,6 @@ sub find_vars {
 	}
 	push @vals_e,$offset_e if ($#vals_b >= 0);
 	for (my $i=0; $i<=$#vars; $i++) {
-		# fill the offsets of values
-		$vars[$i]->{o_value_b}=$vals_b[$i];
-		$vars[$i]->{o_value_e}=$vals_e[$i];
 		# fill in the value
 		$vars[$i]->{value}=$self->find_value($vals_b[$i],$vals_e[$i]);
 	}
@@ -528,7 +523,7 @@ sub _add_new_setting {
 		# in case of a pre-existing array, find insertion point
 		if (exists $group_ref->{vars}->{$var}) {
 			# simple solution: put after the last occurrance
-			my $last_e=$group_ref->{vars}->{$var}->{instances}->[-1]->{o_value_e};
+			my $last_e=$group_ref->{vars}->{$var}->{instances}->[-1]->{value}->[-1]->{o_e};
 			# find newline
 			pos($self->{data_cs})=$last_e;
 			while ($self->{data_cs} =~ m{\n}gs) {
@@ -560,8 +555,6 @@ sub _add_new_setting {
 		index_perl => $index_perl,
 		o_index_b  => $name_end,
 		o_index_e  => $index_end,
-		o_value_b  => $val->{o_b},
-		o_value_e  => $val->{o_e},
 		value      => [ $val ],
 	);
 	push @{$group_ref->{_vars}},\%v;
@@ -654,10 +647,11 @@ sub set {
 sub _remove_instance {
 	my ($self,$instance) = @_;
 	my $offset_b=$instance->{o_decl_b};
-	my $length=$instance->{o_value_e}-$offset_b;
+	my $offset_e=$instance->{value}->[-1]->{o_e};
+	my $length=$offset_e-$offset_b;
 	my $replacement='';
 	# check if there is data in the same line
-	pos($self->{data})=$instance->{o_value_e};
+	pos($self->{data})=$offset_e;
 	if ($self->{data} =~ /\G(,[ \t]*)([^\n]*)\n/gs) {
 		$length+=$+[1]-$-[1];
 		$replacement="\n$self->{indent}";
