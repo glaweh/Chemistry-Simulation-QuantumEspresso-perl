@@ -240,11 +240,6 @@ sub find_vars {
 		}
 		$vars[$#vars]->{o_value_e}=$offset_e;
 		foreach my $v (@vars) {
-			my $val=substr($self->{data_cs},$v->{o_value_b},$v->{o_value_e}-$v->{o_value_b});
-			# strip whitespace at end of mask (originally comments), adjust offset accordingly
-			if ($val =~ /\s+$/) {
-				$v->{o_value_e}-=($+[0]-$-[0]);
-			}
 			# fill in the value
 			$v->{value}=$self->find_value($v->{o_value_b},$v->{o_value_e});
 		}
@@ -273,6 +268,9 @@ sub find_value {
 		while ($data_v=~m{\s*,\s*}gsx) {
 			push @value,$self->parse_value($old_e,$-[0]+$offset_b);
 			$old_e=$+[0]+$offset_b;
+		}
+		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /\s*$/) {
+			$offset_e -= $+[0] - $-[0];
 		}
 		push @value,$self->parse_value($old_e,$offset_e);
 	}
