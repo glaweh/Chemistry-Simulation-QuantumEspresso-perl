@@ -41,6 +41,8 @@ sub get {
 		$val =~ s/''/'/g;
 	} elsif ($val =~ s/^"(.*)"$/$1/) {
 		$val =~ s/""/"/g;
+	} else {
+		return undef;
 	}
 	return($val);
 }
