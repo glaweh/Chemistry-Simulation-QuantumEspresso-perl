@@ -550,13 +550,13 @@ sub _add_new_setting {
 	$self->adjust_offsets($offset_b,length($insert));
 
 	# create data structures
-	my $name_end  = length($self->{indent})+length($var);
+	my $name_end  = length($self->{indent})+length($var)+$offset_b;
 	my $index_end = $name_end+length($index_str);
 	my $val       = parse_value($value,$index_end+3);
 	my %v=(
 		name       => $var,
-		o_decl_b   => 0,
-		o_name_b   => length($self->{indent}),
+		o_decl_b   => $offset_b,
+		o_name_b   => length($self->{indent})+$offset_b,
 		o_name_e   => $name_end,
 		index      => $index_ref,
 		index_perl => $index_perl,
@@ -566,7 +566,6 @@ sub _add_new_setting {
 		o_value_e  => $val->{o_e},
 		value      => [ $val ],
 	);
-	adjust_offsets(\%v,0,$offset_b);
 	push @{$group_ref->{_vars}},\%v;
 	# setup description
 	if ($#index < 0) {
@@ -610,16 +609,15 @@ sub add_group {
 	$self->adjust_offsets($offset_b+1,length($insert));
 	my %group = (
 			name      => lc($group_name),
-			o_name_b  => 1,
-			o_name_e  => length($group_name)+1,
-			o_vars_b  => length($group_name)+3,
-			o_vars_e  => length($group_name)+3,
-			o_b       => 0,                     # group begins with &
-			o_e       => length($group_name)+4, # end of NL group is /
+			o_name_b  => 1+$offset_b,
+			o_name_e  => length($group_name)+1+$offset_b,
+			o_vars_b  => length($group_name)+3+$offset_b,
+			o_vars_e  => length($group_name)+3+$offset_b,
+			o_b       => $offset_b,                       # group begins with &
+			o_e       => length($group_name)+4+$offset_b, # end of NL group is /
 			_vars     => [],
 			vars      => {},
 	);
-	adjust_offsets(\%group,0,$offset_b);
 	splice(@{$self->{_groups}},$after_index+1,0,\%group);
 	$self->{groups}->{$group_name}=\%group;
 }
