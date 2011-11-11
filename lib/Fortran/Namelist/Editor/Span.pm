@@ -118,4 +118,9 @@ package Fortran::Namelist::Editor::CaseSensitiveToken;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::CaseSensitiveToken::ISA=qw{Fortran::Namelist::Editor::Span};
+
+package Fortran::Namelist::Editor::Comment;
+use strict;
+use warnings;
+@Fortran::Namelist::Editor::Comment::ISA=qw{Fortran::Namelist::Editor::Span};
 1;
