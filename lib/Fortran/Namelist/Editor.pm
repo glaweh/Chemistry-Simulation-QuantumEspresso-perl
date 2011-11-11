@@ -206,6 +206,7 @@ sub find_vars {
 	my ($self,$offset_b,$offset_e)=@_;
 	my $data_n      = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
 	my @vars;
+	my (@vals_b,@vals_e);
 	# scan data_n for variables: name, optionally index, followed by '='
 	while ($data_n=~m{,?\s+         ## variable assignments are separated by whitespace, optionally with a preceeding comma
 			([a-zA-Z][^\(\s]+)      ## a fortran identifier starts with a letter
@@ -227,22 +228,21 @@ sub find_vars {
 			o_index_b => (($2 ? $-[2] : $+[1]) + $offset_b),
 			o_index_e => (($2 ? $+[2] : $+[1]) + $offset_b),
 			value     => undef,
-			o_value_b => ($+[0]+$offset_b),
+			o_value_b => undef,
 			o_value_e => undef,
 			o_decl_b  => ($-[0]+$offset_b),
 		);
 		push @vars,\%v;
+		push @vals_e,$-[0]+$offset_b if ($#vals_b >=0 );
+		push @vals_b,$+[0]+$offset_b;
 	}
-	if (@vars > 0) {
-		# fill the end offset of values
-		for (my $i=0; $i<$#vars; $i++) {
-			$vars[$i]->{o_value_e}=$vars[$i+1]->{o_decl_b};
-		}
-		$vars[$#vars]->{o_value_e}=$offset_e;
-		foreach my $v (@vars) {
-			# fill in the value
-			$v->{value}=$self->find_value($v->{o_value_b},$v->{o_value_e});
-		}
+	push @vals_e,$offset_e if ($#vals_b >= 0);
+	for (my $i=0; $i<=$#vars; $i++) {
+		# fill the offsets of values
+		$vars[$i]->{o_value_b}=$vals_b[$i];
+		$vars[$i]->{o_value_e}=$vals_e[$i];
+		# fill in the value
+		$vars[$i]->{value}=$self->find_value($vals_b[$i],$vals_e[$i]);
 	}
 	return(\@vars);
 }
