@@ -68,19 +68,14 @@ sub find_comments_and_strings {
 			);
 			push @strings,\%string;
 		} else {
-			my %comment=(
-				o_b => $-[1],
-				o_e => $+[1],
-			);
-			push @{$self->{_comments}},\%comment;
+			push @{$self->{_comments}},Fortran::Namelist::Editor::Comment->new($self,$-[1],$+[1]);
 		}
 	}
 	# working copy
 	my $d = $self->{data};
 	# replace comments by same-length sequence of space
 	foreach my $c (@{$self->{_comments}}) {
-		my $len=$c->{o_e}-$c->{o_b};
-		substr($d,$c->{o_b},$len) = ' ' x $len;
+		substr($d,$c->{o_b},$c->length) = ' ' x $c->length;
 	}
 	# replace strings by same-length sequence of underscores
 	foreach my $s (@strings) {
