@@ -209,28 +209,35 @@ sub parse_groupless {
 sub find_vars {
 	my ($self,$offset_b,$offset_e)=@_;
 	my $data_n      = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
-	my @vars;
-	my (@vals_b,@vals_e);
+	my @offsets;
 	# scan data_n for variables: name, optionally index, followed by '='
 	while ($data_n=~m{,?\s+         ## variable assignments are separated by whitespace, optionally with a preceeding comma
 			([a-zA-Z][^\(\s]+)      ## a fortran identifier starts with a letter
 			\s*((?:\([^\)]*\)\s*?)*)## there may be more than one index statement attached to each variable
 			\s*=\s*                 ## = separates variable and value, maybe enclosed by whitespace
 		}gsx) {
-		my %v = (
-			name      => Fortran::Namelist::Editor::Token->new($self,$-[1]+$offset_b,$+[1]+$offset_b),
-			index     => Fortran::Namelist::Editor::Index->new($self,$-[2]+$offset_b,$+[2]+$offset_b),
-			value     => undef,
-			o_b       => ($-[0]+$offset_b),
-		);
-		push @vars,\%v;
-		push @vals_e,$-[0]+$offset_b if ($#vals_b >=0 );
-		push @vals_b,$+[0]+$offset_b;
+		if ($#offsets>=0) {
+			$offsets[-1]->[1]=$offsets[-1]->[7]=$-[0]+$offset_b;
+		}
+		push @offsets,[$-[0]+$offset_b,undef,
+			$-[1]+$offset_b,$+[1]+$offset_b,
+			$-[2]+$offset_b,$+[2]+$offset_b,
+			$+[0]+$offset_b,undef];
 	}
-	push @vals_e,$offset_e if ($#vals_b >= 0);
-	for (my $i=0; $i<=$#vars; $i++) {
-		# fill in the value
-		$vars[$i]->{value}=$self->find_value($vals_b[$i],$vals_e[$i]);
+	$offsets[-1]->[1]=$offsets[-1]->[7]=$offset_e if ($#offsets>=0);
+	my @vars;
+	for (my $i=0; $i<=$#offsets; $i++) {
+		my @offset=@{$offsets[$i]};
+		my $val_e = pop @offset;
+		my $val_b = pop @offset;
+		my $value = $self->find_value($val_b,$val_e);
+		my $v = {
+			name      => Fortran::Namelist::Editor::Token->new($self,$offset[2],$offset[3]),
+			index     => Fortran::Namelist::Editor::Index->new($self,$offset[4],$offset[5]),
+			value     => $value,
+			o_b       => $offset[0],
+		};
+		push @vars,$v;
 	}
 	return(\@vars);
 }
