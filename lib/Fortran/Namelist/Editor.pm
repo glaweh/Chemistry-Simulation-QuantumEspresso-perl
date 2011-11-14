@@ -221,7 +221,7 @@ sub find_vars {
 			name      => Fortran::Namelist::Editor::Token->new($self,$-[1]+$offset_b,$+[1]+$offset_b),
 			index     => Fortran::Namelist::Editor::Index->new($self,$-[2]+$offset_b,$+[2]+$offset_b),
 			value     => undef,
-			o_decl_b  => ($-[0]+$offset_b),
+			o_b       => ($-[0]+$offset_b),
 		);
 		push @vars,\%v;
 		push @vals_e,$-[0]+$offset_b if ($#vals_b >=0 );
@@ -431,8 +431,8 @@ sub _add_new_setting {
 	my $name_end  = length($self->{indent})+length($var)+$offset_b;
 	my $index_end = $name_end+length($index_str);
 	my $v={
+		o_b   => $offset_b,
 		name       => Fortran::Namelist::Editor::Token->new($self,length($self->{indent})+$offset_b,$name_end),
-		o_decl_b   => $offset_b,
 		index      => Fortran::Namelist::Editor::Index->new($self,$name_end,$index_end),
 		value      => [ Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value)) ],
 	};
@@ -526,7 +526,7 @@ sub set {
 
 sub _remove_instance {
 	my ($self,$instance) = @_;
-	my $offset_b=$instance->{o_decl_b};
+	my $offset_b=$instance->{o_b};
 	my $offset_e=$instance->{value}->[-1]->{o_e};
 	my $length=$offset_e-$offset_b;
 	my $replacement='';
