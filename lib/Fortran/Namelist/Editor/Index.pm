@@ -2,7 +2,7 @@ package Fortran::Namelist::Editor::Index;
 use strict;
 use warnings;
 use Fortran::Namelist::Editor::Value;
-@Fortran::Namelist::Editor::Index::ISA = qw{Fortran::Namelist::Editor::Container};
+@Fortran::Namelist::Editor::Index::ISA = qw{Fortran::Namelist::Editor::ContainerSpan};
 
 our $BASE=1;
 

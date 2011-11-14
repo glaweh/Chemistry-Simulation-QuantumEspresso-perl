@@ -66,7 +66,7 @@ sub as_hash {
 package Chemistry::Simulation::QuantumEspresso::pw::in::card;
 use strict;
 use warnings;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::ISA=qw{Fortran::Namelist::Editor::Container};
+@Chemistry::Simulation::QuantumEspresso::pw::in::card::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
 	my ($self,$container,$lines,$lines_cs,$o_lines,$i)=@_;
 	$self->SUPER::init($container,$o_lines->[$i]);
@@ -121,7 +121,7 @@ sub parse {
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
 		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)/) {
-			my $species=Fortran::Namelist::Editor::Container->new($self->{container},$o_line,$o_lines->[$i+1]-1);
+			my $species=Fortran::Namelist::Editor::ContainerSpan->new($self->{container},$o_line,$o_lines->[$i+1]-1);
 			$species->{label}           = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
 			$species->{mass}            = Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[2],$o_line+$+[2]);
 			$species->{pseudopotential} = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[3],$o_line+$+[3]);
@@ -194,7 +194,7 @@ sub parse {
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
 		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) {
-			my $atom=Fortran::Namelist::Editor::Container->new($self->{container},$o_line,$o_lines->[$i+1]-1);
+			my $atom=Fortran::Namelist::Editor::ContainerSpan->new($self->{container},$o_line,$o_lines->[$i+1]-1);
 			$atom->{species}         = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
 			$atom->{position}        = [
 				Fortran::Namelist::Editor::Value::single->new($self->{container},$o_line+$-[2],$o_line+$+[2]),

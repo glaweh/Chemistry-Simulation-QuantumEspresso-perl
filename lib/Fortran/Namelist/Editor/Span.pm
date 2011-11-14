@@ -73,10 +73,10 @@ sub length {
 	return($self->{o_e}-$self->{o_b});
 }
 
-package Fortran::Namelist::Editor::Container;
+package Fortran::Namelist::Editor::ContainerSpan;
 use strict;
 use warnings;
-@Fortran::Namelist::Editor::Container::ISA=qw{Fortran::Namelist::Editor::Span};
+@Fortran::Namelist::Editor::ContainerSpan::ISA=qw{Fortran::Namelist::Editor::Span};
 sub init {
 	my ($self,$container,$o_b,$o_e) = @_;
 	$self->SUPER::init($container,$o_b,$o_e);
