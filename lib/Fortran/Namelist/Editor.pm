@@ -7,6 +7,7 @@ use Scalar::Util qw(reftype blessed);
 use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Value;
 use Fortran::Namelist::Editor::Index;
+use Fortran::Namelist::Editor::Assignment;
 
 sub new {
 	my $class=shift;
@@ -231,13 +232,7 @@ sub find_vars {
 		my $val_e = pop @offset;
 		my $val_b = pop @offset;
 		my $value = $self->find_value($val_b,$val_e);
-		my $v = {
-			name      => Fortran::Namelist::Editor::Token->new($self,$offset[2],$offset[3]),
-			index     => Fortran::Namelist::Editor::Index->new($self,$offset[4],$offset[5]),
-			value     => $value,
-			o_b       => $offset[0],
-		};
-		push @vars,$v;
+		push @vars,Fortran::Namelist::Editor::Assignment->new($self,@offset,$value);
 	}
 	return(\@vars);
 }
@@ -437,12 +432,11 @@ sub _add_new_setting {
 	# create data structures
 	my $name_end  = length($self->{indent})+length($var)+$offset_b;
 	my $index_end = $name_end+length($index_str);
-	my $v={
-		o_b   => $offset_b,
-		name       => Fortran::Namelist::Editor::Token->new($self,length($self->{indent})+$offset_b,$name_end),
-		index      => Fortran::Namelist::Editor::Index->new($self,$name_end,$index_end),
-		value      => [ Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value)) ],
-	};
+	my $v = Fortran::Namelist::Editor::Assignment->new($self,
+		$offset_b,$offset_b+length($insert),
+		length($self->{indent})+$offset_b,$name_end,
+		$name_end,$index_end,
+		[ Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value)) ]);
 	my $index_perl = (defined $v->{index} ? $v->{index}->get : '');
 	push @{$group_ref->{_vars}},$v;
 	# setup description
