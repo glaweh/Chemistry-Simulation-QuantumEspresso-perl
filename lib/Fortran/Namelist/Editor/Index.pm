@@ -3,6 +3,9 @@ use strict;
 use warnings;
 use Fortran::Namelist::Editor::Value;
 @Fortran::Namelist::Editor::Index::ISA = qw{Fortran::Namelist::Editor::Container};
+
+our $BASE=1;
+
 sub init {
 	my ($self,$container,$o_b,$o_e)=@_;
 	$self->SUPER::init($container,$o_b,$o_e);
@@ -47,7 +50,7 @@ sub parse {
 
 sub get {
 	my $self = shift;
-	return(join('',map { "->[" . ($_->get-1) . "]" } @{$self->{element}}));
+	return(join('',map { '->[' . ($_->get-$BASE) . ']' } @{$self->{element}}));
 }
 
 1;
