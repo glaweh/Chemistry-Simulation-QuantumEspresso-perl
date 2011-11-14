@@ -430,15 +430,13 @@ sub _add_new_setting {
 	# create data structures
 	my $name_end  = length($self->{indent})+length($var)+$offset_b;
 	my $index_end = $name_end+length($index_str);
-	my $val       = Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value));
-	my $index     = Fortran::Namelist::Editor::Index->new($self,$name_end,$index_end);
-	my $index_perl = (defined $index ? $index->get : '');
 	my $v={
 		name       => Fortran::Namelist::Editor::Token->new($self,length($self->{indent})+$offset_b,$name_end),
 		o_decl_b   => $offset_b,
-		index      => $index,
-		value      => [ $val ],
+		index      => Fortran::Namelist::Editor::Index->new($self,$name_end,$index_end),
+		value      => [ Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value)) ],
 	};
+	my $index_perl = (defined $v->{index} ? $v->{index}->get : '');
 	push @{$group_ref->{_vars}},$v;
 	# setup description
 	if ($#index < 0) {
@@ -458,8 +456,8 @@ sub _add_new_setting {
 			$desc=$group_ref->{vars}->{$var};
 		}
 		push @{$group_ref->{vars}->{$var}->{instances}},$v;
-		eval "\$desc->{values}$index_perl = \$val->get;";
-		eval "\$desc->{values_source}$index_perl = \$val;";
+		eval "\$desc->{values}$index_perl = \$v->{value}->[0]->get;";
+		eval "\$desc->{values_source}$index_perl = \$v->{value}->[0];";
 	}
 }
 
