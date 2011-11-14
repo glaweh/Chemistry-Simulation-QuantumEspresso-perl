@@ -433,21 +433,21 @@ sub _add_new_setting {
 	my $val       = Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value));
 	my $index     = Fortran::Namelist::Editor::Index->new($self,$name_end,$index_end);
 	my $index_perl = (defined $index ? $index->get : '');
-	my %v=(
+	my $v={
 		name       => Fortran::Namelist::Editor::Token->new($self,length($self->{indent})+$offset_b,$name_end),
 		o_decl_b   => $offset_b,
 		index      => $index,
 		value      => [ $val ],
-	);
-	push @{$group_ref->{_vars}},\%v;
+	};
+	push @{$group_ref->{_vars}},$v;
 	# setup description
 	if ($#index < 0) {
 		# no array
 		my %desc = (
 			is_array     => 0,
-			value        => $val->get,
-			value_source => $val,
-			instances    => [ \%v ],
+			value        => $v->{value}->[0]->get,
+			value_source => $v->{value}->[0],
+			instances    => [ $v ],
 		);
 		$group_ref->{vars}->{$var}=\%desc;
 	} else {
@@ -457,7 +457,7 @@ sub _add_new_setting {
 			$group_ref->{vars}->{$var}->{is_array}=1;
 			$desc=$group_ref->{vars}->{$var};
 		}
-		push @{$group_ref->{vars}->{$var}->{instances}},\%v;
+		push @{$group_ref->{vars}->{$var}->{instances}},$v;
 		eval "\$desc->{values}$index_perl = \$val->get;";
 		eval "\$desc->{values_source}$index_perl = \$val;";
 	}
