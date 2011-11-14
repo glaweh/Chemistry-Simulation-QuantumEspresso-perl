@@ -50,7 +50,12 @@ sub parse {
 
 sub get {
 	my $self = shift;
-	return(join('',map { '->[' . ($_->get-$BASE) . ']' } @{$self->{element}}));
+	my @result = map { $_->get-$BASE } @{$self->{element}};
+	if (wantarray) {
+		return(@result);
+	} else {
+		return(join('',map { "->[$_]" } @result));
+	}
 }
 
 1;
