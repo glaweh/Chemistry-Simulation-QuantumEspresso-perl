@@ -152,14 +152,12 @@ sub _varhash {
 			$desc->{values_source}=[];
 			foreach my $inst (@{$vars{$name}->{instances}}) {
 				if (defined $inst->{index}) {
-					if ($#{$inst->{index}} > 0) {
-						confess "only 1d-indices are implemented";
-					}
 					if ($#{$inst->{value}} > 0) {
 						confess "only 1d-values are implemented";
 					}
-					$desc->{values}->[$inst->{index}->[0]->{element}-1]=$inst->{value}->[0]->get;
-					$desc->{values_source}->[$inst->{index}->[0]->{element}-1]=$inst->{value}->[0];
+					my $index_perl=$inst->{index}->get;
+					eval "\$desc->{values}$index_perl = \$inst->{value}->[0]->get; ";
+					eval "\$desc->{values_source}$index_perl = \$inst->{value}->[0]; ";
 				} else {
 					for (my $i=0;$i<=$#{$inst->{value}};$i++) {
 						$desc->{values}->[$i]=$inst->{value}->[$i]->get;
