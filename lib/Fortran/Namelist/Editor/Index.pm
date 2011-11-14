@@ -54,7 +54,7 @@ sub get {
 	if (wantarray) {
 		return(@result);
 	} else {
-		return(join('',map { "->[$_]" } @result));
+		return(index2perlrefstring(@result));
 	}
 }
 
@@ -62,6 +62,15 @@ sub index2fortranstring {
 	my @index = @_;
 	if ($#index >=0) {
 		return('(' . join(',',map { $_+$BASE } @index) . ')');
+	} else {
+		return('');
+	}
+}
+
+sub index2perlrefstring {
+	my @index = @_;
+	if ($#index >=0) {
+		return(join('',map { "->[$_]" } @index));
 	} else {
 		return('');
 	}
