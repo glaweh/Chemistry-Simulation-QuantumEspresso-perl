@@ -91,9 +91,7 @@ sub find_groups {
 	my $self=shift;
 	while ($self->{data_cs} =~ m{(?:^|\n)[ \t]*&(\S+)([^/]*)(/)}gs) {
 		push @{$self->{_groups}},{
-			name      => $1,
-			o_name_b  => $-[1],
-			o_name_e  => $+[1],
+			name      => Fortran::Namelist::Editor::Token->new($self,$-[1],$+[1]),
 			o_vars_b  => $-[2],
 			o_vars_e  => $+[2],
 			o_b       => $-[0],  # group begins with &
@@ -103,7 +101,7 @@ sub find_groups {
 		};
 	}
 	foreach my $g (@{$self->{_groups}}) {
-		my $name=$g->{name};
+		my $name=$g->{name}->get;
 		confess "group '$name' exists more than once" if (exists $self->{groups}->{$name});
 		$self->{groups}->{$name}=$g;
 		$g->{vars}   = _varhash($g->{_vars});
@@ -470,7 +468,7 @@ sub add_group {
 		if ($after =~ /^\d+$/) {
 			$after_index=$after if ($after < $after_index);
 		} elsif (exists $self->{groups}->{$after}) {
-			$after_index = grep { $self->{_groups}->[$_]->{name} eq $after } 0 .. $#{$self->{_groups}};
+			$after_index = grep { $self->{_groups}->[$_]->{name}->get eq $after } 0 .. $#{$self->{_groups}};
 			$after_index--;
 		}
 	}
@@ -480,9 +478,7 @@ sub add_group {
 	substr($self->{data_cs},$offset_b,0)=$insert;
 	$self->adjust_offsets($offset_b+1,length($insert));
 	my %group = (
-			name      => lc($group_name),
-			o_name_b  => 1+$offset_b,
-			o_name_e  => length($group_name)+1+$offset_b,
+			name      => Fortran::Namelist::Editor::Token->new($self,1+$offset_b,length($group_name)+1+$offset_b),
 			o_vars_b  => length($group_name)+3+$offset_b,
 			o_vars_e  => length($group_name)+3+$offset_b,
 			o_b       => $offset_b,                       # group begins with &
