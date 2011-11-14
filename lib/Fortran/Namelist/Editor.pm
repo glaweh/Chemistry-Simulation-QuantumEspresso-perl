@@ -132,7 +132,7 @@ sub _varhash {
 	my $vars_a=shift;
 	my %vars;
 	foreach my $v (@{$vars_a}) {
-		my $name = $v->{name};
+		my $name = $v->{name}->get;
 		push @{$vars{$name}->{instances}},$v;
 	}
 	while (my ($name,$desc) = each %vars) {
@@ -218,9 +218,7 @@ sub find_vars {
 			\s*=\s*                 ## = separates variable and value, maybe enclosed by whitespace
 		}gsx) {
 		my %v = (
-			name      => $1,
-			o_name_b  => ($-[1]+$offset_b),
-			o_name_e  => ($+[1]+$offset_b),
+			name      => Fortran::Namelist::Editor::Token->new($self,$-[1]+$offset_b,$+[1]+$offset_b),
 			index     => Fortran::Namelist::Editor::Index->new($self,$-[2]+$offset_b,$+[2]+$offset_b),
 			value     => undef,
 			o_decl_b  => ($-[0]+$offset_b),
@@ -436,10 +434,8 @@ sub _add_new_setting {
 	my $index     = Fortran::Namelist::Editor::Index->new($self,$name_end,$index_end);
 	my $index_perl = (defined $index ? $index->get : '');
 	my %v=(
-		name       => $var,
+		name       => Fortran::Namelist::Editor::Token->new($self,length($self->{indent})+$offset_b,$name_end),
 		o_decl_b   => $offset_b,
-		o_name_b   => length($self->{indent})+$offset_b,
-		o_name_e   => $name_end,
 		index      => $index,
 		value      => [ $val ],
 	);
