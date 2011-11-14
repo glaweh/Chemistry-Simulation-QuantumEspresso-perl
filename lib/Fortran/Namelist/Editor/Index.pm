@@ -58,4 +58,12 @@ sub get {
 	}
 }
 
+sub index2fortranstring {
+	my @index = @_;
+	if ($#index >=0) {
+		return('(' . join(',',map { $_+$BASE } @index) . ')');
+	} else {
+		return('');
+	}
+}
 1;
