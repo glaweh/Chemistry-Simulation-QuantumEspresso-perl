@@ -451,7 +451,7 @@ sub _add_new_setting {
 			is_array     => 0,
 			value        => $val->get,
 			value_source => $val,
-			instances    => [ $val ],
+			instances    => [ \%v ],
 		);
 		$group_ref->{vars}->{$var}=\%desc;
 	} else {
@@ -459,9 +459,9 @@ sub _add_new_setting {
 		unless (defined $desc) {
 			# new array
 			$group_ref->{vars}->{$var}->{is_array}=1;
-			$group_ref->{vars}->{$var}->{instances}=[ $val ];
 			$desc=$group_ref->{vars}->{$var};
 		}
+		push @{$group_ref->{vars}->{$var}->{instances}},\%v;
 		eval "\$desc->{values}$index_perl = \$val->get;";
 		eval "\$desc->{values_source}$index_perl = \$val;";
 	}
