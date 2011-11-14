@@ -507,24 +507,6 @@ sub set {
 	}
 }
 
-sub _remove_instance {
-	my ($self,$instance) = @_;
-	my $offset_b=$instance->{o_b};
-	my $offset_e=$instance->{value}->[-1]->{o_e};
-	my $length=$offset_e-$offset_b;
-	my $replacement='';
-	# check if there is data in the same line
-	pos($self->{data})=$offset_e;
-	if ($self->{data} =~ /\G(,[ \t]*)([^\n]*)\n/gs) {
-		$length+=$+[1]-$-[1];
-		$replacement="\n$self->{indent}";
-	}
-	# remove the string from data/data_cs
-	substr($self->{data},$offset_b,$length)=$replacement;
-	substr($self->{data_cs},$offset_b,$length)=$replacement;
-	$self->adjust_offsets($offset_b,length($replacement)-$length);
-}
-
 sub _unset {
 	my ($self,$group_ref,$setting)=@_;
 	# setting: var [,index1,...]
@@ -545,7 +527,7 @@ sub _unset {
 			next unless ($instance->{index}->get eq $index_perl);
 		}
 		$instance_removed{$instance}=1;
-		$self->_remove_instance($instance);
+		$instance->delete;
 	}
 	# kill the reference from the group_ref
 	@{$group_ref->{_vars}} = grep { ! $instance_removed{$_} } @{$group_ref->{_vars}};
