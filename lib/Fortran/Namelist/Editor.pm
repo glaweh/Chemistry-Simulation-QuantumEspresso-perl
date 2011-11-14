@@ -572,9 +572,9 @@ sub _unset {
 	}
 	# kill the reference from the group_ref
 	@{$group_ref->{_vars}} = grep { ! $instance_removed{$_} } @{$group_ref->{_vars}};
+	@{$desc->{instances}}  = grep { ! $instance_removed{$_} } @{$desc->{instances}};
 	if ($index_perl) {
 		# clean up array descriptor
-		@{$desc->{instances}} = grep { ! $instance_removed{$_} } @{$desc->{instances}};
 		if ($#{$desc->{instances}}<0) {
 			# empty, delete altogether
 			delete ($group_ref->{vars}->{$var});
@@ -584,7 +584,7 @@ sub _unset {
 			eval "\$desc->{values_source}$index_perl = undef;";
 		}
 	}
-	delete ($group_ref->{vars}->{$var});
+	delete ($group_ref->{vars}->{$var}) if ($#{$desc->{instances}} < 0);
 }
 
 sub unset {
