@@ -92,8 +92,6 @@ sub find_groups {
 	while ($self->{data_cs} =~ m{(?:^|\n)[ \t]*&(\S+)([^/]*)(/)}gs) {
 		push @{$self->{_groups}},{
 			name      => Fortran::Namelist::Editor::Token->new($self,$-[1],$+[1]),
-			o_vars_b  => $-[2],
-			o_vars_e  => $+[2],
 			o_b       => $-[0],  # group begins with &
 			o_e       => $+[3],    # end of NL group is /
 			_vars     => $self->find_vars($-[2],$+[2]),
@@ -114,7 +112,7 @@ sub find_indent {
 	my %indent;
 	foreach my $g (@{$self->{_groups}}) {
 		# detect indentation within groups
-		my $gs = substr($self->{data_cs},$g->{o_vars_b},$g->{o_vars_e}-$g->{o_vars_b});
+		my $gs = substr($self->{data_cs},$g->{name}->{o_e},$g->{o_e}-$g->{name}->{o_e});
 		while ($gs =~ m{(?:^|\n)([ \t]*)\S}gs) {
 			$indent{$1}++;
 		}
@@ -398,7 +396,7 @@ sub _add_new_setting {
 	# take the new value
 	my $value     = pop @index;
 	# insert at end of group's data section
-	my $offset_b  = $group_ref->{o_vars_e};
+	my $offset_b  = $group_ref->{o_e}-1;
 	# variables for dealing with arrays
 	my $index_str = '';
 	# deal with the index
@@ -479,8 +477,6 @@ sub add_group {
 	$self->adjust_offsets($offset_b+1,length($insert));
 	my %group = (
 			name      => Fortran::Namelist::Editor::Token->new($self,1+$offset_b,length($group_name)+1+$offset_b),
-			o_vars_b  => length($group_name)+3+$offset_b,
-			o_vars_e  => length($group_name)+3+$offset_b,
 			o_b       => $offset_b,                       # group begins with &
 			o_e       => length($group_name)+4+$offset_b, # end of NL group is /
 			_vars     => [],
