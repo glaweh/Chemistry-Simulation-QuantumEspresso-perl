@@ -6,6 +6,7 @@ use Data::Dumper;
 use Scalar::Util qw(reftype blessed);
 use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Value;
+use Fortran::Namelist::Editor::Index;
 
 sub new {
 	my $class=shift;
@@ -216,20 +217,11 @@ sub find_vars {
 			\s*((?:\([^\)]*\)\s*?)*)## there may be more than one index statement attached to each variable
 			\s*=\s*                 ## = separates variable and value, maybe enclosed by whitespace
 		}gsx) {
-		my $index      = $self->parse_index($-[2]+$offset_b,$+[2]+$offset_b);
-		my $index_perl;
-		if (defined $index) {
-			my @elems = map { $_->{element} } @{$index};
-			$index_perl=join('',map { "->[$_]" } @elems);
-		}
 		my %v = (
 			name      => $1,
 			o_name_b  => ($-[1]+$offset_b),
 			o_name_e  => ($+[1]+$offset_b),
-			index     => $index,
-			index_perl=> $index_perl,
-			o_index_b => (($2 ? $-[2] : $+[1]) + $offset_b),
-			o_index_e => (($2 ? $+[2] : $+[1]) + $offset_b),
+			index     => Fortran::Namelist::Editor::Index->new($self,$-[2]+$offset_b,$+[2]+$offset_b),
 			value     => undef,
 			o_decl_b  => ($-[0]+$offset_b),
 		);
@@ -273,42 +265,6 @@ sub find_value {
 		push @value,Fortran::Namelist::Editor::Value::subclass($self,$old_e,$offset_e);
 	}
 	return(\@value);
-}
-
-sub parse_index {
-	my ($self,$offset_b,$offset_e)=@_;
-	my $data      = substr($self->{data},$offset_b,$offset_e-$offset_b);
-	return(undef) if ($data=~m{^\s*$}); # no index
-	# remove enclosing brackets
-	if ((my $nbrackets = ($data =~ s{\(([^\)]+)\)}{ $1 }g)) != 1) {
-		confess "No enclosing brackets in '$data'" if ($nbrackets == 0);
-		confess "Subindexing is not supported '$data'";
-	}
-	# insert a comma into each group of spaces unless there is already one
-	# commas are optional in namelists, this will make it easier to parse
-	$data =~ s{
-		([^\s,:])       # last char of a group of non-comma, non-colon, non-space chars
-		\s              # a space, to be substituted by a comma
-		(\s*[^\s,:])    # first char of the next group of non-comma, non-colon, non-space chars
-		}{$1,$2}gsx;
-	if ($data =~ m{
-			(\d+)?\s*(:)\s*(\d+)?(?:\s*:\s*(\d+))?  ## if90 docs: [subscript] : [subscript] [: stride]
-		}xs) {
-		confess "Only explicit indexing is supported: '$data'";
-	}
-	if ($data !~ m{^[\s\d,]+$}) {
-		confess "Don't know how to parse '$data'";
-	}
-	my @index;
-	while ($data=~m{(\d+)}gxs) {
-		my %index_element=(
-			element     => $1,
-			o_element_b => $-[1]+$offset_b,
-			o_element_e => $+[1]+$offset_b,
-		);
-		push @index,\%index_element;
-	}
-	return(\@index);
 }
 
 sub as_hash {
@@ -418,7 +374,7 @@ sub _set_value {
 			carp "variable '$var' is classified as scalar, not array";
 			return(3);
 		}
-		my $md_index=join('',map { "->[$_]" } @index);
+		my $md_index=Fortran::Namelist::Editor::Index::index2perlrefstring(@index);
 		eval "\$val_ref = \\\$var_desc->{values}$md_index;";
 		eval "\$val = \$var_desc->{values_source}$md_index;";
 		return(2) unless (defined $val);
@@ -447,23 +403,10 @@ sub _add_new_setting {
 	my $offset_b  = $group_ref->{o_vars_e};
 	# variables for dealing with arrays
 	my $index_str = '';
-	my $index_ref = undef;
-	my $index_perl = undef;
 	# deal with the index
 	if ($#index>=0) {
 		# stringify index
-		$index_str = '(' . join(',',@index) . ')';
-		$index_perl=join('',map { "->[$_]" } @index);
-		# setup index data structure
-		my $position=1;
-		foreach my $element (@index) {
-			push @{$index_ref},{
-				element     => $element,
-				o_element_b => $position,
-				o_element_e => $position+length($element),
-			};
-			$position=$index_ref->[-1]->{o_element_e}+1;
-		}
+		$index_str = Fortran::Namelist::Editor::Index::index2fortranstring(@index);
 		# in case of a pre-existing array, find insertion point
 		if (exists $group_ref->{vars}->{$var}) {
 			# simple solution: put after the last occurrance
@@ -490,15 +433,14 @@ sub _add_new_setting {
 	my $name_end  = length($self->{indent})+length($var)+$offset_b;
 	my $index_end = $name_end+length($index_str);
 	my $val       = Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value));
+	my $index     = Fortran::Namelist::Editor::Index->new($self,$name_end,$index_end);
+	my $index_perl = (defined $index ? $index->get : '');
 	my %v=(
 		name       => $var,
 		o_decl_b   => $offset_b,
 		o_name_b   => length($self->{indent})+$offset_b,
 		o_name_e   => $name_end,
-		index      => $index_ref,
-		index_perl => $index_perl,
-		o_index_b  => $name_end,
-		o_index_e  => $index_end,
+		index      => $index,
 		value      => [ $val ],
 	);
 	push @{$group_ref->{_vars}},\%v;
@@ -520,7 +462,7 @@ sub _add_new_setting {
 			$group_ref->{vars}->{$var}->{instances}=[ $val ];
 			$desc=$group_ref->{vars}->{$var};
 		}
-		eval "\$desc->{values}$index_perl = $val->get;";
+		eval "\$desc->{values}$index_perl = \$val->get;";
 		eval "\$desc->{values_source}$index_perl = \$val;";
 	}
 }
@@ -615,7 +557,7 @@ sub _unset {
 	my $desc = $group_ref->{vars}->{$var};
 	my $index_perl;
 	if ($#index >= 0) {
-		$index_perl=join('',map { "->[$_]" } @index);
+		$index_perl=Fortran::Namelist::Editor::Index::index2perlrefstring(@index);
 		my $val_test;
 		eval "\$val_test = \$desc->{values}$index_perl;";
 		return(2) unless (defined $val_test);
@@ -623,7 +565,7 @@ sub _unset {
 	my %instance_removed;
 	foreach my $instance (@{$desc->{instances}}) {
 		if ($index_perl) {
-			next unless ($instance->{index_perl} eq $index_perl);
+			next unless ($instance->{index}->get eq $index_perl);
 		}
 		$instance_removed{$instance}=1;
 		$self->_remove_instance($instance);
