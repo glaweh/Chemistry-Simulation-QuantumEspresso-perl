@@ -113,7 +113,7 @@ sub parse {
 	if ($lines_cs->[$i] =~ /^\s*(atomic_species)/i) {
 		$self->{name}=Fortran::Namelist::Editor::Token->new($self->{container},$o_line+$-[1],$o_line+$+[1]);
 	}
-	my $ntyp=$self->{container}->{groups}->{system}->{vars}->{ntyp}->{value};
+	my $ntyp=$self->{container}->{groups}->{system}->{vars}->{ntyp}->{value}->get;
 	while (1) {
 		$i++;
 		last if ($#{$self->{_species}} >= $ntyp-1);
@@ -186,7 +186,7 @@ sub parse {
 		}
 	}
 
-	my $nat=$self->{container}->{groups}->{system}->{vars}->{nat}->{value};
+	my $nat=$self->{container}->{groups}->{system}->{vars}->{nat}->{value}->get;
 	while (1) {
 		$i++;
 		last if ($#{$self->{_atom}} >= $nat-1);

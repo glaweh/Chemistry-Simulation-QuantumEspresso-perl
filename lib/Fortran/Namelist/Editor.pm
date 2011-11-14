@@ -147,30 +147,25 @@ sub _varhash {
 		}
 		if ($desc->{is_array}) {
 			$desc->{values}=[];
-			$desc->{values_source}=[];
 			foreach my $inst (@{$vars{$name}->{instances}}) {
 				if (defined $inst->{index}) {
 					if ($#{$inst->{value}} > 0) {
 						confess "only 1d-values are implemented";
 					}
 					my $index_perl=$inst->{index}->get;
-					eval "\$desc->{values}$index_perl = \$inst->{value}->[0]->get; ";
-					eval "\$desc->{values_source}$index_perl = \$inst->{value}->[0]; ";
+					eval "\$desc->{values}$index_perl = \$inst->{value}->[0]; ";
 				} else {
 					for (my $i=0;$i<=$#{$inst->{value}};$i++) {
-						$desc->{values}->[$i]=$inst->{value}->[$i]->get;
-						$desc->{values_source}->[$i]=$inst->{value}->[$i];
+						$desc->{values}->[$i]=$inst->{value}->[$i];
 					}
 				}
 			}
 		} else {
 			foreach my $inst (@{$vars{$name}->{instances}}) {
 				if (blessed $inst->{value}->[0] and $inst->{value}->[0]->can('get')) {
-					$desc->{value}        = $inst->{value}->[0]->get;
-					$desc->{value_source} = $inst->{value}->[0];
+					$desc->{value}        = $inst->{value}->[0];
 				} else {
 					$desc->{value}        = undef;
-					$desc->{value_source} = undef;
 				}
 			}
 		}
@@ -274,9 +269,9 @@ sub as_hash {
 			my $r=reftype($v);
 			next unless (defined $r and ($r eq 'HASH'));
 			if ($v->{is_array}) {
-				$h{$gname}->{$vname}=$v->{values};
+				$h{$gname}->{$vname}=map { (defined $_ ? $_->get : undef) } @{$v->{values}};
 			} else {
-				$h{$gname}->{$vname}=$v->{value};
+				$h{$gname}->{$vname}=$v->{value}->get;
 			}
 		}
 	}
@@ -289,9 +284,9 @@ sub get {
 	my $v=$self->{groups}->{$group}->{vars}->{$variable};
 	if ($v->{is_array}) {
 		if (defined $index) {
-			return($v->{values}->[$index]);
+			return($v->{values}->[$index]->get);
 		} else {
-			return($v->{values});
+			return([ map { $_->get } @{$v->{values}} ]);
 		}
 	} else {
 		return($v->{value});
@@ -371,20 +366,17 @@ sub _set_value {
 			return(3);
 		}
 		my $md_index=Fortran::Namelist::Editor::Index::index2perlrefstring(@index);
-		eval "\$val_ref = \\\$var_desc->{values}$md_index;";
-		eval "\$val = \$var_desc->{values_source}$md_index;";
+		eval "\$val = \$var_desc->{values}$md_index;";
 		return(2) unless (defined $val);
 	} else {
 		if ($var_desc->{is_array}) {
 			carp "variable '$var' is classified as array, not scalar";
 			return(4);
 		}
-		$val=$var_desc->{value_source};
-		$val_ref=\$var_desc->{value};
+		$val=$var_desc->{value};
 	}
 	# actually set the variable
 	$val->set($value);
-	${$val_ref}=$value;
 	return(1);
 }
 
@@ -440,8 +432,7 @@ sub _add_new_setting {
 		# no array
 		my %desc = (
 			is_array     => 0,
-			value        => $v->{value}->[0]->get,
-			value_source => $v->{value}->[0],
+			value        => $v->{value}->[0],
 			instances    => [ $v ],
 		);
 		$group_ref->{vars}->{$var}=\%desc;
@@ -453,8 +444,7 @@ sub _add_new_setting {
 			$desc=$group_ref->{vars}->{$var};
 		}
 		push @{$group_ref->{vars}->{$var}->{instances}},$v;
-		eval "\$desc->{values}$index_perl = \$v->{value}->[0]->get;";
-		eval "\$desc->{values_source}$index_perl = \$v->{value}->[0];";
+		eval "\$desc->{values}$index_perl = \$v->{value}->[0];";
 	}
 }
 
@@ -568,7 +558,6 @@ sub _unset {
 		} else {
 			# stamp out elements
 			eval "\$desc->{values}$index_perl = undef;";
-			eval "\$desc->{values_source}$index_perl = undef;";
 		}
 	}
 	delete ($group_ref->{vars}->{$var}) if ($#{$desc->{instances}} < 0);
