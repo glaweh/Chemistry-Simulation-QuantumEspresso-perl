@@ -130,45 +130,8 @@ sub _varhash {
 	my %vars;
 	foreach my $v (@{$vars_a}) {
 		my $name = $v->{name}->get;
-		push @{$vars{$name}->{instances}},$v;
-	}
-	while (my ($name,$desc) = each %vars) {
-		# check for/guess array-ness
-		$desc->{is_array} = 0;
-		foreach my $inst (@{$vars{$name}->{instances}}) {
-			if (defined $inst->{index}) {
-				print STDERR "interpreting var '$name' as array (reason: index)\n";
-				$desc->{is_array} = 1;
-			}
-			if ($#{$inst->{value}} > 0) {
-				print STDERR "interpreting var '$name' as array (reason: multiple values)\n";
-				$desc->{is_array} = 1;
-			}
-		}
-		if ($desc->{is_array}) {
-			$desc->{values}=[];
-			foreach my $inst (@{$vars{$name}->{instances}}) {
-				if (defined $inst->{index}) {
-					if ($#{$inst->{value}} > 0) {
-						confess "only 1d-values are implemented";
-					}
-					my $index_perl=$inst->{index}->get;
-					eval "\$desc->{values}$index_perl = \$inst->{value}->[0]; ";
-				} else {
-					for (my $i=0;$i<=$#{$inst->{value}};$i++) {
-						$desc->{values}->[$i]=$inst->{value}->[$i];
-					}
-				}
-			}
-		} else {
-			foreach my $inst (@{$vars{$name}->{instances}}) {
-				if (blessed $inst->{value}->[0] and $inst->{value}->[0]->can('get')) {
-					$desc->{value}        = $inst->{value}->[0];
-				} else {
-					$desc->{value}        = undef;
-				}
-			}
-		}
+		$vars{$name}=Fortran::Namelist::Editor::Variable->new() unless exists ($vars{$name});
+		$vars{$name}->add_instance($v);
 	}
 	return(\%vars);
 }
@@ -268,11 +231,7 @@ sub as_hash {
 		while (my ($vname,$v) = each %{$g->{vars}}) {
 			my $r=reftype($v);
 			next unless (defined $r and ($r eq 'HASH'));
-			if ($v->{is_array}) {
-				$h{$gname}->{$vname}=map { (defined $_ ? $_->get : undef) } @{$v->{values}};
-			} else {
-				$h{$gname}->{$vname}=$v->{value}->get;
-			}
+			$h{$gname}->{$vname}=$v->get;
 		}
 	}
 	return(\%h);
@@ -281,16 +240,7 @@ sub as_hash {
 sub get {
 	my ($self,$group,$variable,$index)=@_;
 	return(undef) unless ((exists $self->{groups}->{$group}) and (exists $self->{groups}->{$group}->{vars}->{$variable}));
-	my $v=$self->{groups}->{$group}->{vars}->{$variable};
-	if ($v->{is_array}) {
-		if (defined $index) {
-			return($v->{values}->[$index]->get);
-		} else {
-			return([ map { $_->get } @{$v->{values}} ]);
-		}
-	} else {
-		return($v->{value});
-	}
+	return($self->{groups}->{$group}->{vars}->{$variable}->get($index));
 }
 
 sub save {
@@ -358,26 +308,8 @@ sub _set_value {
 	}
 	# take the new value
 	my $value = pop @index;
-	# and look for the existing value
-	my ($val,$val_ref);
-	if ($#index >= 0) {
-		unless ($var_desc->{is_array}) {
-			carp "variable '$var' is classified as scalar, not array";
-			return(3);
-		}
-		my $md_index=Fortran::Namelist::Editor::Index::index2perlrefstring(@index);
-		eval "\$val = \$var_desc->{values}$md_index;";
-		return(2) unless (defined $val);
-	} else {
-		if ($var_desc->{is_array}) {
-			carp "variable '$var' is classified as array, not scalar";
-			return(4);
-		}
-		$val=$var_desc->{value};
-	}
 	# actually set the variable
-	$val->set($value);
-	return(1);
+	return($var_desc->set($value,\@index));
 }
 
 sub _add_new_setting {
