@@ -360,25 +360,21 @@ sub _add_new_setting {
 		[ Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value)) ]);
 	my $index_perl = (defined $v->{index} ? $v->{index}->get : '');
 	push @{$group_ref->{_vars}},$v;
+	my $desc;
 	# setup description
 	if ($#index < 0) {
 		# no array
-		my %desc = (
-			is_array     => 0,
-			value        => $v->{value}->[0],
-			instances    => [ $v ],
-		);
-		$group_ref->{vars}->{$var}=\%desc;
+		$desc = Fortran::Namelist::Editor::Variable->new($self->{container});
+		$group_ref->{vars}->{$var}=$desc;
 	} else {
-		my $desc=$group_ref->{vars}->{$var};
+		$desc=$group_ref->{vars}->{$var};
 		unless (defined $desc) {
 			# new array
-			$group_ref->{vars}->{$var}->{is_array}=1;
-			$desc=$group_ref->{vars}->{$var};
+			$desc = Fortran::Namelist::Editor::Array->new($self->{container});
+			$group_ref->{vars}->{$var}=$desc;
 		}
-		push @{$group_ref->{vars}->{$var}->{instances}},$v;
-		eval "\$desc->{values}$index_perl = \$v->{value}->[0];";
 	}
+	$desc->add_instance($v);
 }
 
 sub add_group {
