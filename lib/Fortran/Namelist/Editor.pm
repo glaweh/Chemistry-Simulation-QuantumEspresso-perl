@@ -170,45 +170,12 @@ sub find_vars {
 	$offsets[-1]->[1]=$offsets[-1]->[7]=$offset_e if ($#offsets>=0);
 	for (my $i=0; $i<=$#offsets; $i++) {
 		my @offset=@{$offsets[$i]};
-		my $val_e = pop @offset;
-		my $val_b = pop @offset;
-		my $value = $self->find_value($val_b,$val_e);
-		my $assignment=Fortran::Namelist::Editor::Assignment->new($self,@offset,$value);
+		my $assignment=Fortran::Namelist::Editor::Assignment->new($self,@offset);
 		my $name = $assignment->{name}->get;
 		$group_ref->{vars}->{$name}=Fortran::Namelist::Editor::Variable->new() unless exists ($group_ref->{vars}->{$name});
 		$group_ref->{vars}->{$name}->add_instance($assignment);
 	}
 	return(1);
-}
-
-sub find_value {
-	my ($self,$offset_b,$offset_e)=@_;
-	my $data_v      = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
-	# insert a comma into each group of spaces unless there is already one
-	# commas are optional in namelists, this will make it easier to parse
-	$data_v =~ s{
-		([^\s,])       # last char of a group of non-comma, non-space chars
-		\s             # a space, to be substituted by a comma
-		(\s*[^\s,])    # first char of the next group of non-comma, non-space chars
-		}{$1,$2}gsx;
-	my @value;
-	if ($data_v =~ m{\(}) {
-		# complex
-		confess "unimplemented: complex vars";
-	} else {
-		# re-implement split :(
-		# assumption: whitespace at beginning and end already stripped
-		my $old_e=$offset_b;
-		while ($data_v=~m{\s*,\s*}gsx) {
-			push @value,Fortran::Namelist::Editor::Value::subclass($self,$old_e,$-[0]+$offset_b);
-			$old_e=$+[0]+$offset_b;
-		}
-		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /\s*$/) {
-			$offset_e -= $+[0] - $-[0];
-		}
-		push @value,Fortran::Namelist::Editor::Value::subclass($self,$old_e,$offset_e);
-	}
-	return(\@value);
 }
 
 sub as_hash {
@@ -347,7 +314,7 @@ sub _add_new_setting {
 		$offset_b,$offset_b+length($insert),
 		length($self->{indent})+$offset_b,$name_end,
 		$name_end,$index_end,
-		[ Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value)) ]);
+		$index_end+3,$index_end+3+length($value));
 	my $index_perl = (defined $v->{index} ? $v->{index}->get : '');
 	my $desc;
 	# setup description

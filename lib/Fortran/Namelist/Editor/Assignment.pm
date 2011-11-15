@@ -6,11 +6,12 @@ use Fortran::Namelist::Editor::Index;
 use Fortran::Namelist::Editor::Value;
 @Fortran::Namelist::Editor::Assignment::ISA = qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
-	my ($self,$container,$o_b,$o_e,$o_name_b,$o_name_e,$o_index_b,$o_index_e,$value)=@_;
+	my ($self,$container,$o_b,$o_e,$o_name_b,$o_name_e,$o_index_b,$o_index_e,$o_value_b,$o_value_e)=@_;
 	$self->SUPER::init($container,$o_b,$o_e);
 	$self->{name}  = Fortran::Namelist::Editor::Token->new($container,$o_name_b,$o_name_e);
 	$self->{index} = Fortran::Namelist::Editor::Index->new($container,$o_index_b,$o_index_e);
-	$self->{value} = $value;
+	$self->{value} = [];
+	$self->parse_value($o_value_b,$o_value_e);
 	return($self);
 }
 sub delete {
@@ -29,6 +30,34 @@ sub delete {
 	substr($self->{container}->{data},$offset_b,$length)=$replacement;
 	substr($self->{container}->{data_cs},$offset_b,$length)=$replacement;
 	$self->{container}->adjust_offsets($offset_b,length($replacement)-$length);
+}
+sub parse_value {
+	my ($self,$offset_b,$offset_e)=@_;
+	my $data_v      = substr($self->{container}->{data_cs},$offset_b,$offset_e-$offset_b);
+	# insert a comma into each group of spaces unless there is already one
+	# commas are optional in namelists, this will make it easier to parse
+	$data_v =~ s{
+		([^\s,])       # last char of a group of non-comma, non-space chars
+		\s             # a space, to be substituted by a comma
+		(\s*[^\s,])    # first char of the next group of non-comma, non-space chars
+		}{$1,$2}gsx;
+	if ($data_v =~ m{\(}) {
+		# complex
+		die "unimplemented: complex vars";
+	} else {
+		# re-implement split :(
+		# assumption: whitespace at beginning and end already stripped
+		my $old_e=$offset_b;
+		while ($data_v=~m{\s*,\s*}gsx) {
+			push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{container},$old_e,$-[0]+$offset_b);
+			$old_e=$+[0]+$offset_b;
+		}
+		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /\s*$/) {
+			$offset_e -= $+[0] - $-[0];
+		}
+		push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{container},$old_e,$offset_e);
+	}
+	return(1);
 }
 
 package Fortran::Namelist::Editor::Variable;
