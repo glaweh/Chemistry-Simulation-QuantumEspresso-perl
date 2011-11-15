@@ -94,9 +94,10 @@ sub find_groups {
 			name      => Fortran::Namelist::Editor::Token->new($self,$-[1],$+[1]),
 			o_b       => $-[0],  # group begins with &
 			o_e       => $+[3],    # end of NL group is /
-			_vars     => $self->find_vars($-[2],$+[2]),
+			_vars     => [],
 			vars      => {},
 		};
+		$self->find_vars($self->{_groups}->[-1],$-[2],$+[2]);
 	}
 	foreach my $g (@{$self->{_groups}}) {
 		my $name=$g->{name}->get;
@@ -162,7 +163,7 @@ sub parse_groupless {
 }
 
 sub find_vars {
-	my ($self,$offset_b,$offset_e)=@_;
+	my ($self,$group_ref,$offset_b,$offset_e)=@_;
 	my $data_n      = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
 	my @offsets;
 	# scan data_n for variables: name, optionally index, followed by '='
@@ -180,15 +181,14 @@ sub find_vars {
 			$+[0]+$offset_b,undef];
 	}
 	$offsets[-1]->[1]=$offsets[-1]->[7]=$offset_e if ($#offsets>=0);
-	my @vars;
 	for (my $i=0; $i<=$#offsets; $i++) {
 		my @offset=@{$offsets[$i]};
 		my $val_e = pop @offset;
 		my $val_b = pop @offset;
 		my $value = $self->find_value($val_b,$val_e);
-		push @vars,Fortran::Namelist::Editor::Assignment->new($self,@offset,$value);
+		push @{$group_ref->{_vars}},Fortran::Namelist::Editor::Assignment->new($self,@offset,$value);
 	}
-	return(\@vars);
+	return(1);
 }
 
 sub find_value {
