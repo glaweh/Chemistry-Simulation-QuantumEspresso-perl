@@ -91,6 +91,7 @@ sub set {
 package Fortran::Namelist::Editor::Array;
 use strict;
 use warnings;
+use Scalar::Util qw(blessed);
 @Fortran::Namelist::Editor::Array::ISA=qw{Fortran::Namelist::Editor::Variable};
 sub _switch_to_array {
 	my $self=shift;
@@ -109,8 +110,14 @@ sub add_instance {
 		if ($#{$instance->{value}} > 0) {
 			die "only 1d-values are implemented";
 		}
-		my $index_perl=$instance->{index}->get;
-		eval "\$self->{value}$index_perl = \$instance->{value}->[0]; ";
+		my @index = $instance->{index}->get;
+		my $where = $self->{value};
+		my $lasti = pop @index;
+		foreach (@index) {
+			$where->[$_]=[] unless (defined $where->[$_]);
+			$where=$where->[$_];
+		}
+		$where->[$lasti] = $instance->{value}->[0];
 	} else {
 		for (my $i=0;$i<=$#{$instance->{value}};$i++) {
 			$self->{value}->[$i]=$instance->{value}->[$i];
@@ -167,23 +174,28 @@ sub get_whole_cube {
 sub get {
 	my ($self,@index)=@_;
 	if ($#index >= 0) {
-		my $index_perl = Fortran::Namelist::Editor::Index::index2perlrefstring(@index);
-		my $val;
-		eval "\$val = \$self->{value}$index_perl" . "->get;";
-		return($val);
+		my $where = $self->{value};
+		foreach (@index) {
+			return(undef) unless ((defined $where) and (ref $where eq 'ARRAY'));
+			$where=$where->[$_];
+		}
+		return(undef) unless (blessed($where) and $where->can('get'));
+		return($where->get);
 	} else {
 		return($self->get_whole_cube);
 	}
 }
 sub set {
-	my ($self,$value,$index) = @_;
-	if ($#{$index}<0) {
+	my ($self,$value,@index) = @_;
+	if ($#index<0) {
 		die "variable '" . $self->{name}->get . "' was classified as array, not scalar"
 	}
-	my $index_perl = Fortran::Namelist::Editor::Index::index2perlrefstring(@{$index});
-	my $val;
-	eval "\$val = \$self->{value}$index_perl;";
-	return($val->set($value)) if (defined $val);
-	return(2);
+	my $where = $self->{value};
+	foreach (@index) {
+		return(2) unless ((defined $where) and (ref $where eq 'ARRAY'));
+		$where=$where->[$_];
+	}
+	return(2) unless (blessed($where) and $where->can('get'));
+	return($where->set($value));
 }
 1;

@@ -310,7 +310,7 @@ sub _set_value {
 	# take the new value
 	my $value = pop @index;
 	# actually set the variable
-	return($var_desc->set($value,\@index));
+	return($var_desc->set($value,@index));
 }
 
 sub _add_new_setting {
