@@ -80,8 +80,8 @@ sub get {
 	return($self->{value}->get);
 }
 sub set {
-	my ($self,$value,$index) = @_;
-	if ($#{$index}>=0) {
+	my ($self,$value,@index) = @_;
+	if ($#index>=0) {
 		die "variable '" . $self->{name}->get . "' was classified as scalar, not array"
 	}
 	$self->{value}->set($value);
