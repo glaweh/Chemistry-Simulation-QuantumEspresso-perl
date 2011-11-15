@@ -82,7 +82,7 @@ sub add_instance {
 sub get {
 	my $self=shift;
 	return(undef) unless (defined $self->{value});
-	return(undef) unless (blessed($self->{value} and $self->{value}->can('get')));
+	return(undef) unless (blessed($self->{value}) and $self->{value}->can('get'));
 	return($self->{value}->get);
 }
 sub set {
