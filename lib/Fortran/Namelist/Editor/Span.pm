@@ -1,6 +1,7 @@
 package Fortran::Namelist::Editor::Span;
 use strict;
 use warnings;
+use Data::Dumper;
 sub new {
 	my $class = shift;
 	my $self  = {};
@@ -71,6 +72,12 @@ sub _adjust_offsets {
 sub length {
 	my ($self)=@_;
 	return($self->{o_e}-$self->{o_b});
+}
+sub dump {
+	my $self=shift;
+	my $dd=Data::Dumper->new([ $self ]);
+	$dd->Sortkeys(sub { my $ref=shift; return([ sort grep { $_ ne 'container' } keys %{$ref} ]) });
+	return($dd->Dump());
 }
 
 package Fortran::Namelist::Editor::ContainerSpan;
