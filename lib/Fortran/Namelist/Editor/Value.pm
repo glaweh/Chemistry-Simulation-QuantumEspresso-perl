@@ -50,7 +50,8 @@ sub set {
 	my ($self,$value)=@_;
 	$value =~ s/'/''/g;
 	$value = "'$value'";
-	return($self->SUPER::set($value));
+	my $value_cs= '_' x length($value);
+	return($self->SUPER::set($value,$value_cs));
 }
 
 package Fortran::Namelist::Editor::Value::integer;
