@@ -252,9 +252,9 @@ sub save {
 }
 
 sub adjust_offsets {
-	my ($self,$start,$delta,@skip) = @_;
+	my ($self,$start,$delta,$adjust_id) = @_;
 	my @stack=($self);
-	my $adjust_id = int(rand(4242424));
+	$adjust_id = int(rand(4242424)) unless (defined $adjust_id);
 	while ($#stack >= 0) {
 		my $h=pop @stack;
 		next unless (defined $h);
@@ -286,6 +286,7 @@ sub adjust_offsets {
 			}
 		}
 	}
+	return($adjust_id);
 }
 
 sub _set_value {

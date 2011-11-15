@@ -28,8 +28,10 @@ sub set {
 	my $new_length = length($new_value);
 	substr($self->{container}->{data},$self->{o_b},$old_length)    = $new_value;
 	substr($self->{container}->{data_cs},$self->{o_b},$old_length) = $new_value_cs;
-	$self->{container}->adjust_offsets($self->{o_b},$new_length-$old_length,$self) if ($new_length != $old_length);
-	$self->{o_e}+=$new_length-$old_length;
+	if ($new_length != $old_length) {
+		my $adjust_id = $self->{container}->adjust_offsets($self->{o_b}+1,$new_length-$old_length);
+		$self->{o_e}+=$new_length-$old_length unless ($self->{_adjusted} == $adjust_id);
+	}
 	return(1);
 }
 sub _get_raw {
