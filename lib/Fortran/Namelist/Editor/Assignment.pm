@@ -37,10 +37,10 @@ use warnings;
 use Scalar::Util qw(blessed);
 @Fortran::Namelist::Editor::Variable::ISA = qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
-	my ($self,$container,@instances)=@_;
+	my ($self,$container)=@_;
 	$self->SUPER::init($container);
 	$self->{name}      = undef;
-	$self->{instances} = [ @instances ];
+	$self->{instances} = [ ];
 	$self->{value}     = undef;
 	return($self);
 }
