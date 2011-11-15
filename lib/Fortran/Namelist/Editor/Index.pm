@@ -58,6 +58,16 @@ sub get {
 	}
 }
 
+sub is_equal {
+	my ($self,@index) = @_;
+	return(0) if ($#{$self->{element}} != $#index);
+	my @elements=$self->get;
+	for (my $i=0;$i<=$#index;$i++) {
+		return(0) if ($index[$i] != $elements[$i]);
+	}
+	return(1);
+}
+
 sub index2fortranstring {
 	my @index = @_;
 	if ($#index >=0) {
