@@ -18,6 +18,7 @@ sub init {
 }
 sub is_between {
 	my ($self,$o_b,$o_e) = @_;
+	return(0) unless (defined $self->{o_e} and defined $self->{o_b});
 	return(($self->{o_b}>=$o_b) and ($self->{o_e} <=$o_e));
 }
 sub set {
@@ -65,12 +66,13 @@ sub _adjust_offsets {
 	$adjust_id=int(rand(424242424)) unless (defined $adjust_id);
 	return(0) if ($self->{_adjusted} == $adjust_id);
 	$self->{_adjusted}=$adjust_id;
-	$self->{o_b}+=$delta if ($self->{o_b} >= $start);
-	$self->{o_e}+=$delta if ($self->{o_e} >= $start);
+	$self->{o_b}+=$delta if ((defined $self->{o_b}) and ($self->{o_b} >= $start));
+	$self->{o_e}+=$delta if ((defined $self->{o_e}) and ($self->{o_e} >= $start));
 	return(1);
 }
 sub length {
 	my ($self)=@_;
+	return(0) unless (defined $self->{o_e} and defined $self->{o_b});
 	return($self->{o_e}-$self->{o_b});
 }
 sub dump {
