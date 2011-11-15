@@ -162,7 +162,7 @@ sub get {
 	if ($#index >= 0) {
 		my $index_perl = Fortran::Namelist::Editor::Index::index2perlrefstring(@index);
 		my $val;
-		eval "\$val = \$self->{value}$index_perl;";
+		eval "\$val = \$self->{value}$index_perl" . "->get;";
 		return($val);
 	} else {
 		return($self->get_whole_cube);
