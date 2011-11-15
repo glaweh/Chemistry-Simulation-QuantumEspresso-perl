@@ -44,12 +44,6 @@ sub init {
 	$self->{value}     = undef;
 	return($self);
 }
-sub is_between {
-	return(0);
-}
-sub length {
-	return(0);
-}
 sub add_instance {
 	my ($self,$instance) = @_;
 	my $switch_to_array=0;
