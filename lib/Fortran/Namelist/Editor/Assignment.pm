@@ -87,6 +87,16 @@ sub set {
 	$self->{value}->set($value);
 	return(1);
 }
+sub delete {
+	my ($self,@index) = @_;
+	if ($#index>=0) {
+		die "variable '" . $self->{name}->get . "' was classified as scalar, not array"
+	}
+	foreach my $instance (@{$self->{instances}}) {
+		$instance->delete;
+	}
+	return(1);
+}
 
 package Fortran::Namelist::Editor::Array;
 use strict;
@@ -197,5 +207,26 @@ sub set {
 	}
 	return(2) unless (blessed($where) and $where->can('get'));
 	return($where->set($value));
+}
+sub delete {
+	# return value: 1 if there is no element left
+	my ($self,@index)=@_;
+	return($self->SUPER::delete) if ($#index<0);
+	return(0) unless (defined $self->get(@index));
+	for (my $i=0;$i<=$#{$self->{instances}};$i++) {
+		my $instance=$self->{instances}->[$i];
+		next unless ($instance->{index}->is_equal(@index));
+		$instance->delete;
+		$self->{instances}->[$i]=undef;
+	}
+	@{$self->{instances}}  = grep { defined $_ } @{$self->{instances}};
+	return(1) if ($#{$self->{instances}} < 0);
+	my $where = $self->{value};
+	my $lasti = pop @index;
+	foreach (@index) {
+		$where=$where->[$_];
+	}
+	$where->[$lasti]=undef;
+	return(0);
 }
 1;

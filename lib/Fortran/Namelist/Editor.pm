@@ -430,32 +430,7 @@ sub _unset {
 	my @index     = @{$setting};
 	my $var       = shift @index;
 	return(2) unless (exists $group_ref->{vars}->{$var});
-	my $desc = $group_ref->{vars}->{$var};
-	my $index_perl;
-	if ($#index >= 0) {
-		$index_perl=Fortran::Namelist::Editor::Index::index2perlrefstring(@index);
-		return(2) unless (defined $desc->get(@index));
-	}
-	my %instance_removed;
-	foreach my $instance (@{$desc->{instances}}) {
-		if ($index_perl) {
-			next unless ($instance->{index}->get eq $index_perl);
-		}
-		$instance_removed{$instance}=1;
-		$instance->delete;
-	}
-	@{$desc->{instances}}  = grep { ! $instance_removed{$_} } @{$desc->{instances}};
-	if ($index_perl) {
-		# clean up array descriptor
-		if ($#{$desc->{instances}}<0) {
-			# empty, delete altogether
-			delete ($group_ref->{vars}->{$var});
-		} else {
-			# stamp out elements
-			eval "\$desc->{values}$index_perl = undef;";
-		}
-	}
-	delete ($group_ref->{vars}->{$var}) if ($#{$desc->{instances}} < 0);
+	delete ($group_ref->{vars}->{$var}) if ($group_ref->{vars}->{$var}->delete(@index));
 }
 
 sub unset {
