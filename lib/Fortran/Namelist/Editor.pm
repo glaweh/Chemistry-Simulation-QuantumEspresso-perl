@@ -434,9 +434,7 @@ sub _unset {
 	my $index_perl;
 	if ($#index >= 0) {
 		$index_perl=Fortran::Namelist::Editor::Index::index2perlrefstring(@index);
-		my $val_test;
-		eval "\$val_test = \$desc->{values}$index_perl;";
-		return(2) unless (defined $val_test);
+		return(2) unless (defined $desc->get(@index));
 	}
 	my %instance_removed;
 	foreach my $instance (@{$desc->{instances}}) {
