@@ -94,7 +94,6 @@ sub find_groups {
 			name      => Fortran::Namelist::Editor::Token->new($self,$-[1],$+[1]),
 			o_b       => $-[0],  # group begins with &
 			o_e       => $+[3],    # end of NL group is /
-			_vars     => [],
 			vars      => {},
 		};
 		$self->find_vars($self->{_groups}->[-1],$-[2],$+[2]);
@@ -103,7 +102,6 @@ sub find_groups {
 		my $name=$g->{name}->get;
 		confess "group '$name' exists more than once" if (exists $self->{groups}->{$name});
 		$self->{groups}->{$name}=$g;
-		$g->{vars}   = _varhash($g->{_vars});
 	}
 	return(1);
 }
@@ -124,17 +122,6 @@ sub find_indent {
 		my @idx=sort { $votes[$b] <=> $votes[$a] } 0 .. $#votes;
 		$self->{indent}=$indentations[$idx[0]];
 	}
-}
-
-sub _varhash {
-	my $vars_a=shift;
-	my %vars;
-	foreach my $v (@{$vars_a}) {
-		my $name = $v->{name}->get;
-		$vars{$name}=Fortran::Namelist::Editor::Variable->new() unless exists ($vars{$name});
-		$vars{$name}->add_instance($v);
-	}
-	return(\%vars);
 }
 
 sub find_groupless {
@@ -186,7 +173,10 @@ sub find_vars {
 		my $val_e = pop @offset;
 		my $val_b = pop @offset;
 		my $value = $self->find_value($val_b,$val_e);
-		push @{$group_ref->{_vars}},Fortran::Namelist::Editor::Assignment->new($self,@offset,$value);
+		my $assignment=Fortran::Namelist::Editor::Assignment->new($self,@offset,$value);
+		my $name = $assignment->{name}->get;
+		$group_ref->{vars}->{$name}=Fortran::Namelist::Editor::Variable->new() unless exists ($group_ref->{vars}->{$name});
+		$group_ref->{vars}->{$name}->add_instance($assignment);
 	}
 	return(1);
 }
@@ -359,7 +349,6 @@ sub _add_new_setting {
 		$name_end,$index_end,
 		[ Fortran::Namelist::Editor::Value::subclass($self,$index_end+3,$index_end+3+length($value)) ]);
 	my $index_perl = (defined $v->{index} ? $v->{index}->get : '');
-	push @{$group_ref->{_vars}},$v;
 	my $desc;
 	# setup description
 	if ($#index < 0) {
@@ -398,7 +387,6 @@ sub add_group {
 			name      => Fortran::Namelist::Editor::Token->new($self,1+$offset_b,length($group_name)+1+$offset_b),
 			o_b       => $offset_b,                       # group begins with &
 			o_e       => length($group_name)+4+$offset_b, # end of NL group is /
-			_vars     => [],
 			vars      => {},
 	);
 	splice(@{$self->{_groups}},$after_index+1,0,\%group);
@@ -458,8 +446,6 @@ sub _unset {
 		$instance_removed{$instance}=1;
 		$instance->delete;
 	}
-	# kill the reference from the group_ref
-	@{$group_ref->{_vars}} = grep { ! $instance_removed{$_} } @{$group_ref->{_vars}};
 	@{$desc->{instances}}  = grep { ! $instance_removed{$_} } @{$desc->{instances}};
 	if ($index_perl) {
 		# clean up array descriptor
