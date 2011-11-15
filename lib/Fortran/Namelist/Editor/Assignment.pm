@@ -136,21 +136,28 @@ sub get_whole_cube {
 	$padding_in = $self->get_dimensions unless (defined $padding_in);
 	my @padding = @{$padding_in};
 	my @result;
-	my @stack       = (\@result);
-	my @subd_stack	= [ @padding ];
+	my @stack        = (\@result);
+	my @source_stack = ($self->{value});
+	my @subd_stack	 = [ @padding ];
 	while ($#stack >= 0) {
 		my $target = pop @stack;
+		my $source = pop @source_stack;
 		my @subd   = @{ pop @subd_stack };
 		my $thisd  = shift @subd;
 		if ($#subd < 0) {
 			for (my $i=0; $i<$thisd; $i++) {
-				$target->[$i]=0;
+				if ((defined $source) and (defined $source->[$i])) {
+					$target->[$i]=$source->[$i]->get;
+				} else {
+					$target->[$i]=undef;
+				}
 			}
 		} else {
 			for (my $i=0; $i<$thisd; $i++) {
 				my @a;
 				$target->[$i]=\@a;
 				push @stack,\@a;
+				push @source_stack,$source->[$i];
 				push @subd_stack,[ @subd ];
 			}
 		}
