@@ -43,8 +43,7 @@ sub get {
 	return($self->_get_raw(@_));
 }
 sub insert {
-	my ($class,$namelist,$offset,$value,$separator)=@_;
-	$separator=' ' unless (defined $separator);
+	my ($class,$namelist,$offset,$separator,$value)=@_;
 	my $sep_length=length($separator);
 	if ($sep_length) {
 		substr($namelist->{data},$offset,0)    = $separator;

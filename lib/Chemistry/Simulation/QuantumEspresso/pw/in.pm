@@ -182,7 +182,7 @@ sub parse {
 			foreach (@{$o_lines}) {
 				$_+=5 if ($_ > $o_line);
 			}
-			$self->{units}=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],'alat');
+			$self->{units}=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','alat');
 		}
 	}
 
@@ -316,7 +316,7 @@ sub parse {
 			foreach (@{$o_lines}) {
 				$_+=6 if ($_ > $o_line);
 			}
-			$self->{symmetry}=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],'cubic');
+			$self->{symmetry}=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','cubic');
 		}
 	}
 
