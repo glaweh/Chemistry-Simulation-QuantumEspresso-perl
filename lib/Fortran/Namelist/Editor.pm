@@ -278,7 +278,12 @@ sub _add_new_setting {
 	# take the new value
 	my $value     = pop @index;
 	# insert at end of group's data section
-	my $offset_b  = $group_ref->{o_e}-1;
+	my $offset_b=$group_ref->{o_e};
+	pos($self->{data_cs}) = $offset_b;
+	if ($self->{data_cs} =~ m{(\n[^\n])\G}g) {
+		warn 'fafaf';
+		$offset_b-=$+[1]-$-[1];
+	}
 	# variables for dealing with arrays
 	my $index_str = '';
 	# deal with the index
@@ -292,7 +297,7 @@ sub _add_new_setting {
 			# find newline
 			pos($self->{data_cs})=$last_e;
 			while ($self->{data_cs} =~ m{\n}gs) {
-				$offset_b=$+[0] if ($+[0] < $offset_b);
+				$offset_b=$-[0] if ($+[0] < $offset_b);
 				last;
 			}
 		}
@@ -300,19 +305,19 @@ sub _add_new_setting {
 	# compute insertion into data_cs
 	my $value_cs  = ($value =~ /^["']/ ? '_' x length($value) : $value);
 	# insert the line to be inserted into data and data_cs
-	my $insert    = "$self->{indent}$var$index_str = $value\n";
-	my $insert_cs = "$self->{indent}$var$index_str = $value_cs\n";
+	my $insert    = "\n$self->{indent}$var$index_str = $value";
+	my $insert_cs = "\n$self->{indent}$var$index_str = $value_cs";
 	substr($self->{data}   ,$offset_b,0)=$insert;
 	substr($self->{data_cs},$offset_b,0)=$insert_cs;
 	# update old offsets
-	$self->adjust_offsets($offset_b,length($insert));
+	$self->adjust_offsets($offset_b+1,length($insert));
 
 	# create data structures
-	my $name_end  = length($self->{indent})+length($var)+$offset_b;
+	my $name_end  = length($self->{indent})+1+length($var)+$offset_b;
 	my $index_end = $name_end+length($index_str);
 	my $v = Fortran::Namelist::Editor::Assignment->new($self,
 		$offset_b,$offset_b+length($insert),
-		length($self->{indent})+$offset_b,$name_end,
+		length($self->{indent})+$offset_b+1,$name_end,
 		$name_end,$index_end,
 		$index_end+3,$index_end+3+length($value));
 	my $index_perl = (defined $v->{index} ? $v->{index}->get : '');
