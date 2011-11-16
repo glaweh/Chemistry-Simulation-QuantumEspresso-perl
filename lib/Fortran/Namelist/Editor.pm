@@ -277,7 +277,7 @@ sub _add_new_setting {
 	my ($self,$group_ref,$setting) = @_;
 	# setting: var [,index1,...], value
 	my @index     = @{$setting};
-	my $var       = shift @index;
+	my $var       = lc(shift @index);
 	# take the new value
 	my $value     = pop @index;
 	# insert at end of group's data section
@@ -287,48 +287,10 @@ sub _add_new_setting {
 		warn 'fafaf';
 		$offset_b-=$+[1]-$-[1];
 	}
-	# variables for dealing with arrays
-	my $index_str = '';
-	# deal with the index
-	if ($#index>=0) {
-		# stringify index
-		$index_str = Fortran::Namelist::Editor::Index::index2fortranstring(@index);
-	}
-	# compute insertion into data_cs
-	my $value_cs  = ($value =~ /^["']/ ? '_' x length($value) : $value);
-	# insert the line to be inserted into data and data_cs
-	my $insert    = "\n$self->{indent}$var$index_str = $value";
-	my $insert_cs = "\n$self->{indent}$var$index_str = $value_cs";
-	substr($self->{data}   ,$offset_b,0)=$insert;
-	substr($self->{data_cs},$offset_b,0)=$insert_cs;
-	# update old offsets
-	$self->adjust_offsets($offset_b+1,length($insert));
-
-	# create data structures
-	my $name_b    = length($self->{indent})+1+$offset_b;
-	my $name_end  = $name_b+length($var);
-	my $index_end = $name_end+length($index_str);
-	my $v = Fortran::Namelist::Editor::Assignment->new($self,
-		$name_b,$index_end+3+length($value),
-		$name_b,$name_end,
-		$name_end,$index_end,
-		$index_end+3,$index_end+3+length($value));
-	my $index_perl = (defined $v->{index} ? $v->{index}->get : '');
-	my $desc;
-	# setup description
-	if ($#index < 0) {
-		# no array
-		$desc = Fortran::Namelist::Editor::Variable->new($self);
-		$group_ref->{vars}->{$var}=$desc;
-	} else {
-		$desc=$group_ref->{vars}->{$var};
-		unless (defined $desc) {
-			# new array
-			$desc = Fortran::Namelist::Editor::Array->new($self);
-			$group_ref->{vars}->{$var}=$desc;
-		}
-	}
-	$desc->add_instance($v);
+	die "setting does already exist" if (exists $group_ref->{vars}->{$var});
+	my $s = Fortran::Namelist::Editor::Variable->insert($self,$offset_b,"\n$self->{indent}",$var,
+		$value,@index);
+	$group_ref->{vars}->{$var}=$s;
 }
 
 sub add_group {

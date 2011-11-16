@@ -167,6 +167,15 @@ sub delete {
 	}
 	return(1);
 }
+sub insert {
+	my ($class,$namelist,$o_b,$separator,$name,$value,@index) = @_;
+	my $self=$class->new($namelist);
+	my $a = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_b,
+		"\n$self->{_namelist}->{indent}",$name,
+		$value,@index);
+	$self->add_instance($a);
+	return($self);
+}
 
 package Fortran::Namelist::Editor::Array;
 use strict;
