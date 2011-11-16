@@ -71,7 +71,7 @@ sub is_equal {
 sub insert {
 	my ($class,$namelist,$o_b,$separator,@index) = @_;
 	return(undef) if ($#index < 0);
-	my $i = Fortran::Namelist::Span->insert($namelist,$o_b,index2fortranstring(@index));
+	my $i = Fortran::Namelist::Editor::Span->insert($namelist,$o_b,$separator,index2fortranstring(@index));
 	return($class->new($namelist,$i->{o_b},$i->{o_e}));
 }
 
