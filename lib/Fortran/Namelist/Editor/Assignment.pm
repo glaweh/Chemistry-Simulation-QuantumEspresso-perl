@@ -280,8 +280,6 @@ sub set {
 	} else {
 		# insert new statement after the last
 		my $o_insert=$self->{instances}->[-1]->{o_e};
-		warn "o_insert: $o_insert";
-		warn 'self: ' . $self->{_namelist};
 		pos($self->{_namelist}->{data_cs}) = $o_insert;
 		if ($self->{_namelist}->{data_cs} =~ /\G([^\n]+)/s) {
 			$o_insert=$+[1];
