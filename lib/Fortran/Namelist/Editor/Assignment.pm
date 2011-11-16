@@ -15,7 +15,9 @@ sub init {
 		$self->{value} = [];
 		$self->parse_value($o_value_b,$o_value_e);
 	} elsif ($#options == 2) {
-		$self->{'name','index','value'}=@options;
+		$self->{name}=$options[0];
+		$self->{index}=$options[1];
+		$self->{value}=$options[2];
 	} else {
 		$self->{name}  = undef;
 		$self->{index} = undef;
