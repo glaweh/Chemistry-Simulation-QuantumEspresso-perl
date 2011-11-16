@@ -52,7 +52,7 @@ sub parse_value {
 			push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{_namelist},$old_e,$-[0]+$offset_b);
 			$old_e=$+[0]+$offset_b;
 		}
-		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /\s*$/) {
+		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /\s+$/) {
 			$offset_e -= $+[0] - $-[0];
 		}
 		push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{_namelist},$old_e,$offset_e);
