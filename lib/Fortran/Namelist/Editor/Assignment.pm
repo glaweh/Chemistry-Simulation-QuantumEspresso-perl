@@ -41,24 +41,17 @@ sub parse_value {
 		\s             # a space, to be substituted by a comma
 		(\s*[^\s,])    # first char of the next group of non-comma, non-space chars
 		}{$1,$2}gsx;
-	if ($data_v =~ m{\(}) {
-		# complex
-		die "unimplemented: complex vars";
-	} else {
-		# re-implement split :(
-		# assumption: whitespace at beginning and end already stripped
-		my $old_e=$offset_b;
-		while ($data_v=~m{\s*,\s*}gsx) {
-			push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{_namelist},$old_e,$-[0]+$offset_b);
-			$old_e=$+[0]+$offset_b;
+	die "unimplemented: complex vars" if ($data_v =~ m{\(});
+	while ($data_v =~ m{(?:
+				([^\s,]+)\s*,?   # value, followed by optional space and comma
+			|
+				(\s*),           # empty value between two commas
+			)}gx) {
+		my $val;
+		if ($1) {
+			$val=Fortran::Namelist::Editor::Value::subclass($self->{_namelist},$-[1]+$offset_b,$+[1]+$offset_b);
 		}
-		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /\s+$/) {
-			$offset_e -= $+[0] - $-[0];
-		}
-		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /^\s+/) {
-			$old_e += $+[0] - $-[0];
-		}
-		push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{_namelist},$old_e,$offset_e);
+		push @{$self->{value}},$val;
 	}
 	return(1);
 }
