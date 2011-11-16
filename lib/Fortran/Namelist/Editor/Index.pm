@@ -68,6 +68,13 @@ sub is_equal {
 	return(1);
 }
 
+sub insert {
+	my ($class,$namelist,$o_b,$separator,@index) = @_;
+	return(undef) if ($#index < 0);
+	my $i = Fortran::Namelist::Span->insert($namelist,$o_b,index2fortranstring(@index));
+	return($class->new($namelist,$i->{o_b},$i->{o_e}));
+}
+
 sub index2fortranstring {
 	my @index = @_;
 	if ($#index >=0) {
