@@ -9,8 +9,8 @@ sub new {
 	return($self->init(@_));
 }
 sub init {
-	my ($self,$container,$o_b,$o_e) = @_;
-	$self->{_namelist} = $container;
+	my ($self,$namelist,$o_b,$o_e) = @_;
+	$self->{_namelist} = $namelist;
 	$self->{o_b}       = $o_b;
 	$self->{o_e}       = $o_e;
 	$self->{_adjusted} = 0;
@@ -43,15 +43,15 @@ sub get {
 	return($self->_get_raw(@_));
 }
 sub insert {
-	my ($class,$container,$offset,$value,$separator)=@_;
+	my ($class,$namelist,$offset,$value,$separator)=@_;
 	$separator=' ' unless (defined $separator);
 	my $sep_length=length($separator);
 	if ($sep_length) {
-		substr($container->{data},$offset,0)    = $separator;
-		substr($container->{data_cs},$offset,0) = $separator;
-		$container->adjust_offsets($offset,$sep_length);
+		substr($namelist->{data},$offset,0)    = $separator;
+		substr($namelist->{data_cs},$offset,0) = $separator;
+		$namelist->adjust_offsets($offset,$sep_length);
 	}
-	my $self=$class->new($container,$offset+$sep_length,$offset+$sep_length);
+	my $self=$class->new($namelist,$offset+$sep_length,$offset+$sep_length);
 	$self->set($value);
 	return($self);
 }
@@ -89,8 +89,8 @@ use strict;
 use warnings;
 @Fortran::Namelist::Editor::ContainerSpan::ISA=qw{Fortran::Namelist::Editor::Span};
 sub init {
-	my ($self,$container,$o_b,$o_e) = @_;
-	$self->SUPER::init($container,$o_b,$o_e);
+	my ($self,$namelist,$o_b,$o_e) = @_;
+	$self->SUPER::init($namelist,$o_b,$o_e);
 	@{$self->{_get_ignore_patterns}} = (
 		qr/^o_.*[eb]$/,
 		qr/^_namelist$/,

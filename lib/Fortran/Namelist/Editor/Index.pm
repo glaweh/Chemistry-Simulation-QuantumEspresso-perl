@@ -7,8 +7,8 @@ use Fortran::Namelist::Editor::Value;
 our $BASE=1;
 
 sub init {
-	my ($self,$container,$o_b,$o_e)=@_;
-	$self->SUPER::init($container,$o_b,$o_e);
+	my ($self,$namelist,$o_b,$o_e)=@_;
+	$self->SUPER::init($namelist,$o_b,$o_e);
 	$self->{element}=[];
 	return(undef) unless ($self->length > 0);
 	return($self->parse);

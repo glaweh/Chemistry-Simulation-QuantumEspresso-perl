@@ -6,10 +6,10 @@ use Fortran::Namelist::Editor::Index;
 use Fortran::Namelist::Editor::Value;
 @Fortran::Namelist::Editor::Assignment::ISA = qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
-	my ($self,$container,$o_b,$o_e,$o_name_b,$o_name_e,$o_index_b,$o_index_e,$o_value_b,$o_value_e)=@_;
-	$self->SUPER::init($container,$o_b,$o_e);
-	$self->{name}  = Fortran::Namelist::Editor::Token->new($container,$o_name_b,$o_name_e);
-	$self->{index} = Fortran::Namelist::Editor::Index->new($container,$o_index_b,$o_index_e);
+	my ($self,$namelist,$o_b,$o_e,$o_name_b,$o_name_e,$o_index_b,$o_index_e,$o_value_b,$o_value_e)=@_;
+	$self->SUPER::init($namelist,$o_b,$o_e);
+	$self->{name}  = Fortran::Namelist::Editor::Token->new($namelist,$o_name_b,$o_name_e);
+	$self->{index} = Fortran::Namelist::Editor::Index->new($namelist,$o_index_b,$o_index_e);
 	$self->{value} = [];
 	$self->parse_value($o_value_b,$o_value_e);
 	return($self);
@@ -66,8 +66,8 @@ use warnings;
 use Scalar::Util qw(blessed);
 @Fortran::Namelist::Editor::Variable::ISA = qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
-	my ($self,$container)=@_;
-	$self->SUPER::init($container);
+	my ($self,$namelist)=@_;
+	$self->SUPER::init($namelist);
 	$self->{name}      = undef;
 	$self->{instances} = [ ];
 	$self->{value}     = undef;

@@ -4,8 +4,8 @@ use warnings;
 use Fortran::Namelist::Editor::Span;
 @Fortran::Namelist::Editor::Value::ISA=qw{Fortran::Namelist::Editor::Span};
 sub init {
-	my ($self,$container,$o_b,$o_e) = @_;
-	$self->SUPER::init($container,$o_b,$o_e);
+	my ($self,$namelist,$o_b,$o_e) = @_;
+	$self->SUPER::init($namelist,$o_b,$o_e);
 	if ($o_e-$o_b>0) {
 		# try to parse the string
 		return(undef) unless (defined $self->get);
@@ -13,19 +13,19 @@ sub init {
 	return($self);
 }
 sub subclass {
-	my ($container,$o_b,$o_e) = @_;
-	my @opts=($container,$o_b,$o_e);
+	my ($namelist,$o_b,$o_e) = @_;
+	my @opts=($namelist,$o_b,$o_e);
 	# type detection by try-and-error
 	my $obj;
-	$obj=Fortran::Namelist::Editor::Value::string->new($container,$o_b,$o_e);
+	$obj=Fortran::Namelist::Editor::Value::string->new($namelist,$o_b,$o_e);
 	return($obj) if (defined $obj);
-	$obj=Fortran::Namelist::Editor::Value::integer->new($container,$o_b,$o_e);
+	$obj=Fortran::Namelist::Editor::Value::integer->new($namelist,$o_b,$o_e);
 	return($obj) if (defined $obj);
-	$obj=Fortran::Namelist::Editor::Value::double->new($container,$o_b,$o_e);
+	$obj=Fortran::Namelist::Editor::Value::double->new($namelist,$o_b,$o_e);
 	return($obj) if (defined $obj);
-	$obj=Fortran::Namelist::Editor::Value::single->new($container,$o_b,$o_e);
+	$obj=Fortran::Namelist::Editor::Value::single->new($namelist,$o_b,$o_e);
 	return($obj) if (defined $obj);
-	$obj=Fortran::Namelist::Editor::Value::logical->new($container,$o_b,$o_e);
+	$obj=Fortran::Namelist::Editor::Value::logical->new($namelist,$o_b,$o_e);
 	return($obj) if (defined $obj);
 	return(undef);
 }

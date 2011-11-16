@@ -68,8 +68,8 @@ use strict;
 use warnings;
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
-	my ($self,$container,$lines,$lines_cs,$o_lines,$i)=@_;
-	$self->SUPER::init($container,$o_lines->[$i]);
+	my ($self,$namelist,$lines,$lines_cs,$o_lines,$i)=@_;
+	$self->SUPER::init($namelist,$o_lines->[$i]);
 	$self->{name}      = undef;
 	push @{$self->{_get_ignore_patterns}},qr/^name$/;
 	return($i,$self);
@@ -96,8 +96,8 @@ use strict;
 use warnings;
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
-	my ($self,$container,@args)=@_;
-	$self->SUPER::init($container,@args);
+	my ($self,$namelist,@args)=@_;
+	$self->SUPER::init($namelist,@args);
 	$self->{name}='atomic_species';
 	$self->{species}  = {};
 	$self->{_species} = [];
@@ -152,8 +152,8 @@ use strict;
 use warnings;
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
-	my ($self,$container,@args)=@_;
-	$self->SUPER::init($container,@args);
+	my ($self,$namelist,@args)=@_;
+	$self->SUPER::init($namelist,@args);
 	$self->{name}  ='atomic_positions';
 	$self->{units} = undef;
 	$self->{atom}  = {};
@@ -287,8 +287,8 @@ use strict;
 use warnings;
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::cell_parameters::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
-	my ($self,$container,@args)=@_;
-	$self->SUPER::init($container,@args);
+	my ($self,$namelist,@args)=@_;
+	$self->SUPER::init($namelist,@args);
 	$self->{name}     ='cell_parameters';
 	$self->{symmetry} = undef;
 	$self->{v}     = [];
