@@ -79,6 +79,27 @@ sub parse_value {
 	}
 	return(1);
 }
+sub insert {
+	my ($class,$namelist,$o_b,$separator,$name,$value,@index) = @_;
+	my $type = 'Fortran::Namelist::Editor::Value::Auto';
+	if (defined $index[-1] and $index[-1] !~ /^\d+$/) {
+		my $t = pop @index;
+		if ($t =~ /:/) {
+			$type=$t;
+		} else {
+			$type="Fortran::Namelist::Editor::Value::$t";
+		}
+	}
+	my $o_e=$o_b;
+	my $name_o  = Fortran::Namelist::Editor::Token->insert($namelist,$o_b,$separator,$name);
+	$o_b        = $name_o->{o_b};
+	my $o_e     = $name_o->{o_e};
+	my $index_o = Fortran::Namelist::Editor::Index->insert($namelist,$o_e,'',@index);
+	$o_e        = $index_o->{o_e} if (defined $index_o);
+	my $val_o   = $type->insert($namelist,$o_e,' = ',$value);
+	$o_e        = $val_o->{o_e};
+	return($class->new($namelist,$o_b,$o_e,$name_o,$index_o,[ $val_o ]));
+}
 
 package Fortran::Namelist::Editor::Variable;
 use strict;
