@@ -162,10 +162,13 @@ sub find_vars {
 		if ($#offsets>=0) {
 			$offsets[-1]->[1]=$offsets[-1]->[7]=$-[0]+$offset_b;
 		}
-		push @offsets,[$-[0]+$offset_b,undef,
+		push @offsets,[$-[1]+$offset_b,undef,
 			$-[1]+$offset_b,$+[1]+$offset_b,
 			$-[2]+$offset_b,$+[2]+$offset_b,
 			$+[0]+$offset_b,undef];
+	}
+	if ($data_n =~ /\s+$/gs) {
+		$offset_e-=$+[0]-$-[0];
 	}
 	$offsets[-1]->[1]=$offsets[-1]->[7]=$offset_e if ($#offsets>=0);
 	for (my $i=0; $i<=$#offsets; $i++) {
