@@ -29,6 +29,8 @@ sub delete {
 	my $self=shift;
 	my $offset_b=$self->{o_b};
 	my $offset_e=$self->{o_e};
+	my $debug_extend = 0;
+	warn "to_del: '" . substr($self->{_namelist}->{data},$offset_b,$offset_e-$offset_b) . "'" if ($debug_extend);
 	my $replacement='';
 	# extend area to whitespace up to preceeding newline
 	my $chopped_newline=0;
@@ -36,10 +38,12 @@ sub delete {
 	if ($self->{_namelist}->{data_cs} =~ /([\n,])[ \t]*\G/gs) {
 		$chopped_newline = $1 ne ',';
 		$offset_b=$-[1];
+		warn "ext1: '" . substr($self->{_namelist}->{data},$offset_b,$offset_e-$offset_b) . "'" if ($debug_extend);
 	}
 	pos($self->{_namelist}->{data_cs})=$offset_e;
 	if ($self->{_namelist}->{data_cs} =~ /\G([ \t]+)/gs) {
 		$offset_e=$+[1];
+		warn "ext2: '" . substr($self->{_namelist}->{data},$offset_b,$offset_e-$offset_b) . "'" if ($debug_extend);
 	}
 	pos($self->{_namelist}->{data_cs})=$offset_e;
 	if ($self->{_namelist}->{data_cs} !~ /\G\n/gs) {
