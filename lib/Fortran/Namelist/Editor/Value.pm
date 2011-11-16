@@ -149,9 +149,9 @@ sub new {
 	return($class->new($namelist,$o_b,$o_e));
 }
 sub insert {
-	my ($class,$namelist,$o_b,$value) = @_;
+	my ($class,$namelist,$o_b,$separator,$value) = @_;
 	$class=detect_perl($value);
-	return($class->insert($namelist,$o_b,$value));
+	return($class->insert($namelist,$o_b,$separator,$value));
 }
 sub detect_data {
 	my $val = shift;

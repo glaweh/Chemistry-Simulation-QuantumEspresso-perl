@@ -293,17 +293,6 @@ sub _add_new_setting {
 	if ($#index>=0) {
 		# stringify index
 		$index_str = Fortran::Namelist::Editor::Index::index2fortranstring(@index);
-		# in case of a pre-existing array, find insertion point
-		if (exists $group_ref->{vars}->{$var}) {
-			# simple solution: put after the last occurrance
-			my $last_e=$group_ref->{vars}->{$var}->{instances}->[-1]->{value}->[-1]->{o_e};
-			# find newline
-			pos($self->{data_cs})=$last_e;
-			while ($self->{data_cs} =~ m{\n}gs) {
-				$offset_b=$-[0] if ($+[0] < $offset_b);
-				last;
-			}
-		}
 	}
 	# compute insertion into data_cs
 	my $value_cs  = ($value =~ /^["']/ ? '_' x length($value) : $value);
