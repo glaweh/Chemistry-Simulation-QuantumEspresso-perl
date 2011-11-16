@@ -27,15 +27,24 @@ sub delete {
 	my $self=shift;
 	my $offset_b=$self->{o_b};
 	my $offset_e=$self->{o_e};
-	my $length=$offset_e-$offset_b;
 	my $replacement='';
-	# check if there is data in the same line
+	# extend area to whitespace up to preceeding newline
+	my $chopped_newline=0;
+	pos($self->{_namelist}->{data_cs})=$offset_b;
+	if ($self->{_namelist}->{data_cs} =~ /([\n,])[ \t]*\G/gs) {
+		$chopped_newline = $1 ne ',';
+		$offset_b=$-[1];
+	}
 	pos($self->{_namelist}->{data_cs})=$offset_e;
-	if ($self->{_namelist}->{data_cs} =~ /\G(,[ \t]*)([^\n]*)\n/gs) {
-		$length+=$+[1]-$-[1];
-		$replacement="\n$self->{_namelist}->{indent}";
+	if ($self->{_namelist}->{data_cs} =~ /\G([ \t]+)/gs) {
+		$offset_e=$+[1];
+	}
+	pos($self->{_namelist}->{data_cs})=$offset_e;
+	if ($self->{_namelist}->{data_cs} !~ /\G\n/gs) {
+		$replacement="\n$self->{_namelist}->{indent}" if ($chopped_newline);
 	}
 	# remove the string from data/data_cs
+	my $length = $offset_e-$offset_b;
 	substr($self->{_namelist}->{data},$offset_b,$length)=$replacement;
 	substr($self->{_namelist}->{data_cs},$offset_b,$length)=$replacement;
 	$self->{_namelist}->adjust_offsets($offset_b+1,length($replacement)-$length);
