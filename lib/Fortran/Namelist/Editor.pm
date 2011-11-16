@@ -316,11 +316,12 @@ sub _add_new_setting {
 	$self->adjust_offsets($offset_b+1,length($insert));
 
 	# create data structures
-	my $name_end  = length($self->{indent})+1+length($var)+$offset_b;
+	my $name_b    = length($self->{indent})+1+$offset_b;
+	my $name_end  = $name_b+length($var);
 	my $index_end = $name_end+length($index_str);
 	my $v = Fortran::Namelist::Editor::Assignment->new($self,
-		$offset_b,$offset_b+length($insert),
-		length($self->{indent})+$offset_b+1,$name_end,
+		$name_b,$index_end+3+length($value),
+		$name_b,$name_end,
 		$name_end,$index_end,
 		$index_end+3,$index_end+3+length($value));
 	my $index_perl = (defined $v->{index} ? $v->{index}->get : '');
