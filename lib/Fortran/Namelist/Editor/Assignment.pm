@@ -6,12 +6,21 @@ use Fortran::Namelist::Editor::Index;
 use Fortran::Namelist::Editor::Value;
 @Fortran::Namelist::Editor::Assignment::ISA = qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
-	my ($self,$namelist,$o_b,$o_e,$o_name_b,$o_name_e,$o_index_b,$o_index_e,$o_value_b,$o_value_e)=@_;
+	my ($self,$namelist,$o_b,$o_e,@options)=@_;
 	$self->SUPER::init($namelist,$o_b,$o_e);
-	$self->{name}  = Fortran::Namelist::Editor::Token->new($namelist,$o_name_b,$o_name_e);
-	$self->{index} = Fortran::Namelist::Editor::Index->new($namelist,$o_index_b,$o_index_e);
-	$self->{value} = [];
-	$self->parse_value($o_value_b,$o_value_e);
+	if ($#options == 5) {
+		my ($o_name_b,$o_name_e,$o_index_b,$o_index_e,$o_value_b,$o_value_e)=@options;
+		$self->{name}  = Fortran::Namelist::Editor::Token->new($namelist,$o_name_b,$o_name_e);
+		$self->{index} = Fortran::Namelist::Editor::Index->new($namelist,$o_index_b,$o_index_e);
+		$self->{value} = [];
+		$self->parse_value($o_value_b,$o_value_e);
+	} elsif ($#options == 2) {
+		$self->{'name','index','value'}=@options;
+	} else {
+		$self->{name}  = undef;
+		$self->{index} = undef;
+		$self->{value} = undef;
+	}
 	return($self);
 }
 sub delete {
