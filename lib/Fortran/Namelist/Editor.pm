@@ -175,7 +175,7 @@ sub find_vars {
 		my @offset=@{$offsets[$i]};
 		my $assignment=Fortran::Namelist::Editor::Assignment->new($self,@offset);
 		my $name = $assignment->{name}->get;
-		$group_ref->{vars}->{$name}=Fortran::Namelist::Editor::Variable->new() unless exists ($group_ref->{vars}->{$name});
+		$group_ref->{vars}->{$name}=Fortran::Namelist::Editor::Variable->new($self) unless exists ($group_ref->{vars}->{$name});
 		$group_ref->{vars}->{$name}->add_instance($assignment);
 	}
 	return(1);
@@ -329,13 +329,13 @@ sub _add_new_setting {
 	# setup description
 	if ($#index < 0) {
 		# no array
-		$desc = Fortran::Namelist::Editor::Variable->new($self->{_namelist});
+		$desc = Fortran::Namelist::Editor::Variable->new($self);
 		$group_ref->{vars}->{$var}=$desc;
 	} else {
 		$desc=$group_ref->{vars}->{$var};
 		unless (defined $desc) {
 			# new array
-			$desc = Fortran::Namelist::Editor::Array->new($self->{_namelist});
+			$desc = Fortran::Namelist::Editor::Array->new($self);
 			$group_ref->{vars}->{$var}=$desc;
 		}
 	}
