@@ -320,13 +320,13 @@ sub _add_new_setting {
 	# setup description
 	if ($#index < 0) {
 		# no array
-		$desc = Fortran::Namelist::Editor::Variable->new($self->{container});
+		$desc = Fortran::Namelist::Editor::Variable->new($self->{_namelist});
 		$group_ref->{vars}->{$var}=$desc;
 	} else {
 		$desc=$group_ref->{vars}->{$var};
 		unless (defined $desc) {
 			# new array
-			$desc = Fortran::Namelist::Editor::Array->new($self->{container});
+			$desc = Fortran::Namelist::Editor::Array->new($self->{_namelist});
 			$group_ref->{vars}->{$var}=$desc;
 		}
 	}

@@ -10,7 +10,7 @@ sub new {
 }
 sub init {
 	my ($self,$container,$o_b,$o_e) = @_;
-	$self->{container} = $container;
+	$self->{_namelist} = $container;
 	$self->{o_b}       = $o_b;
 	$self->{o_e}       = $o_e;
 	$self->{_adjusted} = 0;
@@ -26,17 +26,17 @@ sub set {
 	$new_value_cs = $new_value unless (defined $new_value_cs);
 	my $old_length = $self->{o_e}-$self->{o_b};
 	my $new_length = length($new_value);
-	substr($self->{container}->{data},$self->{o_b},$old_length)    = $new_value;
-	substr($self->{container}->{data_cs},$self->{o_b},$old_length) = $new_value_cs;
+	substr($self->{_namelist}->{data},$self->{o_b},$old_length)    = $new_value;
+	substr($self->{_namelist}->{data_cs},$self->{o_b},$old_length) = $new_value_cs;
 	if ($new_length != $old_length) {
-		my $adjust_id = $self->{container}->adjust_offsets($self->{o_b}+1,$new_length-$old_length);
+		my $adjust_id = $self->{_namelist}->adjust_offsets($self->{o_b}+1,$new_length-$old_length);
 		$self->{o_e}+=$new_length-$old_length unless ($self->{_adjusted} == $adjust_id);
 	}
 	return(1);
 }
 sub _get_raw {
 	my ($self) = @_;
-	return(substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}));
+	return(substr($self->{_namelist}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}));
 }
 sub get {
 	my $self=shift;
@@ -57,10 +57,10 @@ sub insert {
 }
 sub delete {
 	my ($self)=@_;
-	substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}) = '';
-	substr($self->{container}->{data_cs},$self->{o_b},$self->{o_e}-$self->{o_b}) = '';
-#	$self->{container}->remove_refs_between($self->{o_b},$self->{o_e});
-	$self->{container}->adjust_offsets($self->{o_b},$self->{o_b}-$self->{o_e});
+	substr($self->{_namelist}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}) = '';
+	substr($self->{_namelist}->{data_cs},$self->{o_b},$self->{o_e}-$self->{o_b}) = '';
+#	$self->{_namelist}->remove_refs_between($self->{o_b},$self->{o_e});
+	$self->{_namelist}->adjust_offsets($self->{o_b},$self->{o_b}-$self->{o_e});
 	return($self);
 }
 sub _adjust_offsets {
@@ -80,7 +80,7 @@ sub length {
 sub dump {
 	my $self=shift;
 	my $dd=Data::Dumper->new([ $self ]);
-	$dd->Sortkeys(sub { my $ref=shift; return([ sort grep { $_ ne 'container' } keys %{$ref} ]) });
+	$dd->Sortkeys(sub { my $ref=shift; return([ sort grep { $_ ne '_namelist' } keys %{$ref} ]) });
 	return($dd->Dump());
 }
 
@@ -93,7 +93,7 @@ sub init {
 	$self->SUPER::init($container,$o_b,$o_e);
 	@{$self->{_get_ignore_patterns}} = (
 		qr/^o_.*[eb]$/,
-		qr/^container$/,
+		qr/^_namelist$/,
 		qr/^_get_ignore_patterns$/,
 	);
 	return($self);
@@ -130,7 +130,7 @@ use warnings;
 @Fortran::Namelist::Editor::Token::ISA=qw{Fortran::Namelist::Editor::Span};
 sub get {
 	my $self=shift;
-	return(lc(substr($self->{container}->{data},$self->{o_b},$self->{o_e}-$self->{o_b})));
+	return(lc(substr($self->{_namelist}->{data},$self->{o_b},$self->{o_e}-$self->{o_b})));
 }
 
 package Fortran::Namelist::Editor::CaseSensitiveToken;

@@ -43,7 +43,7 @@ sub parse {
 		die "Don't know how to parse '$data'";
 	}
 	while ($data=~m{(\d+)}gxs) {
-		push @{$self->{element}},Fortran::Namelist::Editor::Value::integer->new($self->{container},$-[1]+$self->{o_b},$+[1]+$self->{o_b});
+		push @{$self->{element}},Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$-[1]+$self->{o_b},$+[1]+$self->{o_b});
 	}
 	return($self);
 }

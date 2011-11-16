@@ -21,19 +21,19 @@ sub delete {
 	my $length=$offset_e-$offset_b;
 	my $replacement='';
 	# check if there is data in the same line
-	pos($self->{container}->{data_cs})=$offset_e;
-	if ($self->{container}->{data_cs} =~ /\G(,[ \t]*)([^\n]*)\n/gs) {
+	pos($self->{_namelist}->{data_cs})=$offset_e;
+	if ($self->{_namelist}->{data_cs} =~ /\G(,[ \t]*)([^\n]*)\n/gs) {
 		$length+=$+[1]-$-[1];
-		$replacement="\n$self->{container}->{indent}";
+		$replacement="\n$self->{_namelist}->{indent}";
 	}
 	# remove the string from data/data_cs
-	substr($self->{container}->{data},$offset_b,$length)=$replacement;
-	substr($self->{container}->{data_cs},$offset_b,$length)=$replacement;
-	$self->{container}->adjust_offsets($offset_b,length($replacement)-$length);
+	substr($self->{_namelist}->{data},$offset_b,$length)=$replacement;
+	substr($self->{_namelist}->{data_cs},$offset_b,$length)=$replacement;
+	$self->{_namelist}->adjust_offsets($offset_b,length($replacement)-$length);
 }
 sub parse_value {
 	my ($self,$offset_b,$offset_e)=@_;
-	my $data_v      = substr($self->{container}->{data_cs},$offset_b,$offset_e-$offset_b);
+	my $data_v      = substr($self->{_namelist}->{data_cs},$offset_b,$offset_e-$offset_b);
 	# insert a comma into each group of spaces unless there is already one
 	# commas are optional in namelists, this will make it easier to parse
 	$data_v =~ s{
@@ -49,13 +49,13 @@ sub parse_value {
 		# assumption: whitespace at beginning and end already stripped
 		my $old_e=$offset_b;
 		while ($data_v=~m{\s*,\s*}gsx) {
-			push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{container},$old_e,$-[0]+$offset_b);
+			push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{_namelist},$old_e,$-[0]+$offset_b);
 			$old_e=$+[0]+$offset_b;
 		}
 		if (substr($data_v,$old_e-$offset_b,$offset_e-$old_e) =~ /\s*$/) {
 			$offset_e -= $+[0] - $-[0];
 		}
-		push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{container},$old_e,$offset_e);
+		push @{$self->{value}},Fortran::Namelist::Editor::Value::subclass($self->{_namelist},$old_e,$offset_e);
 	}
 	return(1);
 }
