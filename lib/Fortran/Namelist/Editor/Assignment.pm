@@ -57,8 +57,8 @@ sub parse_value {
 				(\s*),           # empty value between two commas
 			)}gx) {
 		my $val;
-		if ($1) {
-			$val=Fortran::Namelist::Editor::Value::subclass($self->{_namelist},$-[1]+$offset_b,$+[1]+$offset_b);
+		if (defined($1)) {
+			$val=Fortran::Namelist::Editor::Value::Auto->new($self->{_namelist},$-[1]+$offset_b,$+[1]+$offset_b);
 		}
 		push @{$self->{value}},$val;
 	}
