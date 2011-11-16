@@ -275,8 +275,23 @@ sub set {
 		return(2) unless ((defined $where) and (ref $where eq 'ARRAY'));
 		$where=$where->[$_];
 	}
-	return(2) unless (blessed($where) and $where->can('get'));
-	return($where->set($value));
+	if (blessed($where) and $where->can('get')) {
+		return($where->set($value));
+	} else {
+		# insert new statement after the last
+		my $o_insert=$self->{instances}->[-1]->{o_e};
+		warn "o_insert: $o_insert";
+		warn 'self: ' . $self->{_namelist};
+		pos($self->{_namelist}->{data_cs}) = $o_insert;
+		if ($self->{_namelist}->{data_cs} =~ /\G([^\n]+)/s) {
+			$o_insert=$+[1];
+		}
+		my $a = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_insert,
+			"\n$self->{_namelist}->{indent}",$self->{name}->get,
+			$value,@index,blessed($self->{instances}->[0]->{value}->[0]));
+		$self->add_instance($a);
+	}
+	return(1);
 }
 sub delete {
 	# return value: 1 if there is no element left
