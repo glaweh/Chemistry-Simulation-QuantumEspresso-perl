@@ -29,7 +29,7 @@ sub delete {
 	# remove the string from data/data_cs
 	substr($self->{_namelist}->{data},$offset_b,$length)=$replacement;
 	substr($self->{_namelist}->{data_cs},$offset_b,$length)=$replacement;
-	$self->{_namelist}->adjust_offsets($offset_b,length($replacement)-$length);
+	$self->{_namelist}->adjust_offsets($offset_b+1,length($replacement)-$length);
 }
 sub parse_value {
 	my ($self,$offset_b,$offset_e)=@_;
