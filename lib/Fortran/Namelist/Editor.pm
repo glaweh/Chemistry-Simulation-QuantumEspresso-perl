@@ -8,6 +8,7 @@ use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Value;
 use Fortran::Namelist::Editor::Index;
 use Fortran::Namelist::Editor::Assignment;
+use Fortran::Namelist::Editor::Group;
 @Fortran::Namelist::Editor::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
 
 sub init {
@@ -134,14 +135,9 @@ sub find_comments_and_strings {
 sub find_groups {
 	my $self=shift;
 	my (undef,$data_cs) = $self->get_data;
-	while ($data_cs =~ m{(?:^|\n)[ \t]*&(\S+)([^/]*)(/)}gs) {
-		push @{$self->{_groups}},{
-			name      => Fortran::Namelist::Editor::Token->new($self,$-[1],$+[1]),
-			o_b       => $-[0],  # group begins with &
-			o_e       => $+[3],    # end of NL group is /
-			vars      => {},
-		};
-		$self->find_vars($self->{_groups}->[-1],$-[2],$+[2]);
+	while ($data_cs =~ m{(?:^|\n)[ \t]*&(\S+)[^/]*/}gs) {
+		push @{$self->{_groups}},
+			Fortran::Namelist::Editor::Group->new($self,$-[1]-1,$+[0],$-[1],$+[1]);
 	}
 	foreach my $g (@{$self->{_groups}}) {
 		my $name=$g->{name}->get;
@@ -193,38 +189,6 @@ sub parse_groupless {
 	return(1);
 }
 
-sub find_vars {
-	my ($self,$group_ref,$offset_b,$offset_e)=@_;
-	my (undef,$data_n) = $self->get_data($offset_b,$offset_e);
-	my @offsets;
-	# scan data_n for variables: name, optionally index, followed by '='
-	while ($data_n=~m{,?\s+         ## variable assignments are separated by whitespace, optionally with a preceeding comma
-			([a-zA-Z][^\(\s]+)      ## a fortran identifier starts with a letter
-			\s*((?:\([^\)]*\)\s*?)*)## there may be more than one index statement attached to each variable
-			\s*=\s*                 ## = separates variable and value, maybe enclosed by whitespace
-		}gsx) {
-		if ($#offsets>=0) {
-			$offsets[-1]->[1]=$offsets[-1]->[7]=$-[0]+$offset_b;
-		}
-		push @offsets,[$-[1]+$offset_b,undef,
-			$-[1]+$offset_b,$+[1]+$offset_b,
-			$-[2]+$offset_b,$+[2]+$offset_b,
-			$+[0]+$offset_b,undef];
-	}
-	if ($data_n =~ /\s+$/gs) {
-		$offset_e-=$+[0]-$-[0];
-	}
-	$offsets[-1]->[1]=$offsets[-1]->[7]=$offset_e if ($#offsets>=0);
-	for (my $i=0; $i<=$#offsets; $i++) {
-		my @offset=@{$offsets[$i]};
-		my $assignment=Fortran::Namelist::Editor::Assignment->new($self,@offset);
-		my $name = $assignment->{name}->get;
-		$group_ref->{vars}->{$name}=Fortran::Namelist::Editor::Variable->new($self) unless exists ($group_ref->{vars}->{$name});
-		$group_ref->{vars}->{$name}->add_instance($assignment);
-	}
-	return(1);
-}
-
 sub as_hash {
 	my $self=shift;
 	my %h;
@@ -242,9 +206,9 @@ sub as_hash {
 }
 
 sub get {
-	my ($self,$group,$variable,$index)=@_;
-	return(undef) unless ((exists $self->{groups}->{$group}) and (exists $self->{groups}->{$group}->{vars}->{$variable}));
-	return($self->{groups}->{$group}->{vars}->{$variable}->get($index));
+	my ($self,$group,@options)=@_;
+	return(undef) unless (exists $self->{groups}->{$group});
+	return($self->{groups}->{$group}->get(@options));
 }
 
 sub save {
