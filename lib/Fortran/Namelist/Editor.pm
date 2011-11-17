@@ -89,7 +89,7 @@ sub set_data {
 		return(0,0) if (wantarray);
 		return(0);
 	}
-	my $adjust_id=$self->_adjust_offsets($o_b+1,$delta);
+	my $adjust_id=$self->_adjust_offsets($o_b,$delta);
 	return($delta,$adjust_id) if (wantarray);
 	return($delta);
 }
