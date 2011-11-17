@@ -29,25 +29,19 @@ sub delete {
 	my $self=shift;
 	my $offset_b=$self->{o_b};
 	my $offset_e=$self->{o_e};
-	my $debug_extend = 0;
-	warn "to_del: '" . $self->{_namelist}->get_data($self) . "'" if ($debug_extend);
 	my $replacement='';
 	# extend area to whitespace up to preceeding newline
-	my $chopped_newline=0;
-	pos($self->{_namelist}->{data_cs})=$offset_b;
-	if ($self->{_namelist}->{data_cs} =~ /([\n,])[ \t]*\G/gs) {
-		$chopped_newline = $1 ne ',';
-		$offset_b=$-[1];
-		warn "ext1: '" . $self->{_namelist}->get_data($offset_b,$offset_e) . "'" if ($debug_extend);
-	}
-	pos($self->{_namelist}->{data_cs})=$offset_e;
-	if ($self->{_namelist}->{data_cs} =~ /\G([ \t]+)/gs) {
-		$offset_e=$+[1];
-		warn "ext2: '" . $self->{_namelist}->get_data($offset_b,$offset_e) . "'" if ($debug_extend);
-	}
-	pos($self->{_namelist}->{data_cs})=$offset_e;
-	if ($self->{_namelist}->{data_cs} !~ /\G\n/gs) {
-		$replacement="\n$self->{_namelist}->{indent}" if ($chopped_newline);
+	$offset_b=$self->{_namelist}->refine_offset_back($offset_b,qr{([\n,])[ \t]*}s);
+	$offset_e=$self->{_namelist}->refine_offset_forward($offset_e,qr{([ \t]*,)}s);
+	my $chopped_comma_after= ($offset_e != $self->{o_e});
+	$offset_e=$self->{_namelist}->refine_offset_forward($offset_e,qr{([ \t]*)}s);
+	my $data=$self->{_namelist}->get_data($offset_b,$offset_e+1);
+	if ($data !~ /\n$/) {
+		if ($data =~ /^\n/) {
+			$replacement="\n$self->{_namelist}->{indent}";
+		} elsif (($data =~ /^,/) and ($chopped_comma_after)) {
+			$replacement=", ";
+		}
 	}
 	# remove the string from data/data_cs
 	$self->{_namelist}->set_data($offset_b,$offset_e,$replacement);
