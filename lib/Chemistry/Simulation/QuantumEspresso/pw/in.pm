@@ -20,11 +20,15 @@ sub parse_cards {
 	return(2) unless ($#{$self->{_groupless}} >= 0);
 	my $o_cards=$self->{_groupless}->[0]->{o_b};
 	# cards can be worked on line-by-line
-	my @lines_cs = map { "$_\n" } split('\n',substr($self->{data},$o_cards,$self->{_groupless}->[0]->{o_e}-$o_cards));
-	my $offset_c = $o_cards;
-	my @o_lines  = map { my $o_line_b = $offset_c; $offset_c+=length($_); $o_line_b } @lines_cs;
-	push @o_lines,$self->{_groupless}->[0]->{o_e};
-	my @lines    = map { substr($self->{data},$o_lines[$_],$o_lines[$_+1]-$o_lines[$_]) } 0 .. $#lines_cs;
+	my ($data,$data_cs) = $self->get_data($self->{_groupless}->[0]);
+	my @lines_cs = map { "$_\n" } split('\n',$data_cs);
+	my @lines;
+	my @o_lines  = (0);
+	foreach my $line_cs (@lines_cs) {
+		push @lines,substr($data,$o_lines[-1],length($line_cs));
+		push @o_lines,$o_lines[-1]+length($line_cs);
+	}
+	map { $_+=$o_cards } @o_lines;
 	my $i=0;
 	my $card;
 	while ($i<=$#lines) {

@@ -36,7 +36,7 @@ sub set {
 }
 sub _get_raw {
 	my ($self) = @_;
-	return(substr($self->{_namelist}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}));
+	return($self->{_namelist}->get_data($self));
 }
 sub get {
 	my $self=shift;
@@ -129,7 +129,7 @@ use warnings;
 @Fortran::Namelist::Editor::Token::ISA=qw{Fortran::Namelist::Editor::Span};
 sub get {
 	my $self=shift;
-	return(lc(substr($self->{_namelist}->{data},$self->{o_b},$self->{o_e}-$self->{o_b})));
+	return(lc($self->SUPER::get()));
 }
 
 package Fortran::Namelist::Editor::CaseSensitiveToken;

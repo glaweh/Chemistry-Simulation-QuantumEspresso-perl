@@ -30,7 +30,7 @@ sub delete {
 	my $offset_b=$self->{o_b};
 	my $offset_e=$self->{o_e};
 	my $debug_extend = 0;
-	warn "to_del: '" . substr($self->{_namelist}->{data},$offset_b,$offset_e-$offset_b) . "'" if ($debug_extend);
+	warn "to_del: '" . $self->{_namelist}->get_data($self) . "'" if ($debug_extend);
 	my $replacement='';
 	# extend area to whitespace up to preceeding newline
 	my $chopped_newline=0;
@@ -38,12 +38,12 @@ sub delete {
 	if ($self->{_namelist}->{data_cs} =~ /([\n,])[ \t]*\G/gs) {
 		$chopped_newline = $1 ne ',';
 		$offset_b=$-[1];
-		warn "ext1: '" . substr($self->{_namelist}->{data},$offset_b,$offset_e-$offset_b) . "'" if ($debug_extend);
+		warn "ext1: '" . $self->{_namelist}->get_data($offset_b,$offset_e) . "'" if ($debug_extend);
 	}
 	pos($self->{_namelist}->{data_cs})=$offset_e;
 	if ($self->{_namelist}->{data_cs} =~ /\G([ \t]+)/gs) {
 		$offset_e=$+[1];
-		warn "ext2: '" . substr($self->{_namelist}->{data},$offset_b,$offset_e-$offset_b) . "'" if ($debug_extend);
+		warn "ext2: '" . $self->{_namelist}->get_data($offset_b,$offset_e) . "'" if ($debug_extend);
 	}
 	pos($self->{_namelist}->{data_cs})=$offset_e;
 	if ($self->{_namelist}->{data_cs} !~ /\G\n/gs) {
@@ -57,7 +57,7 @@ sub delete {
 }
 sub parse_value {
 	my ($self,$offset_b,$offset_e)=@_;
-	my $data_v      = substr($self->{_namelist}->{data_cs},$offset_b,$offset_e-$offset_b);
+	my (undef,$data_v) = $self->{_namelist}->get_data($offset_b,$offset_e);
 	# insert a comma into each group of spaces unless there is already one
 	# commas are optional in namelists, this will make it easier to parse
 	$data_v =~ s{

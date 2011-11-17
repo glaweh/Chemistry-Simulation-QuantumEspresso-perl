@@ -96,8 +96,10 @@ sub set_data {
 sub find_comments_and_strings {
 	my $self = shift;
 	my @strings;
+	# working copy
+	my $d = $self->get_data;
 	# find all fortran !-style comments and quoted strings
-	while ($self->{data} =~ m{
+	while ($d =~ m{
 			                   ## f90 comments start with !, end with EOL
 			(![^\n]*)\n        ## put into group1
 		|                      ## OR ! which are part of quoted strings
@@ -117,8 +119,6 @@ sub find_comments_and_strings {
 			push @{$self->{_comments}},Fortran::Namelist::Editor::Comment->new($self,$-[1],$+[1]);
 		}
 	}
-	# working copy
-	my $d = $self->{data};
 	# replace comments by same-length sequence of space
 	foreach my $c (@{$self->{_comments}}) {
 		substr($d,$c->{o_b},$c->length) = ' ' x $c->length;
@@ -133,7 +133,8 @@ sub find_comments_and_strings {
 
 sub find_groups {
 	my $self=shift;
-	while ($self->{data_cs} =~ m{(?:^|\n)[ \t]*&(\S+)([^/]*)(/)}gs) {
+	my (undef,$data_cs) = $self->get_data;
+	while ($data_cs =~ m{(?:^|\n)[ \t]*&(\S+)([^/]*)(/)}gs) {
 		push @{$self->{_groups}},{
 			name      => Fortran::Namelist::Editor::Token->new($self,$-[1],$+[1]),
 			o_b       => $-[0],  # group begins with &
@@ -155,7 +156,7 @@ sub find_indent {
 	my %indent;
 	foreach my $g (@{$self->{_groups}}) {
 		# detect indentation within groups
-		my $gs = substr($self->{data_cs},$g->{name}->{o_e},$g->{o_e}-$g->{name}->{o_e});
+		my (undef,$gs) = $self->get_data($g->{name}->{o_e},$g->{o_e});
 		while ($gs =~ m{(?:^|\n)([ \t]*)\S}gs) {
 			$indent{$1}++;
 		}
@@ -180,11 +181,10 @@ sub find_groupless {
 
 sub parse_groupless {
 	my ($self,$offset_b,$offset_e)=@_;
-	my $gl_cs = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
+	my ($gl,$gl_cs) = $self->get_data($offset_b,$offset_e);
 	if ($gl_cs =~ m{^\s*$}) {
 		return(undef);
 	}
-	my $gl   = substr($self->{data},$offset_b,$offset_e-$offset_b);
 	push @{$self->{_groupless}},{
 		o_b   => $offset_b,
 		o_e   => $offset_e,
@@ -195,7 +195,7 @@ sub parse_groupless {
 
 sub find_vars {
 	my ($self,$group_ref,$offset_b,$offset_e)=@_;
-	my $data_n      = substr($self->{data_cs},$offset_b,$offset_e-$offset_b);
+	my (undef,$data_n) = $self->get_data($offset_b,$offset_e);
 	my @offsets;
 	# scan data_n for variables: name, optionally index, followed by '='
 	while ($data_n=~m{,?\s+         ## variable assignments are separated by whitespace, optionally with a preceeding comma

@@ -144,7 +144,7 @@ use warnings;
 @Fortran::Namelist::Editor::Value::Auto::ISA=qw{Fortran::Namelist::Editor::Value};
 sub new {
 	my ($class,$namelist,$o_b,$o_e) = @_;
-	my $val = substr($namelist->{data},$o_b,$o_e-$o_b);
+	my $val = $namelist->get_data($o_b,$o_e);
 	$class=detect_data($val);
 	return($class->new($namelist,$o_b,$o_e));
 }
