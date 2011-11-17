@@ -301,6 +301,24 @@ sub _add_new_setting {
 	$group_ref->{vars}->{$var}=$s;
 }
 
+sub refine_offset_back {
+	my ($self,$position,$re) = @_;
+	pos($self->{data_cs}) = $position;
+	if ($self->{data_cs} =~ /$re\G/g) {
+		return($-[1]);
+	}
+	return($position);
+}
+
+sub refine_offset_forward {
+	my ($self,$position,$re) = @_;
+	pos($self->{data_cs}) = $position;
+	if ($self->{data_cs} =~ /\G$re/g) {
+		return($+[1]);
+	}
+	return($position);
+}
+
 sub add_group {
 	my ($self,$group_name,$after)=@_;
 	return(2) if (exists $self->{groups}->{$group_name});
