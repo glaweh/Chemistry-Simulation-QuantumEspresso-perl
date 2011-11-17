@@ -13,8 +13,22 @@ use Fortran::Namelist::Editor::Assignment;
 sub init {
 	my $self=shift;
 	my %opts=%{pop()} if ($_[-1] and (ref $_[-1] eq 'HASH'));
+	my $data=$opts{data};
+	if (defined $opts{filename} and (! defined $data)) {
+		# slurp in file
+		if (open(my $fh,$opts{filename})) {
+			local $/=undef;
+			$data=<$fh>;
+		} else {
+			carp "Error opening file '$opts{filename}'";
+			return(undef);
+		}
+	}
+	$data='' unless (defined $data);
+	$self->SUPER::init(undef,0,length($data));
+
 	$self->{filename}    = $opts{filename};
-	$self->{data}        = $opts{data};
+	$self->{data}        = $data;
 
 	# internal data structures
 	$self->{_comments}   = [];
@@ -23,16 +37,6 @@ sub init {
 	$self->{_groupless}  = [];
 	$self->{indent}      = '';
 
-	if (defined $self->{filename} and (! defined $self->{data})) {
-		# slurp in file
-		if (open(my $fh,$self->{filename})) {
-			local $/=undef;
-			$self->{data}=<$fh>;
-		} else {
-			carp "Error opening file '$self->{filename}'";
-			return(undef);
-		}
-	}
 	if ($self->{data}) {
 		$self->{data_cs}=$self->find_comments_and_strings();
 		$self->find_groups();
