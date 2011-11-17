@@ -76,7 +76,7 @@ sub unset {
 }
 sub indent_histogram {
 	my ($self,$hist) = @_;
-	my $data = $self->{_namelist}->get_data($self);
+	my $data = $self->{_namelist}->get_data($self->{o_b},$self->{o_e});
 	while ($data =~ m{\n([ \t]*)[^/\s]}gs) {
 		$hist->{$1}++;
 	}

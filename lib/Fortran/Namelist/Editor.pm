@@ -48,18 +48,8 @@ sub init {
 }
 sub get_data {
 	my ($self,$o_b,$o_e)=@_;
-	my $r=reftype($o_b);
-	if (defined $r) {
-		return(undef) unless ($r eq 'HASH');
-		$o_e=$o_b->{o_e};
-		$o_b=$o_b->{o_b};
-	}
-	unless ((defined $o_b) and (defined $o_e)) {
-		return($self->{data},$self->{data_cs}) if (wantarray);
-		return($self->{data});
-	}
-	$o_b=$self->{o_b} unless (defined $o_b);
-	$o_e=$self->{o_e} unless (defined $o_e);
+	confess "o_b is undefined" unless (defined $o_b);
+	confess "o_e is undefined" unless (defined $o_e);
 	return(undef) if ($o_e > $self->{o_e});
 	return(undef) if ($o_b > $self->{o_e});
 	my $length = $o_e-$o_b;
@@ -92,7 +82,7 @@ sub find_comments_and_strings {
 	my $self = shift;
 	my (@strings,@comments);
 	# working copy
-	my $d = $self->get_data;
+	my $d = $self->get_data($self->{o_b},$self->{o_e});
 	# find all fortran !-style comments and quoted strings
 	while ($d =~ m{
 			                   ## f90 comments start with !, end with EOL
@@ -133,7 +123,7 @@ sub find_comments_and_strings {
 
 sub find_groups {
 	my $self=shift;
-	my (undef,$data_cs) = $self->get_data;
+	my (undef,$data_cs) = $self->get_data($self->{o_b},$self->{o_e});
 	while ($data_cs =~ m{(?:^|\n)[ \t]*(&\S+)[^/]*/}gs) {
 		push @{$self->{_groups}},
 			Fortran::Namelist::Editor::Group->new($self,$-[1],$+[0],$-[1],$+[1]);

@@ -33,7 +33,7 @@ sub set {
 }
 sub _get_raw {
 	my ($self) = @_;
-	return($self->{_namelist}->get_data($self));
+	return($self->{_namelist}->get_data($self->{o_b},$self->{o_e}));
 }
 sub get {
 	my $self=shift;
