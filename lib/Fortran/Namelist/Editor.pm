@@ -233,16 +233,9 @@ sub add_group {
 		}
 	}
 	my $offset_b    = $self->{_groups}->[$after_index]->{o_e};
-	my $insert      = "\n&$group_name\n/";
-	$self->set_data($offset_b,$offset_b,$insert);
-	my %group = (
-			name      => Fortran::Namelist::Editor::Token->new($self,1+$offset_b,length($group_name)+1+$offset_b),
-			o_b       => $offset_b,                       # group begins with &
-			o_e       => length($group_name)+4+$offset_b, # end of NL group is /
-			vars      => {},
-	);
-	splice(@{$self->{_groups}},$after_index+1,0,\%group);
-	$self->{groups}->{$group_name}=\%group;
+	my $group = Fortran::Namelist::Editor::Group->insert($self,$offset_b,"\n",$group_name);
+	splice(@{$self->{_groups}},$after_index+1,0,$group);
+	$self->{groups}->{$group_name}=$group;
 }
 
 sub remove_group {

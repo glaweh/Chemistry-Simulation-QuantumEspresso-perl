@@ -82,4 +82,10 @@ sub indent_histogram {
 	}
 	return($hist);
 }
+sub insert {
+	my ($class,$namelist,$o_b,$separator,$name) = @_;
+	my $name_o  = Fortran::Namelist::Editor::Token->insert($namelist,$o_b,$separator,$name);
+	$namelist->set_data($name_o->{o_e},$name_o->{o_e},"\n/");
+	return($class->new($namelist,$o_b,$name_o->{o_e}+2,$name_o));
+}
 1;
