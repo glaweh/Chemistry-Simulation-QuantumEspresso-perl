@@ -74,4 +74,12 @@ sub unset {
 	delete ($self->{vars}->{$variable}) if ($self->{vars}->{$variable}->delete(@index));
 	return(1);
 }
+sub indent_histogram {
+	my ($self,$hist) = @_;
+	my $data = $self->{_namelist}->get_data($self);
+	while ($data =~ m{\n([ \t]*)[^/\s]}gs) {
+		$hist->{$1}++;
+	}
+	return($hist);
+}
 1;

@@ -151,11 +151,7 @@ sub find_indent {
 	my $self=shift;
 	my %indent;
 	foreach my $g (@{$self->{_groups}}) {
-		# detect indentation within groups
-		my (undef,$gs) = $self->get_data($g->{name}->{o_e},$g->{o_e});
-		while ($gs =~ m{(?:^|\n)([ \t]*)\S}gs) {
-			$indent{$1}++;
-		}
+		$g->indent_histogram(\%indent);
 	}
 	if (%indent) {
 		my @indentations=keys %indent;
