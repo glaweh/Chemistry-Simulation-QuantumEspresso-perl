@@ -135,9 +135,9 @@ sub find_comments_and_strings {
 sub find_groups {
 	my $self=shift;
 	my (undef,$data_cs) = $self->get_data;
-	while ($data_cs =~ m{(?:^|\n)[ \t]*&(\S+)[^/]*/}gs) {
+	while ($data_cs =~ m{(?:^|\n)[ \t]*(&\S+)[^/]*/}gs) {
 		push @{$self->{_groups}},
-			Fortran::Namelist::Editor::Group->new($self,$-[1]-1,$+[0],$-[1],$+[1]);
+			Fortran::Namelist::Editor::Group->new($self,$-[1],$+[0],$-[1],$+[1]);
 	}
 	foreach my $g (@{$self->{_groups}}) {
 		my $name=$g->{name}->get;
