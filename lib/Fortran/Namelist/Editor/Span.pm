@@ -109,10 +109,12 @@ sub _adjust_offsets {
 	my @stack=values %{$self};
 	while ($#stack >= 0) {
 		my $elem=pop @stack;
-		if (ref $elem eq 'ARRAY') {
+		if (blessed($elem)) {
+			$elem->_adjust_offsets($start,$delta,$adjust_id) if ($elem->can('_adjust_offsets'));
+		} elsif (ref $elem eq 'ARRAY') {
 			push @stack,@{$elem};
-		} elsif (blessed($elem) and $elem->can('_adjust_offsets')) {
-			$elem->_adjust_offsets($start,$delta,$adjust_id);
+		} elsif (ref $elem eq 'HASH') {
+			push @stack,values %{$elem};
 		}
 	}
 	return($adjust_id);
