@@ -27,7 +27,7 @@ sub is_between {
 sub set {
 	my ($self,@val) = @_;
 	my ($delta,$adjust_id) = $self->{_namelist}->set_data($self,undef,@val);
-	$self->{o_e}+=$delta if ($delta and ($self->{_adjusted} != $adjust_id));
+	$self->_adjust_offsets($self->{o_b}+1,$delta,$adjust_id) if ($delta);
 	return(1);
 }
 sub _get_raw {
