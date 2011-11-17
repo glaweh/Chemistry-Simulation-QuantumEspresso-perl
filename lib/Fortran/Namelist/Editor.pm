@@ -5,9 +5,6 @@ use Carp;
 use Data::Dumper;
 use Scalar::Util qw(reftype blessed);
 use Fortran::Namelist::Editor::Span;
-use Fortran::Namelist::Editor::Value;
-use Fortran::Namelist::Editor::Index;
-use Fortran::Namelist::Editor::Assignment;
 use Fortran::Namelist::Editor::Group;
 @Fortran::Namelist::Editor::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
 
