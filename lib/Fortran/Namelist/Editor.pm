@@ -96,7 +96,7 @@ sub set_data {
 
 sub find_comments_and_strings {
 	my $self = shift;
-	my @strings;
+	my (@strings,@comments);
 	# working copy
 	my $d = $self->get_data;
 	# find all fortran !-style comments and quoted strings
@@ -117,12 +117,17 @@ sub find_comments_and_strings {
 			);
 			push @strings,\%string;
 		} else {
-			push @{$self->{_comments}},Fortran::Namelist::Editor::Comment->new($self,$-[1],$+[1]);
+			my %comment=(
+				o_b => $-[1],
+				o_e => $+[1],
+			);
+			push @comments,\%comment;
 		}
 	}
 	# replace comments by same-length sequence of space
-	foreach my $c (@{$self->{_comments}}) {
-		substr($d,$c->{o_b},$c->length) = ' ' x $c->length;
+	foreach my $c (@comments) {
+		my $len=$c->{o_e}-$c->{o_b};
+		substr($d,$c->{o_b},$len) = ' ' x $len;
 	}
 	# replace strings by same-length sequence of underscores
 	foreach my $s (@strings) {
@@ -303,8 +308,6 @@ sub remove_group {
 	my $group_ref = $self->{groups}->{$group_name};
 	@{$self->{_groups}} = grep { $_ != $group_ref } @{$self->{_groups}};
 	delete($self->{groups}->{$group_name});
-	@{$self->{_comments}} = grep { ! (($_->{o_b} > $group_ref->{o_b}) and ($_->{o_e} < $group_ref->{o_e})) }
-		@{$self->{_comments}};
 	$self->set_data($group_ref,undef,'');
 }
 
