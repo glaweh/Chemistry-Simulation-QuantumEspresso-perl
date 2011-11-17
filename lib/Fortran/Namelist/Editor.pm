@@ -41,6 +41,53 @@ sub init {
 	}
 	return($self);
 }
+sub get_data {
+	my ($self,$o_b,$o_e)=@_;
+	my $r=reftype($o_b);
+	if (defined $r) {
+		return(undef) unless ($r eq 'HASH');
+		$o_e=$o_b->{o_e};
+		$o_b=$o_b->{o_e};
+	}
+	unless ((defined $o_b) and (defined $o_e)) {
+		return($self->{data},$self->{data_cs}) if (wantarray);
+		return($self->{data});
+	}
+	$o_b=$self->{o_b} unless (defined $o_b);
+	$o_e=$self->{o_e} unless (defined $o_e);
+	return(undef) if ($o_e > $self->{o_e});
+	return(undef) if ($o_b > $self->{o_b});
+	my $length = $o_e-$o_b;
+	return(substr($self->{data},$o_b,$length),
+		substr($self->{data_cs},$o_b,$length)) if (wantarray);
+	return(substr($self->{data},$o_b,$length));
+}
+sub set_data {
+	my ($self,$o_b,$o_e,$value,$value_cs)=@_;
+	my $r=reftype($o_b);
+	if (defined $r) {
+		return(undef) unless ($r eq 'HASH');
+		$o_e=$o_b->{o_e};
+		$o_b=$o_b->{o_e};
+	}
+	$o_b=$self->{o_b} unless (defined $o_b);
+	$o_e=$self->{o_e} unless (defined $o_e);
+	return(undef) if ($o_e > $self->{o_e});
+	return(undef) if ($o_b > $self->{o_b});
+	my $length    = $o_e-$o_b;
+	my $newlength = length($value);
+	my $delta     = $newlength-$length;
+	$value_cs     = $value unless (defined $value_cs);
+	substr($self->{data},$o_b,$length)    = $value;
+	substr($self->{data_cs},$o_b,$length) = $value_cs;
+	if ($delta == 0) {
+		return(0,0) if (wantarray);
+		return(0);
+	}
+	my $adjust_id=$self->adjust_offsets($o_b+1,$delta);
+	return($delta,$adjust_id) if (wantarray);
+	return($delta);
+}
 
 sub find_comments_and_strings {
 	my $self = shift;
