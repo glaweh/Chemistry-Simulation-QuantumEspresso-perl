@@ -280,10 +280,7 @@ sub set {
 	} else {
 		# insert new statement after the last
 		my $o_insert=$self->{instances}->[-1]->{o_e};
-		pos($self->{_namelist}->{data_cs}) = $o_insert;
-		if ($self->{_namelist}->{data_cs} =~ /\G([^\n]+)/s) {
-			$o_insert=$+[1];
-		}
+		$o_insert=$self->{_namelist}->refine_offset_forward($o_insert,qr{([^\n]+)}s);
 		my $a = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_insert,
 			"\n$self->{_namelist}->{indent}",$self->{name}->get,
 			$value,@index,blessed($self->{instances}->[0]->{value}->[0]));
