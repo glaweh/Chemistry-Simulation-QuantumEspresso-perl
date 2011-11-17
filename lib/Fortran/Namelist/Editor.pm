@@ -29,7 +29,6 @@ sub init {
 	$self->{data}        = $data;
 
 	# internal data structures
-	$self->{_comments}   = [];
 	$self->{_groups}     = [];
 	$self->{groups}      = {};
 	$self->{_groupless}  = [];
