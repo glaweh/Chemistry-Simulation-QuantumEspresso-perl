@@ -28,6 +28,7 @@ sub set {
 	my ($self,@val) = @_;
 	my ($delta,$adjust_id) = $self->{_namelist}->set_data($self,undef,@val);
 	$self->_adjust_offsets($self->{o_b},$delta,$adjust_id) if ($delta);
+	$self->{o_e} = $self->{o_b}+$delta if ($self->{o_b} == $self->{o_e});
 	return(1);
 }
 sub _get_raw {
