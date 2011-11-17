@@ -168,7 +168,6 @@ sub detect_data {
 			last;
 		}
 	}
-	return(undef) unless (defined $class);
 	return($class);
 }
 sub detect_perl {
