@@ -55,7 +55,7 @@ sub _adjust_offsets {
 	$self->{_adjusted}=$adjust_id;
 	$self->{o_b}+=$delta if ((defined $self->{o_b}) and ($self->{o_b} >= $start));
 	$self->{o_e}+=$delta if ((defined $self->{o_e}) and ($self->{o_e} >= $start));
-	return(1);
+	return($adjust_id);
 }
 sub length {
 	my ($self)=@_;
@@ -107,6 +107,7 @@ sub _adjust_offsets {
 			eval { $elem->_adjust_offsets($start,$delta,$adjust_id); }
 		}
 	}
+	return($adjust_id);
 }
 
 package Fortran::Namelist::Editor::Token;
