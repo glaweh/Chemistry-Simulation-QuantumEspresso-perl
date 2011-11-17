@@ -90,7 +90,6 @@ sub insert {
 			$type="Fortran::Namelist::Editor::Value::$t";
 		}
 	}
-	my $o_e=$o_b;
 	my $name_o  = Fortran::Namelist::Editor::Token->insert($namelist,$o_b,$separator,$name);
 	$o_b        = $name_o->{o_b};
 	my $o_e     = $name_o->{o_e};
