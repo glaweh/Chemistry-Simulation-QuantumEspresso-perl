@@ -2,6 +2,9 @@ package Fortran::Namelist::Editor::Span;
 use strict;
 use warnings;
 use Data::Dumper;
+
+our $global_adjust_id = 0;
+
 sub new {
 	my $class = shift;
 	my $self  = {};
@@ -13,7 +16,7 @@ sub init {
 	$self->{_namelist} = $namelist;
 	$self->{o_b}       = $o_b;
 	$self->{o_e}       = $o_e;
-	$self->{_adjusted} = 0;
+	$self->{_adjusted} = $global_adjust_id;
 	return($self);
 }
 sub is_between {
@@ -50,8 +53,12 @@ sub delete {
 }
 sub _adjust_offsets {
 	my ($self,$start,$delta,$adjust_id) = @_;
-	$adjust_id=int(rand(424242424)) unless (defined $adjust_id);
-	return(0) if ($self->{_adjusted} == $adjust_id);
+	if (defined $adjust_id) {
+		return(0) if ($self->{_adjusted} == $adjust_id);
+	} else {
+		$global_adjust_id++;
+		$adjust_id=$global_adjust_id;
+	}
 	$self->{_adjusted}=$adjust_id;
 	$self->{o_b}+=$delta if ((defined $self->{o_b}) and ($self->{o_b} >= $start));
 	$self->{o_e}+=$delta if ((defined $self->{o_e}) and ($self->{o_e} >= $start));
@@ -96,8 +103,8 @@ sub get {
 }
 sub _adjust_offsets {
 	my ($self,$start,$delta,$adjust_id) = @_;
-	return(0) unless ($self->SUPER::_adjust_offsets($start,$delta,$adjust_id));
-	$adjust_id = $self->{_adjusted};
+	$adjust_id=$self->SUPER::_adjust_offsets($start,$delta,$adjust_id);
+	return(0) if ($adjust_id == 0);
 	my @stack=values %{$self};
 	while ($#stack >= 0) {
 		my $elem=pop @stack;
