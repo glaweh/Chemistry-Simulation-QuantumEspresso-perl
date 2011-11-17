@@ -89,7 +89,7 @@ sub set_data {
 		return(0,0) if (wantarray);
 		return(0);
 	}
-	my $adjust_id=$self->adjust_offsets($o_b+1,$delta);
+	my $adjust_id=$self->_adjust_offsets($o_b+1,$delta);
 	return($delta,$adjust_id) if (wantarray);
 	return($delta);
 }
@@ -219,44 +219,6 @@ sub save {
 	confess "cannot open file '$filename' for writing" unless (open($fh,'>',$filename));
 	print $fh $self->{data};
 	close($fh);
-}
-
-sub adjust_offsets {
-	my ($self,$start,$delta,$adjust_id) = @_;
-	my @stack=($self);
-	$adjust_id = int(rand(4242424)) unless (defined $adjust_id);
-	while ($#stack >= 0) {
-		my $h=pop @stack;
-		next unless (defined $h);
-		next unless ((defined reftype($h)) and (reftype($h) eq 'HASH'));
-		next if ((defined $h->{_adjusted}) and ($h->{_adjusted} == $adjust_id));
-		$h->{_adjusted}=$adjust_id;
-		foreach my $key (keys %{$h}) {
-			my $r=reftype($h->{$key});
-			if ($key =~ /^o_.*[be]$/) {
-				if (defined $r) {
-					if ($r eq 'ARRAY') {
-						foreach (@{$h->{$key}}) {
-							next unless defined;
-							next unless ($_ >= $start);
-							$_+=$delta
-						}
-					}
-				} elsif ((defined $h->{$key}) and ($h->{$key} >= $start)) {
-					$h->{$key}+=$delta;
-				}
-			} elsif (defined $r) {
-				if (blessed($h->{$key}) and $h->{$key}->can('_adjust_offsets')) {
-					$h->{$key}->_adjust_offsets($start,$delta,$adjust_id);
-				} elsif ($r eq 'ARRAY') {
-					push @stack,@{$h->{$key}};
-				} elsif ($r eq 'HASH') {
-					push @stack,$h->{$key};
-				}
-			}
-		}
-	}
-	return($adjust_id);
 }
 
 sub refine_offset_back {
