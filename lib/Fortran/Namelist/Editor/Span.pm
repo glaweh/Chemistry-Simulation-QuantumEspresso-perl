@@ -79,6 +79,7 @@ sub dump {
 package Fortran::Namelist::Editor::ContainerSpan;
 use strict;
 use warnings;
+use Scalar::Util qw(blessed);
 @Fortran::Namelist::Editor::ContainerSpan::ISA=qw{Fortran::Namelist::Editor::Span};
 sub init {
 	my ($self,$namelist,$o_b,$o_e) = @_;
@@ -110,8 +111,8 @@ sub _adjust_offsets {
 		my $elem=pop @stack;
 		if (ref $elem eq 'ARRAY') {
 			push @stack,@{$elem};
-		} else {
-			eval { $elem->_adjust_offsets($start,$delta,$adjust_id); }
+		} elsif (blessed($elem) and $elem->can('_adjust_offsets')) {
+			$elem->_adjust_offsets($start,$delta,$adjust_id);
 		}
 	}
 	return($adjust_id);
