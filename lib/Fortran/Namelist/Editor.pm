@@ -207,6 +207,7 @@ sub as_hash {
 
 sub get {
 	my ($self,$group,@options)=@_;
+	return($self->SUPER::get) unless (defined $group);
 	return(undef) unless (exists $self->{groups}->{$group});
 	return($self->{groups}->{$group}->get(@options));
 }
