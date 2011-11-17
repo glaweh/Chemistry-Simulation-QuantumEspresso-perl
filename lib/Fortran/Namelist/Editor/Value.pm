@@ -173,13 +173,15 @@ sub detect_data {
 sub detect_perl {
 	my $val = shift;
 	my ($class,@res);
-	foreach $class (qw{
+	foreach (qw{
 		Fortran::Namelist::Editor::Value::single
 		Fortran::Namelist::Editor::Value::string}) {
-		@res = $class->to_data($val);
-		last if (defined $res[0]);
+		@res = $_->to_data($val);
+		if (defined $res[0]) {
+			$class=$_;
+			last;
+		}
 	}
-	return(undef) unless (defined $res[0]);
 	return($class);
 }
 1;
