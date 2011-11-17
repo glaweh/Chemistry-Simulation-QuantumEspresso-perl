@@ -284,7 +284,7 @@ sub set {
 		my $a = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_insert,
 			"\n$self->{_namelist}->{indent}",$self->{name}->get,
 			$value,@index,blessed($self->{instances}->[0]->{value}->[0]));
-		$self->add_instance($a);
+		$self->add_instance($a) if (defined $a);
 	}
 	return(1);
 }
