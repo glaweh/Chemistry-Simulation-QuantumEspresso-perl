@@ -51,6 +51,7 @@ sub delete {
 	}
 	# remove the string from data/data_cs
 	$self->{_namelist}->set_data($offset_b,$offset_e,$replacement);
+	return(1);
 }
 sub parse_value {
 	my ($self,$offset_b,$offset_e)=@_;

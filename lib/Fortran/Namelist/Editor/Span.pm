@@ -49,7 +49,7 @@ sub insert {
 sub delete {
 	my ($self)=@_;
 	$self->{_namelist}->set_data($self,undef,'');
-	return($self);
+	return(1);
 }
 sub _adjust_offsets {
 	my ($self,$start,$delta,$adjust_id) = @_;
