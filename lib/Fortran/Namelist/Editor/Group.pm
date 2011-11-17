@@ -57,5 +57,21 @@ sub get {
 	return(undef) unless (exists $self->{vars}->{$variable});
 	return($self->{vars}->{$variable}->get(@index));
 }
-
+sub set {
+	my ($self,$variable,$value,@index) = @_;
+	if (exists $self->{vars}->{$variable}) {
+		return($self->{vars}->{$variable}->set($value,@index));
+	}
+	# insert at end of group's data section
+	my $offset_b=$self->{_namelist}->refine_offset_back($self->{o_e},qr{(\n[^\n]*)/});
+	$self->{vars}->{$variable} = Fortran::Namelist::Editor::Variable->insert(
+		$self->{_namelist},$offset_b,"\n$self->{_namelist}->{indent}",$variable,$value,@index);
+	return(1);
+}
+sub unset {
+	my ($self,$variable,@index) = @_;
+	return(0) unless (exists $self->{vars}->{$variable});
+	delete ($self->{vars}->{$variable}) if ($self->{vars}->{$variable}->delete(@index));
+	return(1);
+}
 1;

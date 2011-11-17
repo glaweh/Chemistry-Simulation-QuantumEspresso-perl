@@ -258,50 +258,6 @@ sub adjust_offsets {
 	return($adjust_id);
 }
 
-sub _set_value {
-	# modify an existing input variable
-	#   return codes
-	#     1: setting successfull
-	#     0: variable does not yet exist
-	#     2: array element does not yet exist
-	#     3: setting with index, but variable was classified as scalar
-	#     4: setting without index, but variable was classified as array
-	my ($self,$group_ref,$setting) = @_;
-	# setting: var [,index1,...], value
-	my @index    = @{$setting};
-	my $var      = shift @index;
-	# get the description
-	my $var_desc = $group_ref->{vars}->{$var};
-	unless (defined $var_desc) {
-		# variable does not yet exist
-		return(0);
-	}
-	# take the new value
-	my $value = pop @index;
-	# actually set the variable
-	return($var_desc->set($value,@index));
-}
-
-sub _add_new_setting {
-	my ($self,$group_ref,$setting) = @_;
-	# setting: var [,index1,...], value
-	my @index     = @{$setting};
-	my $var       = lc(shift @index);
-	# take the new value
-	my $value     = pop @index;
-	# insert at end of group's data section
-	my $offset_b=$group_ref->{o_e};
-	pos($self->{data_cs}) = $offset_b;
-	if ($self->{data_cs} =~ m{(\n[^\n])\G}g) {
-		warn 'fafaf';
-		$offset_b-=$+[1]-$-[1];
-	}
-	die "setting does already exist" if (exists $group_ref->{vars}->{$var});
-	my $s = Fortran::Namelist::Editor::Variable->insert($self,$offset_b,"\n$self->{indent}",$var,
-		$value,@index);
-	$group_ref->{vars}->{$var}=$s;
-}
-
 sub refine_offset_back {
 	my ($self,$position,$re) = @_;
 	pos($self->{data_cs}) = $position;
@@ -357,42 +313,19 @@ sub remove_group {
 }
 
 sub set {
-	my ($self,$group,@settings)=@_;
+	my ($self,$group,@setting)=@_;
 	unless (exists $self->{groups}->{$group}) {
 		$self->add_group($group);
 	}
-	my $g=$self->{groups}->{$group};
-	foreach my $setting_o (@settings) {
-		confess "Needs array ref" unless (ref $setting_o eq 'ARRAY');
-		my $set_result=$self->_set_value($g,$setting_o);
-		next if ($set_result == 1); # value successfully modified
-		if (($set_result == 0) or ($set_result == 2)) {
-			$self->_add_new_setting($g,$setting_o);
-		} else {
-			confess "Do not know how to continue";
-		}
-	}
-}
-
-sub _unset {
-	my ($self,$group_ref,$setting)=@_;
-	# setting: var [,index1,...]
-	my @index     = @{$setting};
-	my $var       = shift @index;
-	return(2) unless (exists $group_ref->{vars}->{$var});
-	delete ($group_ref->{vars}->{$var}) if ($group_ref->{vars}->{$var}->delete(@index));
+	return($self->{groups}->{$group}->set(@setting));
 }
 
 sub unset {
-	my ($self,$group,@settings)=@_;
+	my ($self,$group,@setting)=@_;
 	unless (exists $self->{groups}->{$group}) {
 		return(2);
 	}
-	my $g=$self->{groups}->{$group};
-	foreach my $setting (@settings) {
-		confess "Needs array ref" unless (ref $setting eq 'ARRAY');
-		my $unset_result=$self->_unset($g,$setting);
-	}
+	return($self->{groups}->{$group}->unset(@setting));
 }
 
 1;
