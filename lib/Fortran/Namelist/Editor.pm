@@ -51,7 +51,7 @@ sub get_data {
 	if (defined $r) {
 		return(undef) unless ($r eq 'HASH');
 		$o_e=$o_b->{o_e};
-		$o_b=$o_b->{o_e};
+		$o_b=$o_b->{o_b};
 	}
 	unless ((defined $o_b) and (defined $o_e)) {
 		return($self->{data},$self->{data_cs}) if (wantarray);
@@ -60,7 +60,7 @@ sub get_data {
 	$o_b=$self->{o_b} unless (defined $o_b);
 	$o_e=$self->{o_e} unless (defined $o_e);
 	return(undef) if ($o_e > $self->{o_e});
-	return(undef) if ($o_b > $self->{o_b});
+	return(undef) if ($o_b > $self->{o_e});
 	my $length = $o_e-$o_b;
 	return(substr($self->{data},$o_b,$length),
 		substr($self->{data_cs},$o_b,$length)) if (wantarray);
@@ -72,12 +72,12 @@ sub set_data {
 	if (defined $r) {
 		return(undef) unless ($r eq 'HASH');
 		$o_e=$o_b->{o_e};
-		$o_b=$o_b->{o_e};
+		$o_b=$o_b->{o_b};
 	}
 	$o_b=$self->{o_b} unless (defined $o_b);
 	$o_e=$self->{o_e} unless (defined $o_e);
 	return(undef) if ($o_e > $self->{o_e});
-	return(undef) if ($o_b > $self->{o_b});
+	return(undef) if ($o_b > $self->{o_e});
 	my $length    = $o_e-$o_b;
 	my $newlength = length($value);
 	my $delta     = $newlength-$length;
