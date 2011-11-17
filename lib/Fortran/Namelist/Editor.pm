@@ -69,14 +69,8 @@ sub get_data {
 }
 sub set_data {
 	my ($self,$o_b,$o_e,$value,$value_cs)=@_;
-	my $r=reftype($o_b);
-	if (defined $r) {
-		return(undef) unless ($r eq 'HASH');
-		$o_e=$o_b->{o_e};
-		$o_b=$o_b->{o_b};
-	}
-	$o_b=$self->{o_b} unless (defined $o_b);
-	$o_e=$self->{o_e} unless (defined $o_e);
+	confess "o_b is undefined" unless (defined $o_b);
+	confess "o_e is undefined" unless (defined $o_e);
 	return(undef) if ($o_e > $self->{o_e});
 	return(undef) if ($o_b > $self->{o_e});
 	my $length    = $o_e-$o_b;
@@ -270,7 +264,7 @@ sub remove_group {
 	my $group_ref = $self->{groups}->{$group_name};
 	@{$self->{_groups}} = grep { $_ != $group_ref } @{$self->{_groups}};
 	delete($self->{groups}->{$group_name});
-	$self->set_data($group_ref,undef,'');
+	$self->set_data($group_ref->{o_b},$group_ref->{o_e},'');
 }
 
 sub set {

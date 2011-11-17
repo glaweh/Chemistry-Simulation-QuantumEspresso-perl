@@ -26,7 +26,7 @@ sub is_between {
 }
 sub set {
 	my ($self,@val) = @_;
-	my ($delta,$adjust_id) = $self->{_namelist}->set_data($self,undef,@val);
+	my ($delta,$adjust_id) = $self->{_namelist}->set_data($self->{o_b},$self->{o_e},@val);
 	$self->_adjust_offsets($self->{o_b},$delta,$adjust_id) if ($delta);
 	$self->{o_e} = $self->{o_b}+$delta if ($self->{o_b} == $self->{o_e});
 	return(1);
@@ -49,7 +49,7 @@ sub insert {
 }
 sub delete {
 	my ($self)=@_;
-	$self->{_namelist}->set_data($self,undef,'');
+	$self->{_namelist}->set_data($self->{o_b},$self->{o_e},'');
 	return(1);
 }
 sub _adjust_offsets {
