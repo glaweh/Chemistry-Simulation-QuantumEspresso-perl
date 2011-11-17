@@ -22,16 +22,9 @@ sub is_between {
 	return(($self->{o_b}>=$o_b) and ($self->{o_e} <=$o_e));
 }
 sub set {
-	my ($self,$new_value,$new_value_cs) = @_;
-	$new_value_cs = $new_value unless (defined $new_value_cs);
-	my $old_length = $self->{o_e}-$self->{o_b};
-	my $new_length = length($new_value);
-	substr($self->{_namelist}->{data},$self->{o_b},$old_length)    = $new_value;
-	substr($self->{_namelist}->{data_cs},$self->{o_b},$old_length) = $new_value_cs;
-	if ($new_length != $old_length) {
-		my $adjust_id = $self->{_namelist}->adjust_offsets($self->{o_b}+1,$new_length-$old_length);
-		$self->{o_e}+=$new_length-$old_length unless ($self->{_adjusted} == $adjust_id);
-	}
+	my ($self,@val) = @_;
+	my ($delta,$adjust_id) = $self->{_namelist}->set_data($self,undef,@val);
+	$self->{o_e}+=$delta if ($delta and ($self->{_adjusted} != $adjust_id));
 	return(1);
 }
 sub _get_raw {
@@ -45,21 +38,14 @@ sub get {
 sub insert {
 	my ($class,$namelist,$offset,$separator,$value)=@_;
 	my $sep_length=length($separator);
-	if ($sep_length) {
-		substr($namelist->{data},$offset,0)    = $separator;
-		substr($namelist->{data_cs},$offset,0) = $separator;
-		$namelist->adjust_offsets($offset,$sep_length);
-	}
+	$namelist->set_data($offset,$offset,$separator) if ($sep_length);
 	my $self=$class->new($namelist,$offset+$sep_length,$offset+$sep_length);
 	$self->set($value);
 	return($self);
 }
 sub delete {
 	my ($self)=@_;
-	substr($self->{_namelist}->{data},$self->{o_b},$self->{o_e}-$self->{o_b}) = '';
-	substr($self->{_namelist}->{data_cs},$self->{o_b},$self->{o_e}-$self->{o_b}) = '';
-#	$self->{_namelist}->remove_refs_between($self->{o_b},$self->{o_e});
-	$self->{_namelist}->adjust_offsets($self->{o_b},$self->{o_b}-$self->{o_e});
+	$self->{_namelist}->set_data($self,undef,'');
 	return($self);
 }
 sub _adjust_offsets {

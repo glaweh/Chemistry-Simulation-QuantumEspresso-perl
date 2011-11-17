@@ -351,9 +351,7 @@ sub add_group {
 	}
 	my $offset_b    = $self->{_groups}->[$after_index]->{o_e};
 	my $insert      = "\n&$group_name\n/";
-	substr($self->{data},$offset_b,0)=$insert;
-	substr($self->{data_cs},$offset_b,0)=$insert;
-	$self->adjust_offsets($offset_b+1,length($insert));
+	$self->set_data($offset_b,$offset_b,$insert);
 	my %group = (
 			name      => Fortran::Namelist::Editor::Token->new($self,1+$offset_b,length($group_name)+1+$offset_b),
 			o_b       => $offset_b,                       # group begins with &
@@ -372,9 +370,7 @@ sub remove_group {
 	delete($self->{groups}->{$group_name});
 	@{$self->{_comments}} = grep { ! (($_->{o_b} > $group_ref->{o_b}) and ($_->{o_e} < $group_ref->{o_e})) }
 		@{$self->{_comments}};
-	substr($self->{data},$group_ref->{o_b},$group_ref->{o_e}-$group_ref->{o_b})='';
-	substr($self->{data_cs},$group_ref->{o_b},$group_ref->{o_e}-$group_ref->{o_b})='';
-	$self->adjust_offsets($group_ref->{o_b},$group_ref->{o_b}-$group_ref->{o_e});
+	$self->set_data($group_ref,undef,'');
 }
 
 sub set {

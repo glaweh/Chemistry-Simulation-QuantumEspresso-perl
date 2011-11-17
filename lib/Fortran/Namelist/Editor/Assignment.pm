@@ -50,10 +50,7 @@ sub delete {
 		$replacement="\n$self->{_namelist}->{indent}" if ($chopped_newline);
 	}
 	# remove the string from data/data_cs
-	my $length = $offset_e-$offset_b;
-	substr($self->{_namelist}->{data},$offset_b,$length)=$replacement;
-	substr($self->{_namelist}->{data_cs},$offset_b,$length)=$replacement;
-	$self->{_namelist}->adjust_offsets($offset_b+1,length($replacement)-$length);
+	$self->{_namelist}->set_data($offset_b,$offset_e,$replacement);
 }
 sub parse_value {
 	my ($self,$offset_b,$offset_e)=@_;
