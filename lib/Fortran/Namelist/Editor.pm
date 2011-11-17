@@ -8,14 +8,7 @@ use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Value;
 use Fortran::Namelist::Editor::Index;
 use Fortran::Namelist::Editor::Assignment;
-
-sub new {
-	my $class=shift;
-	my $self={};
-	bless($self,$class);
-	return(undef) unless $self->init(@_);
-	return($self);
-}
+@Fortran::Namelist::Editor::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
 
 sub init {
 	my $self=shift;
@@ -46,7 +39,7 @@ sub init {
 		$self->find_groupless();
 		$self->find_indent();
 	}
-	return(1);
+	return($self);
 }
 
 sub find_comments_and_strings {

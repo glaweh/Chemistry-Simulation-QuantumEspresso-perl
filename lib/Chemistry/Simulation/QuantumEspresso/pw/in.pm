@@ -12,7 +12,7 @@ sub init {
 	$self->{_cards}=[];
 	$self->{cards}={};
 	$self->parse_cards;
-	return(1);
+	return($self);
 }
 
 sub parse_cards {
