@@ -25,11 +25,12 @@ sub is_between {
 	return(($self->{o_b}>=$o_b) and ($self->{o_e} <=$o_e));
 }
 sub set {
-	my ($self,@val) = @_;
-	my ($delta,$adjust_id) = $self->{_namelist}->set_data($self->{o_b},$self->{o_e},@val);
-	$self->_adjust_offsets($self->{o_b},$delta,$adjust_id) if ($delta);
-	$self->{o_e} = $self->{o_b}+$delta if ($self->{o_b} == $self->{o_e});
-	return(1);
+	my ($self,$val) = @_;
+	my ($adjust_opt) = $self->{_namelist}->set_data($self->{o_b},$self->{o_e},$val);
+	my $delta = $adjust_opt->[1];
+	$self->_adjust_offsets($adjust_opt);
+	$self->{o_e} = $self->{o_b}+$delta if (($delta > 0) and ($self->{o_b} == $self->{o_e}));
+	return($adjust_opt);
 }
 sub _get_raw {
 	my ($self) = @_;
@@ -40,30 +41,33 @@ sub get {
 	return($self->_get_raw(@_));
 }
 sub insert {
-	my ($class,$namelist,$offset,$separator,$value)=@_;
-	my $sep_length=length($separator);
-	$namelist->set_data($offset,$offset,$separator) if ($sep_length);
-	my $self=$class->new($namelist,$offset+$sep_length,$offset+$sep_length);
-	$self->set($value);
+	my ($class,$namelist,$offset,$separator,@value)=@_;
+	my $adj1=$namelist->set_data($offset,$offset,$separator);
+	my $self=$class->new($namelist,$offset+$adj1->[1],$offset+$adj1->[1]);
+	my $adj2=$self->set(@value);
+	$adj2->[1]+=$adj1->[1];
+	return($self,$adj2) if (wantarray);
 	return($self);
 }
 sub delete {
 	my ($self)=@_;
-	$self->{_namelist}->set_data($self->{o_b},$self->{o_e},'');
+	my $adj=$self->{_namelist}->set_data($self->{o_b},$self->{o_e},'');
+	return(1,$adj) if (wantarray);
 	return(1);
 }
 sub _adjust_offsets {
-	my ($self,$start,$delta,$adjust_id) = @_;
-	if (defined $adjust_id) {
-		return(0) if ($self->{_adjusted} == $adjust_id);
-	} else {
-		$global_adjust_id++;
-		$adjust_id=$global_adjust_id;
+	my ($self,$adjust_opt) = @_;
+	return(undef) unless ($adjust_opt);
+	my ($start,$delta,$adjust_id) = @{$adjust_opt};
+	if (! defined $adjust_id) {
+		$global_adjust_id++ if ($delta!=0);
+		$adjust_opt->[2] = $adjust_id = $global_adjust_id;
 	}
+	return(undef) if ($self->{_adjusted} == $adjust_id);
 	$self->{_adjusted}=$adjust_id;
 	$self->{o_b}+=$delta if ((defined $self->{o_b}) and ($self->{o_b} > $start));
 	$self->{o_e}+=$delta if ((defined $self->{o_e}) and ($self->{o_e} > $start));
-	return($adjust_id);
+	return($adjust_opt);
 }
 sub length {
 	my ($self)=@_;
@@ -104,21 +108,21 @@ sub get {
 	return(\%h);
 }
 sub _adjust_offsets {
-	my ($self,$start,$delta,$adjust_id) = @_;
-	$adjust_id=$self->SUPER::_adjust_offsets($start,$delta,$adjust_id);
-	return(0) if ($adjust_id == 0);
+	my ($self,$adjust_opt) = @_;
+	$adjust_opt=$self->SUPER::_adjust_offsets($adjust_opt);
+	return(undef) unless (defined $adjust_opt);
 	my @stack=values %{$self};
 	while ($#stack >= 0) {
 		my $elem=pop @stack;
 		if (blessed($elem)) {
-			$elem->_adjust_offsets($start,$delta,$adjust_id) if ($elem->can('_adjust_offsets'));
+			$elem->_adjust_offsets($adjust_opt) if ($elem->can('_adjust_offsets'));
 		} elsif (ref $elem eq 'ARRAY') {
 			push @stack,@{$elem};
 		} elsif (ref $elem eq 'HASH') {
 			push @stack,values %{$elem};
 		}
 	}
-	return($adjust_id);
+	return($adjust_opt);
 }
 
 package Fortran::Namelist::Editor::Token;

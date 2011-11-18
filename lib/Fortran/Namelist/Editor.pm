@@ -65,13 +65,8 @@ sub set_data {
 	$value_cs     = $value unless (defined $value_cs);
 	substr($self->{data},$o_b,$length)    = $value;
 	substr($self->{data_cs},$o_b,$length) = $value_cs;
-	if ($delta == 0) {
-		return(0,$self->{_adjust_id}) if (wantarray);
-		return(0);
-	}
-	my $adjust_id=$self->_adjust_offsets($o_b,$delta);
-	return($delta,$adjust_id) if (wantarray);
-	return($delta);
+	return([0,0,$self->{_adjust_id}]) if ($delta == 0);
+	return($self->_adjust_offsets([$o_b,$delta]));
 }
 
 sub find_comments_and_strings {
