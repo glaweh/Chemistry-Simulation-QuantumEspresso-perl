@@ -32,13 +32,11 @@ sub init {
 	# internal data structures
 	$self->{_groups}     = [];
 	$self->{groups}      = {};
-	$self->{_groupless}  = [];
 	$self->{indent}      = '';
 
 	if ($self->{data}) {
 		$self->{data_cs}=$self->find_comments_and_strings();
 		$self->find_groups();
-		$self->find_groupless();
 		$self->find_indent();
 	}
 	return($self);
@@ -159,30 +157,6 @@ sub find_indent {
 		my @idx=sort { $votes[$b] <=> $votes[$a] } 0 .. $#votes;
 		$self->{indent}=$indentations[$idx[0]];
 	}
-}
-
-sub find_groupless {
-	my $self=shift;
-	my $o_last_end=0;
-	foreach my $g (@{$self->{_groups}}) {
-		$o_last_end=$g->{o_e} if ($g->{o_e} > $o_last_end);
-	}
-	$self->parse_groupless($o_last_end,length($self->{data}));
-	return(1);
-}
-
-sub parse_groupless {
-	my ($self,$offset_b,$offset_e)=@_;
-	my ($gl,$gl_cs) = $self->get_data($offset_b,$offset_e);
-	if ($gl_cs =~ m{^\s*$}) {
-		return(undef);
-	}
-	push @{$self->{_groupless}},{
-		o_b   => $offset_b,
-		o_e   => $offset_e,
-		value => $gl,
-	};
-	return(1);
 }
 
 sub get {

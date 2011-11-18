@@ -17,10 +17,10 @@ sub init {
 
 sub parse_cards {
 	my $self=shift;
-	return(2) unless ($#{$self->{_groupless}} >= 0);
-	my $o_cards=$self->{_groupless}->[0]->{o_b};
+	# cards are between end of last group and end of file
+	my $o_cards=$self->{_groups}->[-1]->{o_e};
+	my ($data,$data_cs) = $self->get_data($o_cards,$self->{o_e});
 	# cards can be worked on line-by-line
-	my ($data,$data_cs) = $self->get_data($self->{_groupless}->[0]->{o_b},$self->{_groupless}->[0]->{o_e});
 	my @lines_cs = map { "$_\n" } split('\n',$data_cs);
 	my @lines;
 	my @o_lines  = (0);
