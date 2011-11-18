@@ -68,7 +68,26 @@ sub set_data {
 	return([0,0,$self->{_adjust_id}]) if ($delta == 0);
 	return($self->_adjust_offsets([$o_b,$delta]));
 }
-
+sub insert_new_line_before {
+	my ($self,$offset,$indent) = @_;
+	$indent = $self->{indent} unless ($indent);
+	my $to_insert="\n$indent";
+	$offset=$self->refine_offset_back($offset,qr{(\n[^\n]*)/});
+	my $adjust_opt=$self->set_data($offset,$offset,$to_insert);
+	$offset=$adjust_opt->[0]+$adjust_opt->[1];
+	return($offset,$adjust_opt) if (wantarray);
+	return($offset);
+}
+sub insert_new_line_after {
+	my ($self,$offset,$indent) = @_;
+	$indent = $self->{indent} unless ($indent);
+	my $to_insert="\n$indent";
+	$offset=$self->refine_offset_forward($offset,qr{([^\n]+)}s);
+	my $adjust_opt=$self->set_data($offset,$offset,$to_insert);
+	$offset=$adjust_opt->[0]+$adjust_opt->[1];
+	return($offset,$adjust_opt) if (wantarray);
+	return($offset);
+}
 sub find_comments_and_strings {
 	my $self = shift;
 	my (@strings,@comments);

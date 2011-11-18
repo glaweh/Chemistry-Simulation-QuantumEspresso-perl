@@ -295,13 +295,14 @@ sub set {
 		return($where->set($value));
 	} else {
 		# insert new statement after the last
-		my $o_insert=$self->{instances}->[-1]->{o_e};
-		$o_insert=$self->{_namelist}->refine_offset_forward($o_insert,qr{([^\n]+)}s);
-		my ($a,$adj) = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_insert,
-			"\n$self->{_namelist}->{indent}",$self->{name}->get,
-			$value,@index,blessed($self->{instances}->[0]->{value}->[0]));
+		my ($o_insert,@adj,$a);
+		($o_insert,$adj[0])=$self->{_namelist}->insert_new_line_after($self->{instances}->[-1]->{o_e});
+		($a,$adj[1]) = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_insert,'',
+			$self->{name}->get,$value,@index,blessed($self->{instances}->[0]->{value}->[0]));
 		$self->add_instance($a) if (defined $a);
-		return($adj);
+		$adj[1]->[1]+=$adj[0]->[1];
+		$self->_adjust_offsets($adj[1]);
+		return($adj[1]);
 	}
 }
 sub delete {

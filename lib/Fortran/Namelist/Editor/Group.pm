@@ -63,11 +63,13 @@ sub set {
 		return($self->{vars}->{$variable}->set($value,@index));
 	}
 	# insert at end of group's data section
-	my $offset_b=$self->{_namelist}->refine_offset_back($self->{o_e},qr{(\n[^\n]*)/});
-	my $adjust_opt;
-	($self->{vars}->{$variable},$adjust_opt) = Fortran::Namelist::Editor::Variable->insert(
-		$self->{_namelist},$offset_b,"\n$self->{_namelist}->{indent}",$variable,$value,@index);
-	return($adjust_opt);
+	my ($offset_b,@adj);
+	($offset_b,$adj[0])=$self->{_namelist}->insert_new_line_before($self->{o_e});
+	($self->{vars}->{$variable},$adj[1]) = Fortran::Namelist::Editor::Variable->insert(
+		$self->{_namelist},$offset_b,"",$variable,$value,@index);
+	$adj[1]->[1]+=$adj[0]->[1];
+	$self->_adjust_offsets($adj[1]);
+	return($adj[1]);
 }
 sub delete {
 	my ($self,$variable,@index) = @_;
