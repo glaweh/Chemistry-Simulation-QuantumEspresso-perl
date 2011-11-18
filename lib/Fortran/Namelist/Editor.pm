@@ -24,6 +24,7 @@ sub init {
 	}
 	$data='' unless (defined $data);
 	$self->SUPER::init(undef,0,length($data));
+	$self->{_get_reroot} = 'groups';
 
 	$self->{filename}    = $opts{filename};
 	$self->{data}        = $data;
@@ -182,22 +183,6 @@ sub parse_groupless {
 		value => $gl,
 	};
 	return(1);
-}
-
-sub as_hash {
-	my $self=shift;
-	my %h;
-	while (my ($gname,$g) = each %{$self->{groups}}) {
-		my $r=reftype($g);
-		next unless (defined $r and ($r eq 'HASH'));
-		$h{$gname}={};
-		while (my ($vname,$v) = each %{$g->{vars}}) {
-			my $r=reftype($v);
-			next unless (defined $r and ($r eq 'HASH'));
-			$h{$gname}->{$vname}=$v->get;
-		}
-	}
-	return(\%h);
 }
 
 sub get {

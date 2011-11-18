@@ -7,6 +7,7 @@ use Fortran::Namelist::Editor::Assignment;
 sub init {
 	my ($self,$namelist,$o_b,$o_e,@options) = @_;
 	$self->SUPER::init($namelist,$o_b,$o_e);
+	$self->{_get_reroot} = 'vars';
 	$self->{vars} = {};
 	if ($#options == 1) {
 		$self->{name} = Fortran::Namelist::Editor::Token->new($namelist,$options[0],$options[1]);
