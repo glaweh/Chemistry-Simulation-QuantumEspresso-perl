@@ -232,7 +232,7 @@ sub add_group {
 	$self->{groups}->{$group_name}=$group;
 }
 
-sub remove_group {
+sub _remove_group {
 	my ($self,$group_name)=@_;
 	return(2) unless (exists $self->{groups}->{$group_name});
 	my $group_ref = $self->{groups}->{$group_name};
@@ -249,12 +249,20 @@ sub set {
 	return($self->{groups}->{$group}->set(@setting));
 }
 
-sub unset {
+sub delete {
 	my ($self,$group,@setting)=@_;
-	unless (exists $self->{groups}->{$group}) {
-		return(2);
+	my $is_empty = 0;
+	my $adjust_id;
+	if (exists $self->{groups}->{$group}) {
+		if ($#setting >=0) {
+			($is_empty,$adjust_id) = $self->{groups}->{$group}->delete(@setting);
+		} else {
+			$adjust_id = $self->_remove_group($group);
+		}
 	}
-	return($self->{groups}->{$group}->unset(@setting));
+	$is_empty = 1 if ($#{$self->{_groups}} < 0);
+	return($is_empty,$adjust_id) if (wantarray);
+	return($is_empty);
 }
 
 1;

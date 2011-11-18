@@ -69,12 +69,17 @@ sub set {
 		$self->{_namelist},$offset_b,"\n$self->{_namelist}->{indent}",$variable,$value,@index);
 	return($adjust_opt);
 }
-sub unset {
+sub delete {
 	my ($self,$variable,@index) = @_;
-	return(0) unless (exists $self->{vars}->{$variable});
-	my ($is_empty,$adjust_opt) = $self->{vars}->{$variable}->delete(@index);
-	delete ($self->{vars}->{$variable}) if ($is_empty);
-	return(1);
+	my $is_empty=0;
+	my $adjust_opt;
+	if (exists $self->{vars}->{$variable}) {
+		($is_empty,$adjust_opt) = $self->{vars}->{$variable}->delete(@index);
+		delete ($self->{vars}->{$variable}) if ($is_empty);
+	}
+	$is_empty = 1 if (! keys %{$self->{vars}});
+	return($is_empty,$adjust_opt) if (wantarray);
+	return($is_empty);
 }
 sub indent_histogram {
 	my ($self,$hist) = @_;
