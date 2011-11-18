@@ -93,16 +93,19 @@ sub init {
 		qr/^o_.*[eb]$/,
 		qr/^_namelist$/,
 		qr/^_get_ignore_patterns$/,
+		qr/^_get_reroot$/,
 	);
 	return($self);
 }
 sub get {
 	my $self=shift;
+	my $root=$self;
+	$root=$self->{$self->{_get_reroot}} if ($self->{_get_reroot});
 	my %h;
-	foreach my $key (keys %{$self}) {
+	foreach my $key (keys %{$root}) {
 		next if (grep { $key =~ $_ } @{$self->{_get_ignore_patterns}});     # skip offset fields
 		my $val;
-		eval { $val = $self->{$key}->get }; # try to use childs get method
+		eval { $val = $root->{$key}->get }; # try to use childs get method
 		$h{$key}=$val if (defined $val);
 	}
 	return(\%h);
