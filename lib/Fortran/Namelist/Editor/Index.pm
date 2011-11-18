@@ -10,14 +10,13 @@ sub init {
 	my ($self,$namelist,$o_b,$o_e)=@_;
 	$self->SUPER::init($namelist,$o_b,$o_e);
 	$self->{element}=[];
-	return(undef) unless ($self->length > 0);
 	return($self->parse);
 }
 
 sub parse {
 	my $self=shift;
 	my $data=$self->_get_raw();
-	return(undef) if ($data=~m{^\s*$}); # no index
+	return($self) if ($data=~m{^\s*$}); # no index
 	# remove enclosing brackets
 	if ((my $nbrackets = ($data =~ s{\(([^\)]+)\)}{ $1 }g)) != 1) {
 		if ($nbrackets == 0) {

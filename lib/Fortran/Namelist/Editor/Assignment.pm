@@ -11,7 +11,9 @@ sub init {
 	if ($#options == 5) {
 		my ($o_name_b,$o_name_e,$o_index_b,$o_index_e,$o_value_b,$o_value_e)=@options;
 		$self->{name}  = Fortran::Namelist::Editor::Token->new($namelist,$o_name_b,$o_name_e);
-		$self->{index} = Fortran::Namelist::Editor::Index->new($namelist,$o_index_b,$o_index_e);
+		$self->{index} = undef;
+		$self->{index} = Fortran::Namelist::Editor::Index->new($namelist,$o_index_b,$o_index_e)
+			if (($o_index_e-$o_index_b) > 0);
 		$self->{value} = [];
 		$self->parse_value($o_value_b,$o_value_e);
 	} elsif ($#options == 2) {
