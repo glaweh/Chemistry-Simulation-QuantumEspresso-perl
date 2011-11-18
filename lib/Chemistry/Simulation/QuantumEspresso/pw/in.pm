@@ -186,7 +186,9 @@ sub parse {
 			foreach (@{$o_lines}) {
 				$_+=5 if ($_ > $o_line);
 			}
-			$self->{units}=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','alat');
+			my $adj;
+			($self->{units},$adj)=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','alat');
+			$self->_adjust_offsets($adj);
 		}
 	}
 
@@ -320,7 +322,9 @@ sub parse {
 			foreach (@{$o_lines}) {
 				$_+=6 if ($_ > $o_line);
 			}
-			$self->{symmetry}=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','cubic');
+			my $adj;
+			($self->{symmetry},$adj)=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','cubic');
+			$self->_adjust_offsets($adj);
 		}
 	}
 

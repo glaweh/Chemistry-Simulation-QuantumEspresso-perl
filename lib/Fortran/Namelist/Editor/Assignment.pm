@@ -95,6 +95,8 @@ sub insert {
 	$adj->[0]     = $o_b;
 	$adj->[1]     = $o_e-$o_b;
 	$o_b          = $name_o->{o_b};
+	$name_o->{_adjusted}  = $adj->[2];
+	$index_o->{_adjusted} = $adj->[2] if ($index_o);
 	my $a         = $class->new($namelist,$o_b,$o_e,$name_o,$index_o,[ $val_o ]);
 	return($a,$adj) if (wantarray);
 	return($a);
@@ -174,9 +176,9 @@ sub delete {
 }
 sub insert {
 	my ($class,$namelist,$o_b,$separator,$name,$value,@index) = @_;
+	my ($a,$adj) = Fortran::Namelist::Editor::Assignment->insert($namelist,$o_b,
+		"\n$namelist->{indent}",$name,$value,@index);
 	my $self=$class->new($namelist);
-	my ($a,$adj) = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_b,
-		"\n$self->{_namelist}->{indent}",$name,$value,@index);
 	$self->add_instance($a);
 	return($self,$adj) if (wantarray);
 	return($self);
