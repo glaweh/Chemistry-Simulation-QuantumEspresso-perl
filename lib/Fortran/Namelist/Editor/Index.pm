@@ -48,6 +48,14 @@ sub parse {
 	return($self);
 }
 
+sub set {
+	my ($self,@index)=@_;
+	$self->{element}=[];
+	my $adj=$self->SUPER::set(index2fortranstring(@index));
+	$self->parse;
+	return($adj);
+}
+
 sub get {
 	my $self = shift;
 	my @result = map { $_->get-$BASE } @{$self->{element}};
