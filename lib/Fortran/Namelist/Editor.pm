@@ -69,7 +69,7 @@ sub set_data {
 }
 sub insert_new_line_before {
 	my ($self,$offset,$indent) = @_;
-	$indent = $self->{indent} unless ($indent);
+	$indent = $self->{indent} unless (defined $indent);
 	my $to_insert="\n$indent";
 	$offset=$self->refine_offset_back($offset,qr{(\n[^\n]*)/});
 	my $adjust_opt=$self->set_data($offset,$offset,$to_insert);
@@ -79,7 +79,7 @@ sub insert_new_line_before {
 }
 sub insert_new_line_after {
 	my ($self,$offset,$indent) = @_;
-	$indent = $self->{indent} unless ($indent);
+	$indent = $self->{indent} unless (defined $indent);
 	my $to_insert="\n$indent";
 	$offset=$self->refine_offset_forward($offset,qr{([^\n]+)}s);
 	my $adjust_opt=$self->set_data($offset,$offset,$to_insert);
