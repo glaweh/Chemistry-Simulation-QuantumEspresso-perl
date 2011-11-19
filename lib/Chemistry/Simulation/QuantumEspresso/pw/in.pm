@@ -9,8 +9,6 @@ use Scalar::Util qw(blessed);
 sub init {
 	my $self=shift;
 	$self->SUPER::init(@_);
-	$self->{_cards}=[];
-	$self->{cards}={};
 	$self->parse_cards;
 	return($self);
 }
@@ -48,23 +46,13 @@ sub parse_cards {
 		}
 	} continue {
 		if (defined $card) {
-			push @{$self->{_cards}},$card;
-			$self->{cards}->{$card->name}=$card;
+			push @{$self->{_groups}},$card;
+			$self->{groups}->{$card->name}=$card;
 			$card=undef;
 		} else {
 			$i++;
 		}
 	}
-}
-
-sub as_hash {
-	my ($self)=@_;
-	my $h=$self->SUPER::as_hash;
-	foreach my $card (keys %{$self->{cards}}) {
-		next unless (blessed($self->{cards}->{$card}) and $self->{cards}->{$card}->can('get'));
-		$h->{$card}=$self->{cards}->{$card}->get;
-	}
-	return($h);
 }
 
 package Chemistry::Simulation::QuantumEspresso::pw::in::card;
