@@ -65,7 +65,9 @@ sub set_data {
 	substr($self->{data},$o_b,$length)    = $value;
 	substr($self->{data_cs},$o_b,$length) = $value_cs;
 	return([0,0,$self->{_adjust_id}]) if ($delta == 0);
-	return($self->_adjust_offsets([$o_b,$delta]));
+	my $adj=$self->_adjust_offsets([$o_b,$delta]);
+	$self->{o_e}+=$delta if ($o_b == $self->{o_e});
+	return($adj);
 }
 sub insert_new_line_before {
 	my ($self,$offset,$indent) = @_;
