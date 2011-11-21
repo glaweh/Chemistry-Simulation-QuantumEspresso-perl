@@ -32,13 +32,9 @@ sub set {
 	$self->{o_e} = $self->{o_b}+$delta if (($delta > 0) and ($self->{o_b} == $self->{o_e}));
 	return($adjust_opt);
 }
-sub _get_raw {
-	my ($self) = @_;
-	return($self->{_namelist}->get_data($self->{o_b},$self->{o_e}));
-}
 sub get {
 	my $self=shift;
-	return($self->_get_raw(@_));
+	return(($self->{_namelist}->get_data($self->{o_b},$self->{o_e}))[1]);
 }
 sub insert {
 	my ($class,$namelist,$offset,$separator,@value)=@_;

@@ -15,7 +15,7 @@ sub init {
 
 sub parse {
 	my $self=shift;
-	my $data=$self->_get_raw();
+	my $data=$self->{_namelist}->get_data($self->{o_b},$self->{o_e});
 	return($self) if ($data=~m{^\s*$}); # no index
 	# remove enclosing brackets
 	if ((my $nbrackets = ($data =~ s{\(([^\)]+)\)}{ $1 }g)) != 1) {
