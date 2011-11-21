@@ -340,12 +340,63 @@ sub parse {
 	return($i,$self);
 }
 
-sub get {
-	my $self = shift;
-	my $h = $self->SUPER::get();
-	for my $vec (@{$self->{v}}) {
-		push @{$h->{v}}, [ map { $_->get } @{$vec} ];
+sub _get_vec {
+	my ($self,@index) = @_;
+	my @result;
+	if ($#index < 0) {
+		for my $vec (@{$self->{v}}) {
+			push @result, [ map { $_->get } @{$vec} ];
+		}
+	} elsif ($#index == 0) {
+		@result = map { $_->get } @{$self->{v}->[$index[0]]};
+	} else {
+		return($self->{v}->[$index[0]]->[$index[1]]->get);
 	}
-	return($h);
+	return(\@result);
+}
+
+sub get {
+	my ($self,$var,@index) = @_;
+	if (! defined $var) {
+		my $h = $self->SUPER::get();
+		$h->{v}=$self->_get_vec();
+		return($h);
+	} else {
+		if ($var eq 'symmetry') {
+			return($self->{symmetry}->get);
+		} elsif ($var eq 'v') {
+			return($self->_get_vec(@index));
+		} else {
+			return(undef);
+		}
+	}
+}
+
+sub _set_vec {
+	my ($self,$value,@index) = @_;
+	my @adj;
+	if ($#index < 0) {
+		for (my $i=0;$i<3;$i++) {
+			for (my $j=0;$j<3;$j++) {
+				push @adj,$self->{v}->[$i]->[$j]->set_padded($value->[$i]->[$j]);
+			}
+		}
+	} elsif ($#index==0) {
+		for (my $i=0;$i<3;$i++) {
+			push @adj,$self->{v}->[$index[0]]->[$i]->set_padded($value->[$i]);
+		}
+	} else {
+		return($self->{v}->[$index[0]]->[$index[1]]->set_padded($value));
+	}
+	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
+}
+
+sub set {
+	my ($self,$var,$value,@index) = @_;
+	if ($var eq 'symmetry') {
+		return($self->{symmetry}->set($value));
+	} elsif ($var eq 'v') {
+		return($self->_set_vec($value,@index));
+	}
 }
 1;
