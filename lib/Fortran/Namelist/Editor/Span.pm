@@ -144,11 +144,30 @@ sub get {
 	my $self=shift;
 	return(lc($self->SUPER::get()));
 }
+sub set_padded {
+	my ($self,$data) = @_;
+	my $l_data=length($data);
+	my $l_old =$self->length;
+	if ($l_old > $l_data) {
+		$data = ' ' x ($l_old-$l_data) . $data;
+	}
+	return($self->SUPER::set($data));
+}
+
 
 package Fortran::Namelist::Editor::CaseSensitiveToken;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::CaseSensitiveToken::ISA=qw{Fortran::Namelist::Editor::Span};
+sub set_padded {
+	my ($self,$data) = @_;
+	my $l_data=length($data);
+	my $l_old =$self->length;
+	if ($l_old > $l_data) {
+		$data = ' ' x ($l_old-$l_data) . $data;
+	}
+	return($self->SUPER::set($data));
+}
 
 package Fortran::Namelist::Editor::Comment;
 use strict;
