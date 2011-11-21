@@ -30,8 +30,4 @@ sub set {
 	die "unimplemented";
 }
 
-sub get {
-	die "unimplemented";
-}
-
 1;
