@@ -85,6 +85,14 @@ sub name {
 	return($name);
 }
 
+sub set {
+	die "unimplemented";
+}
+
+sub get {
+	die "unimplemented";
+}
+
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES;
 use strict;
 use warnings;
