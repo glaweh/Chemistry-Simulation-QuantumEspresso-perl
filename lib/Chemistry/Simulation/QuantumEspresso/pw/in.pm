@@ -35,15 +35,15 @@ sub parse_cards {
 		# skip empty lines
 		next if ($lines_cs[$i] =~ /^\s*$/) ;
 		if ($lines_cs[$i] =~ /^\s*ATOMIC_SPECIES/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES->new($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*ATOMIC_POSITIONS/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS->new($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*CELL_PARAMETERS/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::cell_parameters->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS->new($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 	} continue {
@@ -85,10 +85,10 @@ sub name {
 	return($name);
 }
 
-package Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species;
+package Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES;
 use strict;
 use warnings;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
+@Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->SUPER::init($namelist,@args);
@@ -127,7 +127,7 @@ sub parse {
 	}
 	$self->{o_e}=$o_lines->[$i];
 	if ($#{$self->{_species}} < $ntyp-1) {
-		warn "Card 'atomic_species' incomplete";
+		warn "Card 'ATOMIC_SPECIES' incomplete";
 	}
 	return($i,$self);
 }
@@ -141,10 +141,10 @@ sub get {
 	return($h);
 }
 
-package Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions;
+package Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS;
 use strict;
 use warnings;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
+@Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->SUPER::init($namelist,@args);
@@ -210,7 +210,7 @@ sub parse {
 	}
 	$self->{o_e}=$o_lines->[$i];
 	if ($#{$self->{_atom}} < $nat-1) {
-		warn "Card 'atomic_positions' incomplete";
+		warn "Card 'ATOMIC_POSITIONS' incomplete";
 	}
 	return($i,$self);
 }
@@ -278,10 +278,10 @@ sub get {
 	return($h);
 }
 
-package Chemistry::Simulation::QuantumEspresso::pw::in::card::cell_parameters;
+package Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS;
 use strict;
 use warnings;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::cell_parameters::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
+@Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->SUPER::init($namelist,@args);
@@ -335,7 +335,7 @@ sub parse {
 	}
 	$self->{o_e}=$o_lines->[$i];
 	if ($#{$self->{v}} < 2) {
-		warn "Card 'cell_parameters' incomplete";
+		warn "Card 'CELL_PARAMETERS' incomplete";
 	}
 	return($i,$self);
 }
