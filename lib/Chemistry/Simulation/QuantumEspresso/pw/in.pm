@@ -5,6 +5,7 @@ use Carp;
 use Fortran::Namelist::Editor;
 use Scalar::Util qw(blessed);
 @Chemistry::Simulation::QuantumEspresso::pw::in::ISA=('Fortran::Namelist::Editor');
+my @groups = qw{&control &system &electrons &ions &cell ATOMIC_SPECIES ATOMIC_POSITIONS K_POINTS CELL_PARAMETERS OCCUPATIONS CONSTRAINTS};
 
 sub init {
 	my $self=shift;
