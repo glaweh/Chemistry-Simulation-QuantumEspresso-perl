@@ -287,7 +287,7 @@ sub init {
 	$self->SUPER::init($namelist,@args);
 	$self->{name}     ='CELL_PARAMETERS';
 	$self->{symmetry} = undef;
-	$self->{v}     = [];
+	$self->{v}        = [];
 	if ($#args >= 0) {
 		return($self->parse(@args));
 	}
