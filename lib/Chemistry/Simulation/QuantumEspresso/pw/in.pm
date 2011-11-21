@@ -33,15 +33,15 @@ sub parse_cards {
 	while ($i<=$#lines) {
 		# skip empty lines
 		next if ($lines_cs[$i] =~ /^\s*$/) ;
-		if ($lines_cs[$i] =~ /^\s*atomic_species/i) {
+		if ($lines_cs[$i] =~ /^\s*ATOMIC_SPECIES/) {
 			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_species->new($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
-		if ($lines_cs[$i] =~ /^\s*atomic_positions/i) {
+		if ($lines_cs[$i] =~ /^\s*ATOMIC_POSITIONS/) {
 			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::atomic_positions->new($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
-		if ($lines_cs[$i] =~ /^\s*cell_parameters/i) {
+		if ($lines_cs[$i] =~ /^\s*CELL_PARAMETERS/) {
 			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::cell_parameters->new($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
@@ -91,7 +91,7 @@ use warnings;
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->SUPER::init($namelist,@args);
-	$self->{name}='atomic_species';
+	$self->{name}='ATOMIC_SPECIES';
 	$self->{species}  = {};
 	$self->{_species} = [];
 	if ($#args >= 0) {
@@ -103,8 +103,8 @@ sub init {
 sub parse {
 	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
 	my $o_line = $self->{o_b} = $o_lines->[$i];
-	if ($lines_cs->[$i] =~ /^\s*(atomic_species)/i) {
-		$self->{name}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
+	if ($lines_cs->[$i] =~ /^\s*(ATOMIC_SPECIES)/) {
+		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 	}
 	my $ntyp=$self->{_namelist}->get('&system','ntyp');
 	while (1) {
@@ -147,7 +147,7 @@ use warnings;
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->SUPER::init($namelist,@args);
-	$self->{name}  ='atomic_positions';
+	$self->{name}  ='ATOMIC_POSITIONS';
 	$self->{units} = undef;
 	$self->{atom}  = {};
 	$self->{_atom} = [ ];
@@ -164,9 +164,9 @@ sub parse {
 	while ($title =~ /__+/) {
 		substr($title,$-[0],$+[0]-$-[0])=substr($lines->[$i],$-[0],$+[0]-$-[0]);
 	}
-	if ($title =~ /^\s*(atomic_positions)(\s+\S*(alat|bohr|angstrom|crystal)\S*)?/i) {
+	if ($title =~ /^\s*(ATOMIC_POSITIONS)(\s+\S*(alat|bohr|angstrom|crystal)\S*)?/i) {
 		my $o_line = $o_lines->[$i];
-		$self->{name}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
+		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 		if (defined $2) {
 			$self->{units}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 		} else {
@@ -284,7 +284,7 @@ use warnings;
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->SUPER::init($namelist,@args);
-	$self->{name}     ='cell_parameters';
+	$self->{name}     ='CELL_PARAMETERS';
 	$self->{symmetry} = undef;
 	$self->{v}     = [];
 	if ($#args >= 0) {
@@ -300,9 +300,9 @@ sub parse {
 	while ($title =~ /__+/) {
 		substr($title,$-[0],$+[0]-$-[0])=substr($lines->[$i],$-[0],$+[0]-$-[0]);
 	}
-	if ($title =~ /^\s*(cell_parameters)(?:\s+\S*(cubic|hexagonal)\S*)?/i) {
+	if ($title =~ /^\s*(CELL_PARAMETERS)(?:\s+\S*(cubic|hexagonal)\S*)?/i) {
 		my $o_line = $o_lines->[$i];
-		$self->{name}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
+		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 		if (defined $2) {
 			$self->{symmetry}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);
 		} else {
