@@ -1,7 +1,7 @@
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES;
 use strict;
 use warnings;
-use Chemistry::Simulation::QuantumEspresso::pw::in;
+use Chemistry::Simulation::QuantumEspresso::pw::in::card;
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
 	my ($self,$namelist,@args)=@_;
