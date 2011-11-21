@@ -64,4 +64,25 @@ sub get {
 		return($self->{species}->{$index}->{$variable}->get);
 	}
 }
+
+sub set {
+	my ($self,$variable,$value,$index) = @_;
+	return(undef) unless ($variable =~ /^label|mass|pseudopotential$/);
+	my $ntyp=$self->get('&system','ntyp');
+	my @adj;
+	if (! defined $index) {
+		die "dimension mismatch" unless ((ref($value) eq 'ARRAY') and ($#{$value}==$ntyp-1));
+		for (my $i=0; $i<$ntyp; $i++) {
+			push @adj,$self->{_species}->[$i]->{$variable}->set_padded($value->[$i]);
+		}
+	} elsif ($index =~ /^\d+$/) {
+		push @adj,$self->{_species}->[$index]->{$variable}->set_padded($value);
+	} else {
+		push @adj,$self->{species}->{$index}->{$variable}->set_padded($value);
+	}
+	if ($variable eq 'label') {
+		%{$self->{species}}=map { $_->{label}->get(),$_ } @{$self->{_species}};
+	}
+	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
+}
 1;
