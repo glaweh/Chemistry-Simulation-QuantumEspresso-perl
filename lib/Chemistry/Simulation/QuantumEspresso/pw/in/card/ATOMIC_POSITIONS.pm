@@ -87,52 +87,107 @@ sub get_species {
 	}
 }
 
-sub get_position {
-	my ($self,$index)=@_;
-	if (defined $index) {
-		if (defined $self->{_atom}->[$index]) {
-			my @position=map { $_->get } @{$self->{_atom}->[$index]->{position}};
-			return(\@position);
-		} else {
-			return(undef);
-		}
-	} else {
-		my @position;
-		foreach my $atom (@{$self->{_atom}}) {
-			push @position,[ map { $_->get } @{$atom->{position}} ];
-		}
-		return(\@position);
-	}
-}
-
-sub get_if_pos {
-	my ($self,$index)=@_;
-	if (defined $index) {
-		if (defined $self->{_atom}->[$index] and defined $self->{_atom}->[$index]->{if_pos}) {
-			my @if_pos=map { $_->get } @{$self->{_atom}->[$index]->{if_pos}};
-			return(\@if_pos);
-		} else {
-			return(undef);
-		}
-	} else {
-		my @if_pos;
-		foreach my $atom (@{$self->{_atom}}) {
-			if (defined $atom->{if_pos}) {
-				push @if_pos,[ map { $_->get } @{$atom->{if_pos}} ];
+sub _get_vec {
+	my ($self,$var,@index) = @_;
+	my @result;
+	if ($#index < 0) {
+		for my $atom (@{$self->{_atom}}) {
+			if (defined $atom->{$var}) {
+				push @result, [ map { $_->get } @{$atom->{$var}} ];
 			} else {
-				push @if_pos,[ 1, 1, 1];
+				push @result, [ 1, 1, 1];
 			}
 		}
-		return(\@if_pos);
+	} elsif ($#index == 0) {
+		if (defined $self->{_atom}->[$index[0]]->{$var}) {
+			@result = map { $_->get } @{$self->{_atom}->[$index[0]]->{$var}};
+		} else {
+			push @result,1,1,1;
+		}
+	} else {
+		return($self->{_atom}->[$index[0]]->{$var}->[$index[1]]->get) if (defined $self->{_atom}->[$index[0]]->{$var});
+		return(undef);
 	}
+	return(\@result);
 }
 
 sub get {
-	my $self=shift;
-	my $h=$self->SUPER::get();
-	$h->{species}  = $self->get_species;
-	$h->{position} = $self->get_position;
-	$h->{if_pos}   = $self->get_if_pos;
-	return($h);
+	my ($self,$variable,@index)=@_;
+	unless (defined $variable) {
+		my $h;
+		$h->{units}    = $self->get('units');
+		$h->{species}  = $self->get('species');
+		$h->{position} = $self->get('position');
+		$h->{if_pos}   = $self->get('if_pos');
+		return($h);
+	}
+	return($self->{units}->get()) if ($variable eq 'units');
+	if ($variable eq 'species') {
+		if ($#index < 0) {
+			return([ map { $_->{species}->get() } @{$self->{_atom}} ]);
+		} else {
+			return($self->{_atom}->[$index[0]]->{species}->get());
+		}
+	}
+	return(undef) unless ($variable =~ /^position|if_pos$/);
+	return($self->_get_vec($variable,@index));
+}
+
+sub _insert_ifpos {
+	my ($self,$value,$atom) = @_;
+	return(undef) unless defined ($value);
+	return(undef) if (defined $atom->{if_pos});
+	my $o_b = $atom->{o_e};
+	my $adj=$self->{_namelist}->set_data($o_b,$o_b,"  " . join("  ",@{$value}));
+	for (my $i=0;$i<3;$i++) {
+		push @{$atom->{if_pos}},
+			Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$o_b+2,$o_b+2+length($value->[$i]));
+		$o_b=$o_b+2+length($value->[$i]);
+	}
+	return($adj);
+}
+
+sub _set_vec {
+	my ($self,$var,$value,@index) = @_;
+	my @adj;
+	my $nat = $self->get('&system','nat');
+	if ($#index < 0) {
+		die "dimension mismatch" unless ((ref($value) eq 'ARRAY') and ($#{$value}==$nat-1));
+		for (my $i=0;$i<$nat;$i++) {
+			if (defined $self->{_atom}->[$i]->{$var}) {
+				for (my $j=0;$j<3;$j++) {
+					push @adj,$self->{_atom}->[$i]->{$var}->[$j]->set_padded($value->[$i]->[$j]);
+				}
+			} else {
+				push @adj,$self->_insert_ifpos($value->[$i],$self->{_atom}->[$i]);
+			}
+		}
+	} elsif ($#index==0) {
+		if (defined $self->{_atom}->[$index[0]]->{$var}) {
+			for (my $i=0;$i<3;$i++) {
+				push @adj,$self->{_atom}->[$index[0]]->{$var}->[$i]->set_padded($value->[$i]);
+			}
+		} else {
+			push @adj,$self->_insert_ifpos($value,$self->{_atom}->[$index[0]]);
+		}
+	} else {
+		if (defined $self->{_atom}->[$index[0]]->{$var}) {
+			return($self->{_atom}->[$index[0]]->{$var}->[$index[1]]->set_padded($value));
+		} else {
+			my $setting = [ 1, 1, 1];
+			$setting->[$index[1]]=$value;
+			return($self->_insert_ifpos($setting,$self->{_atom}->[$index[0]]));
+		}
+	}
+	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
+}
+
+sub set {
+	my ($self,$var,$value,@index) = @_;
+	if ($var eq 'units') {
+		return($self->{units}->set($value));
+	} else {
+		return($self->_set_vec($var,$value,@index));
+	}
 }
 1;
