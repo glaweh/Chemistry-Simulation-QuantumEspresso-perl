@@ -47,11 +47,21 @@ sub parse {
 }
 
 sub get {
-	my $self = shift;
-	my $h = $self->SUPER::get();
-	for my $species (@{$self->{_species}}) {
-		push @{$h->{species}},$species->get;
+	my ($self,$variable,$index) = @_;
+	unless (defined $variable) {
+		my $h;
+		$h->{label}   = $self->get('label');
+		$h->{mass}    = $self->get('mass');
+		$h->{pseudopotential}=$self->get('pseudopotential');
+		return($h);
 	}
-	return($h);
+	return(undef) unless ($variable =~ /^label|mass|pseudopotential$/);
+	if (! defined $index) {
+		return([ map { $_->{$variable}->get() } @{$self->{_species}} ]);
+	} elsif ($index =~ /^\d+$/) {
+		return($self->{_species}->[$index]->{$variable}->get);
+	} else {
+		return($self->{species}->{$index}->{$variable}->get);
+	}
 }
 1;
