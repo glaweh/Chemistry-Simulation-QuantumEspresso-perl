@@ -22,6 +22,17 @@ sub set {
 	return(undef) unless (defined $data[0]);
 	return($self->SUPER::set(@data));
 }
+sub set_padded {
+	my ($self,$value) = @_;
+	my $data=$self->to_data($value);
+	return(undef) unless (defined $data);
+	my $l_data=length($data);
+	my $l_old =$self->length;
+	if ($l_old > $l_data) {
+		$data = ' ' x ($l_old-$l_data) . $data;
+	}
+	return($self->SUPER::set($data));
+}
 
 package Fortran::Namelist::Editor::Value::string;
 use strict;
@@ -52,12 +63,14 @@ use warnings;
 @Fortran::Namelist::Editor::Value::integer::ISA=qw{Fortran::Namelist::Editor::Value};
 sub to_perl {
 	my ($self,$val)=@_;
-	return(undef) unless ($val =~ /^\d+$/);
-	return($val);
+	if ($val =~ /^\h*(\d+)$/) {
+		return($1);
+	}
+	return(undef);
 }
 sub to_data {
 	my ($self,$val)=@_;
-	return(undef) unless ($val =~ /^\d+$/);
+	return(undef) unless ($val =~ /^\h*\d+$/);
 	return($val,$val);
 }
 
@@ -67,7 +80,7 @@ use warnings;
 @Fortran::Namelist::Editor::Value::double::ISA=qw{Fortran::Namelist::Editor::Value};
 sub to_perl {
 	my ($self,$val)=@_;
-	return(undef) unless ($val=~s{^
+	if ($val=~m{^\h*
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*\.\d+       ##    with decimal point
@@ -75,12 +88,14 @@ sub to_perl {
 			\d+)              ##    without decimal point
 		)
 		[dD]([+-]?\d+)        ## group 2: exponent with optional sign
-		$}{$1e$2}x);
-	return($val);
+		$}x) {
+		return($1 . 'e' . $2);
+	}
+	return(undef);
 }
 sub to_data {
 	my ($self,$val)=@_;
-	return(undef) unless ($val=~m{^
+	if ($val=~m{^(\h*)
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*\.\d+       ##    with decimal point
@@ -88,9 +103,11 @@ sub to_data {
 			\d+)              ##    without decimal point
 		)
 		(?:[eE]([+-]?\d+))?   ## group 2: exponent with optional sign
-		$}x);
-	$val=$1 . 'd' . (defined $2 ? $2 : '0');
-	return($val,$val);
+		$}x) {
+			$val=$1 . $2 . 'd' . (defined $3 ? $3 : '0');
+			return($val,$val);
+		}
+	return(undef);
 }
 package Fortran::Namelist::Editor::Value::single;
 use strict;
@@ -98,7 +115,7 @@ use warnings;
 @Fortran::Namelist::Editor::Value::single::ISA=qw{Fortran::Namelist::Editor::Value};
 sub to_perl {
 	my ($self,$val)=@_;
-	return(undef) unless ($val=~m{
+	if ($val=~m{\h*
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*(\.\d+)     ##    group 2: decimal point and digits
@@ -106,12 +123,14 @@ sub to_perl {
 			\d+)              ##    without decimal point
 		)
 		(?:[eE]([+-]?\d+))?   ## group3: exponent with optional sign
-		}x);
-	return($val);
+		}x) {
+		return($1);
+	}
+	return(undef);
 }
 sub to_data {
 	my ($self,$val)=@_;
-	return(undef) unless ($val=~m{
+	if ($val=~m{\h*
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*(\.\d+)     ##    group 2: decimal point and digits
@@ -119,8 +138,10 @@ sub to_data {
 			\d+)              ##    without decimal point
 		)
 		(?:[eE]([+-]?\d+))?   ## group3: exponent with optional sign
-		}x);
-	return($val,$val);
+		}x) {
+		return($val,$val);
+	}
+	return(undef);
 }
 
 package Fortran::Namelist::Editor::Value::logical;
