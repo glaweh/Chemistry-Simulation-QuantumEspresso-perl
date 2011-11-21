@@ -59,5 +59,30 @@ sub parse_cards {
 		}
 	}
 }
+sub add_group {
+	my ($self,$group_name)=@_;
+	die "no group name" unless $group_name;
+	my $is_card = ($group_name !~ /^&/);
+	$group_name=lc($group_name) unless ($is_card);
+	die "unknown group name: '$group_name'" unless (exists $groups{$group_name});
+	return(2) if (exists $self->{groups}->{$group_name});
+	# find position
+	my $new_order     = $groups{$group_name};
+	my $after_idx     = $#{$self->{_groups}};
+	my @present_order = map { $groups{$_->{name}->get()} } @{$self->{_groups}};
+	for (my $i=0; $i<@present_order; $i++) {
+		if (($new_order > $present_order[$i]) and ($new_order < $present_order[$i+1])) {
+			$after_idx = $i;
+			last;
+		}
+	}
+	return($self->SUPER::add_group($group_name,$after_idx)) unless ($is_card);	
+	my $offset_b    = $self->{_groups}->[$after_idx]->{o_e};
+	$offset_b = $self->insert_new_line_after($offset_b,'');
+	my $class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::' . $group_name;
+	my $card  = $class->insert($self,$offset_b,'',$group_name);
+	splice(@{$self->{_groups}},$after_idx+1,0,$card);
+	$self->{groups}->{$group_name}=$card;
+}
 
 1;
