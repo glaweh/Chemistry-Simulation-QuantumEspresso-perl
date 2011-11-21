@@ -81,6 +81,18 @@ sub dump {
 	return($dd->Dump());
 }
 
+# function, not method
+sub summarize_adj {
+	my @adj;
+	foreach my $a (@_) {
+		next unless (defined $a);
+		next unless ($a->[1] != 0);
+		$adj[0] = $a->[0] if ((! defined $adj[0]) or ($adj[0]>$a->[0]));
+		$adj[1] = (defined $adj[1] ? $adj[1]+$a->[1] : $a->[1]);
+		$adj[2] = $a->[2] if ((! defined $adj[2]) or ($adj[2]<$a->[2]));
+	}
+	return(\@adj);
+}
 package Fortran::Namelist::Editor::ContainerSpan;
 use strict;
 use warnings;
