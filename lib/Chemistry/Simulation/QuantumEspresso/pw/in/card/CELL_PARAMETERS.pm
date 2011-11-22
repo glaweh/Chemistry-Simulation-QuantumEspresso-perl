@@ -54,7 +54,7 @@ sub parse {
 			push @{$self->{v}},$vec;
 		}
 	}
-	$self->{o_e}=$o_lines->[$i];
+	$self->{o_e}=$o_lines->[$i]-1;
 	if ($#{$self->{v}} < 2) {
 		warn "Card 'CELL_PARAMETERS' incomplete";
 	}

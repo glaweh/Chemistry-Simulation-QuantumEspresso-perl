@@ -66,7 +66,7 @@ sub parse {
 			push @{$self->{atom}->{$atom->{species}->get}},$atom;
 		}
 	}
-	$self->{o_e}=$o_lines->[$i];
+	$self->{o_e}=$o_lines->[$i]-1;
 	if ($#{$self->{_atom}} < $nat-1) {
 		warn "Card 'ATOMIC_POSITIONS' incomplete";
 	}

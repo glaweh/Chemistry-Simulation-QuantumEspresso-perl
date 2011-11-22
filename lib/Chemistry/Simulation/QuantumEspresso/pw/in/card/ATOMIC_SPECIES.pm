@@ -39,7 +39,7 @@ sub parse {
 			last;
 		}
 	}
-	$self->{o_e}=$o_lines->[$i];
+	$self->{o_e}=$o_lines->[$i]-1;
 	if ($#{$self->{_species}} < $ntyp-1) {
 		warn "Card 'ATOMIC_SPECIES' incomplete";
 	}
