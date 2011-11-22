@@ -136,7 +136,8 @@ use warnings;
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->{nks}=undef;
-	$self->{k}  = [];
+	$self->{xk}  = [];
+	$self->{wk}  = [];
 	return($self->SUPER::init($namelist,@args));
 }
 sub parse {
@@ -154,17 +155,18 @@ sub parse {
 			$nks=$self->{nks}->get;
 		}
 		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
-			push @{$self->{k}},[
+			push @{$self->{xk}},[
 				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]),
 				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]),
 				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[3],$o_line+$+[3]),
-				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[4],$o_line+$+[4]),
 			];
+			push @{$self->{wk}},
+				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[4],$o_line+$+[4]);
 			last;
 		}
 	}
 	$self->{o_e}=$o_lines->[$i];
-	if ((! defined $nks) or ($#{$self->{k}} < $nks-1)) {
+	if ((! defined $nks) or ($#{$self->{xk}} < $nks-1)) {
 		warn "Card 'K_POINTS' incomplete";
 	}
 	return($i,$self);
@@ -181,18 +183,12 @@ sub get {
 	return($self->{nks}->get) if ($variable eq 'nks');
 	if ($variable eq 'xk') {
 		$result=[];
-		foreach my $k (@{$self->{k}}) {
-			push @{$result},[ map { $_->get } @{$k}[0,1,2] ];
+		foreach my $xk (@{$self->{xk}}) {
+			push @{$result},[ map { $_->get } @{$xk} ];
 		}
 		return($result);
 	} elsif ($variable eq 'wk') {
-		return([ map { $_->[3]->get } @{$self->{k}} ]);
-	} elsif ($variable eq 'k') {
-		$result=[];
-		foreach my $k (@{$self->{k}}) {
-			push @{$result},[ map { $_->get } @{$k} ];
-		}
-		return($result);
+		return([ map { $_->get } @{$self->{wk}} ]);
 	}
 	return(undef);
 }
