@@ -4,7 +4,8 @@ use warnings;
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
 	my ($self,$namelist,$lines,$lines_cs,$o_lines,$i)=@_;
-	$self->SUPER::init($namelist,$o_lines->[$i]);
+	my $o_line=$o_lines->[$i] if (defined $i);
+	$self->SUPER::init($namelist,$o_line);
 	$self->{name}      = undef;
 	push @{$self->{_get_ignore_patterns}},qr/^name$/;
 	return($i,$self);
