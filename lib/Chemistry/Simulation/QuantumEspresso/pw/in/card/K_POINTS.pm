@@ -53,6 +53,17 @@ sub parse {
 	return($i,$self);
 }
 
+sub get {
+	my ($self,$variable,@index)=@_;
+	unless (defined $variable) {
+		my $h;
+		$h->{units} = $self->get('units');
+		return($h);
+	}
+	return($self->{units}->get()) if ($variable eq 'units');
+	return(undef);
+}
+
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma;
 use strict;
 use warnings;
@@ -102,6 +113,21 @@ sub parse {
 	}
 	return($i,$self);
 }
+sub get {
+	my ($self,$variable,@index)=@_;
+	my $result=$self->SUPER::get($variable,@index);
+	if (! defined $variable) {
+		$result->{nk}=$self->get('nk');
+		$result->{sk}=$self->get('sk');
+	}
+	return($result) if defined ($result);
+	if ($variable eq 'nk') {
+		return([ map { $_->get } @{$self->{nk}} ]);
+	} elsif ($variable eq 'sk') {
+		return([ map { $_->get } @{$self->{sk}} ]);
+	}
+	return(undef);
+}
 
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list;
 use strict;
@@ -143,5 +169,26 @@ sub parse {
 		warn "Card 'K_POINTS' incomplete";
 	}
 	return($i,$self);
+}
+sub get {
+	my ($self,$variable,@index)=@_;
+	my $result=$self->SUPER::get($variable,@index);
+	if (! defined $variable) {
+		$result->{nks} = $self->get('nks');
+		$result->{xk}  = $self->get('xk');
+		$result->{wk}  = $self->get('wk');
+	}
+	return($result) if defined ($result);
+	return($self->{nks}->get) if ($variable eq 'nks');
+	if ($variable eq 'xk') {
+		$result=[];
+		foreach my $k (@{$self->{k}}) {
+			push @{$result},[ map { $_->get } @{$k}[0,1,2] ];
+		}
+		return($result);
+	} elsif ($variable eq 'wk') {
+		return([ map { $_->[3]->get } @{$self->{k}} ]);
+	}
+	return(undef);
 }
 1;
