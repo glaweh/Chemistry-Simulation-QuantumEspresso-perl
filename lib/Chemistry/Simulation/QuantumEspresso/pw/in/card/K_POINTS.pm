@@ -188,6 +188,12 @@ sub get {
 		return($result);
 	} elsif ($variable eq 'wk') {
 		return([ map { $_->[3]->get } @{$self->{k}} ]);
+	} elsif ($variable eq 'k') {
+		$result=[];
+		foreach my $k (@{$self->{k}}) {
+			push @{$result},[ map { $_->get } @{$k} ];
+		}
+		return($result);
 	}
 	return(undef);
 }
