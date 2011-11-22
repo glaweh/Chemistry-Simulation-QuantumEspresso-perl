@@ -72,6 +72,17 @@ sub parse {
 	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
 	return($i+1,$self);
 }
+sub set {
+	my ($self,$variable,$value,@index)=@_;
+	return(undef) unless (defined $variable);
+	return(undef) unless (defined $value);
+	if ($variable eq 'units') {
+		if ($value ne 'gamma') {
+			die "cannot change units from 'gamma' to '$value'";
+		}
+	}
+	die "unknown variable '$variable'";
+}
 
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::automatic;
 use strict;
@@ -126,6 +137,29 @@ sub get {
 		return([ map { $_->get } @{$self->{sk}} ]);
 	}
 	return(undef);
+}
+sub set {
+	my ($self,$variable,$value,@index)=@_;
+	return(undef) unless (defined $variable);
+	return(undef) unless (defined $value);
+	if ($variable eq 'units') {
+		if ($value ne 'automatic') {
+			die "cannot change units from 'automatic' to '$value'";
+		}
+	}
+	my @adj;
+	if (($variable eq 'nk') or ($variable eq 'sk')) {
+		if ($#index < 0) {
+			for (my $i=0; $i<3; $i++) {
+				push @adj,$self->{$variable}->[$i]->set_padded($value->[$i]);
+			}
+		} else {
+			push @adj,$self->{$variable}->[$index[0]]->set_padded($value);
+		}
+	} else {
+		die "unknown variable '$variable'";
+	}
+	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
 }
 
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list;
@@ -191,5 +225,46 @@ sub get {
 		return([ map { $_->get } @{$self->{wk}} ]);
 	}
 	return(undef);
+}
+sub set {
+	my ($self,$variable,$value,@index)=@_;
+	return(undef) unless (defined $variable);
+	return(undef) unless (defined $value);
+	if ($variable eq 'units') {
+		if ($value =~ /^(?:automatic|gamma)$/) {
+			die "cannot change units from '" . $self->get('units') . "' to '$value'";
+		}
+		return(undef);
+	}
+	my @adj;
+	my $nks = $self->get('nks');
+	if ($variable eq 'xk') {
+		if ($#index < 0) {
+			die "dimension mismatch" if ($#{$value} != $nks-1);
+			for (my $i=0; $i<$nks;$i++) {
+				for (my $j=0; $j<3; $j++) {
+					push @adj,$self->{xk}->[$i]->[$j]->set_padded($value->[$i]->[$j]);
+				}
+			}
+		} elsif ($#index == 0) {
+			for (my $j=0;$j<3;$j++) {
+				push @adj,$self->{xk}->[$index[0]]->[$j]->set_padded($value->[$j]);
+			}
+		} elsif ($#index == 1) {
+			push @adj,$self->{xk}->[$index[0]]->[$index[1]]->set_padded($value);
+		}
+	} elsif ($variable eq 'wk') {
+		if ($#index < 0) {
+			die "dimension mismatch" if ($#{$value} != $nks-1);
+			for (my $i=0; $i<$nks;$i++) {
+				push @adj,$self->{wk}->[$i]->set_padded($value->[$i]);
+			}
+		} elsif ($#index == 0) {
+			push @adj,$self->{wk}->[$index[0]]->set_padded($value);
+		}
+	} else {
+		die "unknown variable '$variable'";
+	}
+	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
 }
 1;
