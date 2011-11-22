@@ -12,7 +12,8 @@ sub init {
 	if ($#args >= 0) {
 		return($self->parse(@args));
 	}
-	return(undef,$self);
+	return(undef,$self) if (wantarray);
+	return($self);
 }
 
 sub parse {
