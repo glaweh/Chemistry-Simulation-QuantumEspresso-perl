@@ -65,7 +65,7 @@ sub parse_cards {
 	}
 }
 sub add_group {
-	my ($self,$group_name)=@_;
+	my ($self,$group_name,$after,@options)=@_;
 	die "no group name" unless $group_name;
 	my $is_card = ($group_name !~ /^&/);
 	$group_name=lc($group_name) unless ($is_card);
@@ -81,11 +81,11 @@ sub add_group {
 			last;
 		}
 	}
-	return($self->SUPER::add_group($group_name,$after_idx)) unless ($is_card);	
+	return($self->SUPER::add_group($group_name,$after_idx,@options)) unless ($is_card);
 	my $offset_b    = $self->{_groups}->[$after_idx]->{o_e};
 	$offset_b = $self->insert_new_line_after($offset_b,'');
 	my $class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::' . $group_name;
-	my $card  = $class->insert($self,$offset_b,'',$group_name);
+	my $card  = $class->insert($self,$offset_b,'',$group_name,@options);
 	splice(@{$self->{_groups}},$after_idx+1,0,$card);
 	$self->{groups}->{$group_name}=$card;
 }

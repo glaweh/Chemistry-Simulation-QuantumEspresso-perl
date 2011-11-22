@@ -195,7 +195,7 @@ sub refine_offset_forward {
 }
 
 sub add_group {
-	my ($self,$group_name,$after)=@_;
+	my ($self,$group_name,$after,@options)=@_;
 	return(2) if (exists $self->{groups}->{$group_name});
 	my $after_index = $#{$self->{_groups}};
 	if (defined $after) {
@@ -208,7 +208,7 @@ sub add_group {
 	}
 	my $offset_b    = $self->{_groups}->[$after_index]->{o_e};
 	$offset_b = $self->insert_new_line_after($offset_b,'');
-	my $group = Fortran::Namelist::Editor::Group->insert($self,$offset_b,'',$group_name);
+	my $group = Fortran::Namelist::Editor::Group->insert($self,$offset_b,'',$group_name,@options);
 	splice(@{$self->{_groups}},$after_index+1,0,$group);
 	$self->{groups}->{$group_name}=$group;
 }
