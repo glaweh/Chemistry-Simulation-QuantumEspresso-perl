@@ -47,7 +47,6 @@ sub parse {
 		} else {
 			bless($self,'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list');
 		}
-		warn "blessed: " . blessed($self);
 		return($self->parse($lines,$lines_cs,$o_lines,$i));
 	}
 	return($i,$self);
