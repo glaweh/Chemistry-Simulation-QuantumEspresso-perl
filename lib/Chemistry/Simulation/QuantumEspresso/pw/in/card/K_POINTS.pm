@@ -64,6 +64,35 @@ sub get {
 	return(undef);
 }
 
+sub insert {
+	my ($class,$namelist,$o_b,$separator,$name,$units,@args) = @_;
+	die "units option undefined" unless (defined $units);
+	if ($units eq 'gamma') {
+		$class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma';
+	} elsif ($units eq 'automatic') {
+		$class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::automatic';
+	} else {
+		$class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list';
+	}
+	my $self = $class->new;
+	my @adj;
+	($self->{name},$adj[0])  = Fortran::Namelist::Editor::CaseSensitiveToken->insert($namelist,$o_b,$separator,$name);
+	($self->{units},$adj[1]) = Fortran::Namelist::Editor::Token->insert($namelist,$self->{name}->{o_e},' ',$units);
+	$self->{o_b} = $o_b;
+	$self->{o_e} = $self->{units}->{o_e};
+	$self->{_adjusted} = $self->{units}->{_adjusted};
+
+	push @adj,$self->_insert_subclass(@args);
+	my $adj=Fortran::Namelist::Editor::Span::summarize_adj(@adj);
+
+	return($self,$adj) if (wantarray);
+	return($self);
+}
+
+sub _insert_subclass {
+	return(undef);
+}
+
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma;
 use strict;
 use warnings;
