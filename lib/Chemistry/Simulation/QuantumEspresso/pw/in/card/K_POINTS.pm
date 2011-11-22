@@ -150,7 +150,7 @@ sub parse {
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
-		if ($lines_cs->[$i] = /^\s*(\S+)\s*$/) {
+		if ($lines_cs->[$i] =~ /^\s*(\S+)\s*$/) {
 			$self->{nks}=Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 			$nks=$self->{nks}->get;
 		}
