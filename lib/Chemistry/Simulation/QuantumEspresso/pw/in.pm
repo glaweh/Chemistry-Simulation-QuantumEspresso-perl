@@ -7,6 +7,7 @@ use Scalar::Util qw(blessed);
 use Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES;
 use Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS;
 use Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS;
+use Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS;
 @Chemistry::Simulation::QuantumEspresso::pw::in::ISA=('Fortran::Namelist::Editor');
 my @groups = qw{&control &system &electrons &ions &cell ATOMIC_SPECIES ATOMIC_POSITIONS K_POINTS CELL_PARAMETERS OCCUPATIONS CONSTRAINTS};
 my %groups = map { $groups[$_],$_ } 0 .. $#groups;
@@ -47,6 +48,10 @@ sub parse_cards {
 		}
 		if ($lines_cs[$i] =~ /^\s*CELL_PARAMETERS/) {
 			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			next;
+		}
+		if ($lines_cs[$i] =~ /^\s*K_POINTS/) {
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS->new($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 	} continue {
