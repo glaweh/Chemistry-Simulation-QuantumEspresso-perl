@@ -46,7 +46,7 @@ sub parse {
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
-		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) {
+		if ($lines_cs->[$i] =~ /^\s?(\s*\S+)\s(\s*\S+)\s(\s*\S+)\s(\s*\S+)(?:\s+(\S+)\s+(\S+)\s+(\S+))?/) {
 			my $atom=Fortran::Namelist::Editor::ContainerSpan->new($self->{_namelist},$o_line,$o_lines->[$i+1]-1);
 			$atom->{species}         = Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 			$atom->{position}        = [

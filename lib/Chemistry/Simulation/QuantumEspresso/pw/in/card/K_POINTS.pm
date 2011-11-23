@@ -134,7 +134,7 @@ sub parse {
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
-		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
+		if ($lines_cs->[$i] =~ /^\s?(\s*\S+)\s(\s*\S+)\s(\s*\S+)\s(\s*\S+)\s(\s*\S+)\s(\s*\S+)/) {
 			@{$self->{nk}}=(
 				Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]),
 				Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]),
@@ -237,11 +237,11 @@ sub parse {
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
-		if ($lines_cs->[$i] =~ /^\s*(\S+)\s*$/) {
+		if ($lines_cs->[$i] =~ /^\s?(\s*\S+)\s*$/) {
 			$self->{nks}=Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 			$nks=$self->{nks}->get;
 		}
-		if ($lines_cs->[$i] =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
+		if ($lines_cs->[$i] =~ /^\s?(\s*\S+)\s(\s*\S+)\s(\s*\S+)\s(\s*\S+)/) {
 			push @{$self->{xk}},[
 				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]),
 				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]),
