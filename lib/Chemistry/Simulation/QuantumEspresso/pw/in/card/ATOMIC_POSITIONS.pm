@@ -155,7 +155,7 @@ sub _set_vec {
 		for (my $i=0;$i<$nat;$i++) {
 			if (defined $self->{_atom}->[$i]->{$var}) {
 				for (my $j=0;$j<3;$j++) {
-					push @adj,$self->{_atom}->[$i]->{$var}->[$j]->set_padded($value->[$i]->[$j]);
+					push @adj,$self->{_atom}->[$i]->{$var}->[$j]->set_padded(sprintf('%14.10f',$value->[$i]->[$j]));
 				}
 			} else {
 				push @adj,$self->_insert_ifpos($value->[$i],$self->{_atom}->[$i]);
