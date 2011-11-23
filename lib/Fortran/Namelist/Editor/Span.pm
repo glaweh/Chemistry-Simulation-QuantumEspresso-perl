@@ -142,7 +142,9 @@ use warnings;
 @Fortran::Namelist::Editor::Token::ISA=qw{Fortran::Namelist::Editor::Span};
 sub get {
 	my $self=shift;
-	return(lc($self->SUPER::get()));
+	my $data=lc($self->SUPER::get());
+	$data =~ s/^\s+//;
+	return($data);
 }
 sub set_padded {
 	my ($self,$data) = @_;
@@ -159,6 +161,12 @@ package Fortran::Namelist::Editor::CaseSensitiveToken;
 use strict;
 use warnings;
 @Fortran::Namelist::Editor::CaseSensitiveToken::ISA=qw{Fortran::Namelist::Editor::Span};
+sub get {
+	my $self=shift;
+	my $data=$self->SUPER::get();
+	$data =~ s/^\s+//;
+	return($data);
+}
 sub set_padded {
 	my ($self,$data) = @_;
 	my $l_data=length($data);
