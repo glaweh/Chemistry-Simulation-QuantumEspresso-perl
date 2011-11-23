@@ -9,15 +9,13 @@ sub init {
 	$self->SUPER::init($namelist,@args);
 	$self->{name}     ='K_POINTS' unless (exists $self->{name});
 	$self->{units}    = undef     unless (exists $self->{units});
-	if ($#args >= 0) {
-		return($self->parse(@args));
-	}
 	return(undef,$self) if (wantarray);
 	return($self);
 }
 
 sub parse {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
+	my $self = $class->new($namelist);
 	# check for units
 	unless (defined $self->{units}) {
 		my $title = $lines_cs->[$i];
@@ -99,7 +97,8 @@ use warnings;
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma::ISA =
 	qw{Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS};
 sub parse {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
+	my $self = $class->new($namelist);
 	return($i+1,$self);
 }
 sub set {
@@ -126,8 +125,9 @@ sub init {
 	return($self->SUPER::init($namelist,@args));
 }
 sub parse {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
-	($i,$self)=$self->SUPER::parse($lines,$lines_cs,$o_lines,$i);
+	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
+	my $self;
+	($i,$self)=$class->SUPER::parse($namelist,$lines,$lines_cs,$o_lines,$i);
 	while (1) {
 		$i++;
 		last if ($i > $#{$lines});
@@ -205,8 +205,9 @@ sub init {
 	return($self->SUPER::init($namelist,@args));
 }
 sub parse {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
-	($i,$self)=$self->SUPER::parse($lines,$lines_cs,$o_lines,$i);
+	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
+	my $self;
+	($i,$self)=$class->SUPER::parse($namelist,$lines,$lines_cs,$o_lines,$i);
 	my $nks;
 	while (1) {
 		$i++;

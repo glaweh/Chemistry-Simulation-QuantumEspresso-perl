@@ -12,7 +12,8 @@ sub init {
 }
 
 sub parse {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
+	my $self = $class->new($namelist);
 	return($i,$self);
 }
 

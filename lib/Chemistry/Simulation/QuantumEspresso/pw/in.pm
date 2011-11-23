@@ -39,19 +39,19 @@ sub parse_cards {
 		# skip empty lines
 		next if ($lines_cs[$i] =~ /^\s*$/) ;
 		if ($lines_cs[$i] =~ /^\s*ATOMIC_SPECIES/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*ATOMIC_POSITIONS/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*CELL_PARAMETERS/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*K_POINTS/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS->new($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 	} continue {

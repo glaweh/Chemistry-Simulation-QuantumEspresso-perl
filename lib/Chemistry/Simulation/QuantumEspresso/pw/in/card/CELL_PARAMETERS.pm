@@ -9,14 +9,12 @@ sub init {
 	$self->{name}     ='CELL_PARAMETERS';
 	$self->{symmetry} = undef;
 	$self->{v}        = [];
-	if ($#args >= 0) {
-		return($self->parse(@args));
-	}
 	return(undef,$self);
 }
 
 sub parse {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
+	my $self = $class->new($namelist);
 	# check for units
 	my $title = $lines_cs->[$i];
 	while ($title =~ /__+/) {

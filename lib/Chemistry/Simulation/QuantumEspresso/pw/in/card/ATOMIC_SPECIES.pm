@@ -9,14 +9,12 @@ sub init {
 	$self->{name}='ATOMIC_SPECIES';
 	$self->{species}  = {};
 	$self->{_species} = [];
-	if ($#args >= 0) {
-		return($self->parse(@args));
-	}
 	return(undef,$self);
 }
 
 sub parse {
-	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
+	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
+	my $self = $class->new($namelist);
 	my $o_line = $self->{o_b} = $o_lines->[$i];
 	if ($lines_cs->[$i] =~ /^\s*(ATOMIC_SPECIES)/) {
 		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
