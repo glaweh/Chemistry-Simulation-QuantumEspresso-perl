@@ -246,4 +246,12 @@ sub delete {
 	return($is_empty);
 }
 
+sub dump_hash {
+	my $self=shift;
+	my $h = $self->get();
+	my $dd=Data::Dumper->new([ $h ]);
+	$dd->Sortkeys(sub { my $ref=shift; return([ sort keys %{$ref} ]) });
+	$dd->Indent(1);
+	return($dd->Dump());
+}
 1;
