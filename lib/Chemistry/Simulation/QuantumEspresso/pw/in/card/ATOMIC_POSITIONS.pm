@@ -149,7 +149,7 @@ sub _insert_ifpos {
 sub _set_vec {
 	my ($self,$var,$value,@index) = @_;
 	my @adj;
-	my $nat = $self->get('&system','nat');
+	my $nat = $self->{_namelist}->get('&system','nat');
 	if ($#index < 0) {
 		die "dimension mismatch" unless ((ref($value) eq 'ARRAY') and ($#{$value}==$nat-1));
 		for (my $i=0;$i<$nat;$i++) {
