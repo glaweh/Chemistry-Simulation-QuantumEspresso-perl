@@ -22,6 +22,7 @@ sub parse {
 	}
 	if ($title =~ /^\s*(CELL_PARAMETERS)(?:\s+\S*(cubic|hexagonal)\S*)?/i) {
 		my $o_line = $o_lines->[$i];
+		$self->{o_b}=$o_line;
 		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 		if (defined $2) {
 			$self->{symmetry}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);

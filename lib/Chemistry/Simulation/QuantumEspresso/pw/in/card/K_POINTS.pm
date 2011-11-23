@@ -24,6 +24,7 @@ sub parse {
 		}
 		if ($title =~ /^\s*(K_POINTS)(?:\s+\S*(tpiba|automatic|crystal|gamma|tpiba_b|crystal_b)\S*)?/i) {
 			my $o_line = $o_lines->[$i];
+			$self->{o_b} = $o_line;
 			$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 			if (defined $2) {
 				$self->{units}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);
