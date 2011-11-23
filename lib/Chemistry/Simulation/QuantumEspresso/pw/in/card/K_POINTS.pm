@@ -72,7 +72,7 @@ sub insert {
 	} else {
 		$class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list';
 	}
-	my $self = $class->new;
+	my $self = $class->new($namelist);
 	my @adj;
 	($self->{name},$adj[0])  = Fortran::Namelist::Editor::CaseSensitiveToken->insert($namelist,$o_b,$separator,$name);
 	($self->{units},$adj[1]) = Fortran::Namelist::Editor::Token->insert($namelist,$self->{name}->{o_e},' ',$units);
