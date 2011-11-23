@@ -191,6 +191,27 @@ sub set {
 	}
 	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
 }
+sub _insert_subclass {
+	my ($self,@grid) = @_;
+	map { $grid[$_] = 1 unless (defined $grid[$_]) } 0 .. 2;
+	map { $grid[$_] = 0 unless (defined $grid[$_]) } 3 .. 5;
+	my $to_insert = sprintf("\n%s%2d %2d %2d %2d %2d %2d",$self->{_namelist}->{indent},@grid);
+	my @length = map { my $l=length($_); $l=2 if ($l<2) } @grid;
+	my $offset=$self->{_namelist}->refine_offset_forward($self->{o_e},qr{([^\n]+)}s);
+	my $adj = $self->{_namelist}->set_data($offset,$offset,$to_insert);
+	$self->{o_e} += length($to_insert);
+	$self->{_adjusted} = $adj->[2];
+	$offset+=length($self->{_namelist}->{indent})+1;
+	for (my $i=0;$i<3;$i++) {
+		push @{$self->{nk}},Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$offset,$offset+$length[$i]);
+		$offset+=$length[$i]+1;
+	}
+	for (my $i=3;$i<6;$i++) {
+		push @{$self->{sk}},Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$offset,$offset+$length[$i]);
+		$offset+=$length[$i]+1;
+	}
+	return($adj)
+}
 
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list;
 use strict;
@@ -297,5 +318,40 @@ sub set {
 		die "unknown variable '$variable'";
 	}
 	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
+}
+sub _insert_subclass {
+	my ($self,$xk,$wk) = @_;
+	die "needs xk array ref" unless (ref $xk eq 'ARRAY');
+	my @wk  = @{$wk} if (ref $wk eq 'ARRAY');
+	map { $wk[$_] = 1 unless (defined $wk[$_]) } 0 .. $#{$xk};
+	# calculate insertion
+	my $nks = $#{$xk}+1;
+	my $nindent = "\n" . $self->{_namelist}->{indent};
+	my $lindent = length($nindent);
+	my $to_insert = sprintf("%s%4d",$nindent,$nks);
+	my $o_b=$self->{_namelist}->refine_offset_forward($self->{o_e},qr{([^\n]+)}s);
+	my $offset = $o_b+$lindent;
+	my $nks_o = Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$offset,$offset+4);
+	$offset+=4;
+	my (@xk_o,@wk_o);
+	for (my $i=0;$i<=$#{$xk};$i++) {
+		$to_insert.=sprintf("%s%14.10f %14.10f %14.10f %s",$nindent,@{$xk->[$i]},$wk[$i]);
+		$offset+=$lindent;
+		my @length = map { my $l=length($_); $l=14 if ($l < 14) } @{$xk->[$i]};
+		for (my $j=0;$j<3;$j++) {
+			push @{$xk_o[$i]},
+				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$offset,$offset+$length[$j]);
+			$offset+=$length[$j]+1;
+		}
+		push @wk_o,Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$offset,$offset+length($wk[$i]));
+		$offset+=length($wk[$i]);
+	}
+	my $adj = $self->{_namelist}->set_data($o_b,$o_b,$to_insert);
+	$self->{nks} = $nks_o;
+	$self->{wk} = \@wk_o;
+	$self->{xk} = \@xk_o;
+	$self->{o_e} += length($to_insert);
+	$self->{_adjusted} = $adj->[2];
+	return($adj)
 }
 1;
