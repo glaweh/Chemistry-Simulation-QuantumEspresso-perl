@@ -21,11 +21,11 @@ sub parse {
 	while ($title =~ /__+/) {
 		substr($title,$-[0],$+[0]-$-[0])=substr($lines->[$i],$-[0],$+[0]-$-[0]);
 	}
-	if ($title =~ /^\s*(ATOMIC_POSITIONS)(\s+\S*(alat|bohr|angstrom|crystal)\S*)?/i) {
+	if ($title =~ /^\s*(ATOMIC_POSITIONS)(?:\s+\S*(alat|bohr|angstrom|crystal)\S*)?/i) {
 		my $o_line = $o_lines->[$i];
 		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 		if (defined $2) {
-			$self->{units}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
+			$self->{units}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);
 		} else {
 			substr($lines->[$i],$+[1],0) = ' alat';
 			substr($lines_cs->[$i],$+[1],0) = ' alat';
