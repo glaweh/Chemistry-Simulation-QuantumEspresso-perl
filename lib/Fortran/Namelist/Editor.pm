@@ -70,9 +70,10 @@ sub set_data {
 	return($adj);
 }
 sub insert_new_line_before {
-	my ($self,$offset,$indent) = @_;
-	$indent = $self->{indent} unless (defined $indent);
-	my $to_insert="\n$indent";
+	my ($self,$offset,$indent,$content) = @_;
+	$indent  = $self->{indent} unless (defined $indent);
+	$content = '' unless (defined $content);
+	my $to_insert="\n$indent$content";
 	$offset=$self->refine_offset_back($offset,qr{(\n[^\n]*)});
 	my $adjust_opt=$self->set_data($offset,$offset,$to_insert);
 	$offset=$adjust_opt->[0]+$adjust_opt->[1];
@@ -80,9 +81,10 @@ sub insert_new_line_before {
 	return($offset);
 }
 sub insert_new_line_after {
-	my ($self,$offset,$indent) = @_;
+	my ($self,$offset,$indent,$content) = @_;
 	$indent = $self->{indent} unless (defined $indent);
-	my $to_insert="\n$indent";
+	$content = '' unless (defined $content);
+	my $to_insert="\n$indent$content";
 	$offset=$self->refine_offset_forward($offset,qr{([^\n]+)}s);
 	my $adjust_opt=$self->set_data($offset,$offset,$to_insert);
 	$offset=$adjust_opt->[0]+$adjust_opt->[1];
