@@ -94,12 +94,47 @@ my %dft_long_to_short = (
 	"sla+pw+tpss+tpss" => "tpss",
 );
 
+my @header_fields_types = (
+	'generated'      , 'string',
+	'author'         , 'string',
+	'date'           , 'string',
+	'comment'        , 'string',
+	'element'        , 'string',
+	'pseudo_type'    , 'string',
+	'relativistic'   , 'string',
+	'is_ultrasoft'   , 'logical',
+	'is_paw'         , 'logical',
+	'is_coulomb'     , 'logical',
+	'has_so'         , 'logical',
+	'has_wfc'        , 'logical',
+	'has_gipaw'      , 'logical',
+	'paw_as_gipaw'   , 'logical',
+	'core_correction', 'logical',
+	'functional'     , 'string',
+	'z_valence'      , 'double',
+	'total_psenergy' , 'double',
+	'wfc_cutoff'     , 'double',
+	'rho_cutoff'     , 'double',
+	'l_max'          , 'integer',
+	'l_max_rho'      , 'integer',
+	'l_local'        , 'integer',
+	'mesh_size'      , 'integer',
+	'number_of_wfc'  , 'integer',
+	'number_of_proj' , 'integer',
+);
+our @header_fields;
+our %header_types;
+
 # initialize vars
 sub init {
 	foreach my $short (keys %dft_short_to_long) {
 		my $long = $dft_short_to_long{$short};
 		$dft_long_to_short{$long}=$short;
 	}
+	for (my $i=0; $i<$#header_fields_types; $i+=2) {
+		push @header_fields,$header_fields_types[$i];
+	}
+	%header_types = @header_fields_types;
 }
 
 
@@ -188,16 +223,50 @@ sub read_header_upf_v2 {
 		return undef;
 	}
 }
+
+sub header2data {
+	my $header=shift;
+	my %data;
+	foreach my $field (@header_fields) {
+		my $type = $header_types{$field};
+		my $val  = $header->{$field};
+		if (defined $val) {
+			$val =~ s/^\s+//;
+			$val =~ s/\s+$//;
+			if ($type eq 'double') {
+				$val =~ s/[dD]/e/;
+			} elsif ($type eq 'logical') {
+				if (uc($val) eq 'T') {
+					$val = 1;
+				} else {
+					$val = 0;
+				}
+			} elsif ($field eq 'element') {
+				$val=ucfirst(lc($val));
+			}
+		} else {
+			if ($field eq 'author') {
+				$val = 'anonymous';
+			} elsif ($field eq 'has_wfc') {
+				$val = $data{is_paw};
+			} elsif ($field eq 'l_max_rho') {
+				$val = 2*$data{l_max};
+			} elsif ($header_types{$field} eq 'string') {
+				$val = '';
+			} else {
+				$val = 0;
+			}
+		}
+		$data{$field}=$val;
+	}
+	return(\%data);
+}
 sub parse {
 	my $fname_upf = shift;
-	my $data;
-	$data=read_header_upf_v1($fname_upf) unless (defined ($data=read_header_upf_v2($fname_upf)));
-	next unless (defined $data);
-	$data->{element}=~ s/^\s*//;
-	$data->{element}=ucfirst(lc($data->{element}));
-	return($data);
+	my $header;
+	$header=read_header_upf_v1($fname_upf) unless (defined ($header=read_header_upf_v2($fname_upf)));
+	return(header2data($header));
 }
-
 
 init();
 1;
