@@ -122,8 +122,8 @@ my @header_fields_types = (
 	'number_of_wfc'  , 'integer',
 	'number_of_proj' , 'integer',
 );
-our @header_fields;
-our %header_types;
+our @fields;
+our %type;
 
 # initialize vars
 sub init {
@@ -132,9 +132,9 @@ sub init {
 		$dft_long_to_short{$long}=$short;
 	}
 	for (my $i=0; $i<$#header_fields_types; $i+=2) {
-		push @header_fields,$header_fields_types[$i];
+		push @fields,$header_fields_types[$i];
 	}
-	%header_types = @header_fields_types;
+	%type = @header_fields_types;
 }
 
 
@@ -227,8 +227,8 @@ sub read_header_upf_v2 {
 sub header2data {
 	my $header=shift;
 	my %data;
-	foreach my $field (@header_fields) {
-		my $type = $header_types{$field};
+	foreach my $field (@fields) {
+		my $type = $type{$field};
 		my $val  = $header->{$field};
 		if (defined $val) {
 			$val =~ s/^\s+//;
@@ -251,7 +251,7 @@ sub header2data {
 				$val = $data{is_paw};
 			} elsif ($field eq 'l_max_rho') {
 				$val = 2*$data{l_max};
-			} elsif ($header_types{$field} eq 'string') {
+			} elsif ($type eq 'string') {
 				$val = '';
 			} else {
 				$val = 0;
