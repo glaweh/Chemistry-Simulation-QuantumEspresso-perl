@@ -2,7 +2,6 @@ package Chemistry::Simulation::QuantumEspresso::UPF;
 use strict;
 use warnings;
 use XML::Simple;
-use Chemistry::Elements;
 use Switch;
 # shamelessly stolen from espresso-4.2/Modules/funct.f90
 #
@@ -196,7 +195,6 @@ sub parse {
 	next unless (defined $data);
 	$data->{element}=~ s/^\s*//;
 	$data->{element}=ucfirst(lc($data->{element}));
-	$data->{z}=Chemistry::Elements::get_Z($data->{element});
 	return($data);
 }
 
