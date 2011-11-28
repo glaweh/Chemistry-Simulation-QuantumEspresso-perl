@@ -94,10 +94,16 @@ my %dft_long_to_short = (
 	"sla+pw+pbe+pbe" => "pbe",
 	"sla+pw+tpss+tpss" => "tpss",
 );
-foreach my $short (keys %dft_short_to_long) {
-	my $long = $dft_short_to_long{$short};
-	$dft_long_to_short{$long}=$short;
+
+# initialize vars
+sub init {
+	foreach my $short (keys %dft_short_to_long) {
+		my $long = $dft_short_to_long{$short};
+		$dft_long_to_short{$long}=$short;
+	}
 }
+
+
 
 # subroutines
 sub map_to_short_dft {
@@ -193,4 +199,7 @@ sub parse {
 	$data->{z}=Chemistry::Elements::get_Z($data->{element});
 	return($data);
 }
+
+
+init();
 1;
