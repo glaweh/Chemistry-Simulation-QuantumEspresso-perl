@@ -177,7 +177,7 @@ sub delete {
 sub insert {
 	my ($class,$namelist,$o_b,$separator,$name,$value,@index) = @_;
 	my ($a,$adj) = Fortran::Namelist::Editor::Assignment->insert($namelist,$o_b,
-		"\n$namelist->{indent}",$name,$value,@index);
+		$separator,$name,$value,@index);
 	my $self=$class->new($namelist);
 	$self->add_instance($a);
 	return($self,$adj) if (wantarray);
