@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Chemistry::Simulation::QuantumEspresso::pw::in;
+my $fname = shift;
+my $in = Chemistry::Simulation::QuantumEspresso::pw::in->new({filename => $fname});
+
+foreach my $setting (@ARGV) {
+	my ($group,$var,$val,@index) = split /\s*:\s*/,$setting;
+	if ((! defined $val) or $val =~ /^$/) {
+		$in->delete($group,$var,@index);
+	} else {
+		$in->set($group,$var,$val,@index);
+	}
+}
+
+$in->save($fname);
