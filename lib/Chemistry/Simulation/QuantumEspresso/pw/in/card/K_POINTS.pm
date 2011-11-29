@@ -15,40 +15,50 @@ sub init {
 
 sub parse {
 	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
-	my $self = $class->new($namelist);
-	# check for units
-	unless (defined $self->{units}) {
-		my $title = $lines_cs->[$i];
-		while ($title =~ /__+/) {
-			substr($title,$-[0],$+[0]-$-[0])=substr($lines->[$i],$-[0],$+[0]-$-[0]);
+	my $title = $lines_cs->[$i];
+	while ($title =~ /__+/) {
+		substr($title,$-[0],$+[0]-$-[0])=substr($lines->[$i],$-[0],$+[0]-$-[0]);
+	}
+	my $o_line = $o_lines->[$i];
+	my $self;
+	if ($title =~ /^\s*(K_POINTS)(?:\s+\S*(tpiba|automatic|crystal|gamma|tpiba_b|crystal_b)\S*)?/i) {
+		my $name  = Fortran::Namelist::Editor::CaseSensitiveToken->new($namelist,$-[1]+$o_line,$+[1]+$o_line);
+		my ($units,$units_o);
+		if (defined $2) {
+			$units=lc($2);
+			$units_o=Fortran::Namelist::Editor::Token->new($namelist,$-[2]+$o_line,$+[2]+$o_line);
+		} else {
+			$units='tpiba';
+			substr($lines->[$i],$+[1],0) = ' tpiba';
+			substr($lines_cs->[$i],$+[1],0) = ' tpiba';
+			foreach (@{$o_lines}) {
+				$_+=6 if ($_ > $o_line);
+			}
+			my $adj;
+			($units_o,$adj)=Fortran::Namelist::Editor::Token->insert($namelist,$name->{o_e},' ','tpiba');
 		}
-		if ($title =~ /^\s*(K_POINTS)(?:\s+\S*(tpiba|automatic|crystal|gamma|tpiba_b|crystal_b)\S*)?/i) {
-			my $o_line = $o_lines->[$i];
-			$self->{o_b} = $o_line;
-			$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
-			if (defined $2) {
-				$self->{units}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);
+		# check for units
+		if ($class =~ /K_POINTS$/) {
+			if ((defined $units) and ($units eq 'gamma')) {
+				$class.='::gamma';
+			} elsif ((defined $units) and ($units eq 'automatic')) {
+				$class.='::automatic';
 			} else {
-				substr($lines->[$i],$+[1],0) = ' tpiba';
-				substr($lines_cs->[$i],$+[1],0) = ' tpiba';
-				foreach (@{$o_lines}) {
-					$_+=6 if ($_ > $o_line);
-				}
-				my $adj;
-				($self->{units},$adj)=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','tpiba');
-				$self->_adjust_offsets($adj);
+				$class.='::list';
 			}
 		}
-		my $units=$self->{units}->get;
-		if ($units eq 'gamma') {
-			bless($self,'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma');
-		} elsif ($units eq 'automatic') {
-			bless($self,'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::automatic');
-		} else {
-			bless($self,'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list');
-		}
-		return($self->parse($lines,$lines_cs,$o_lines,$i));
+		$self=$class->new($namelist);
+		$self->{o_b} = $o_line;
+		$self->{name}=$name;
+		$self->{units}=$units_o
+	} else {
+		die "Error parsing K_POINTS title";
 	}
+	return($self->_parse_subclass($lines,$lines_cs,$o_lines,$i+1));
+}
+
+sub _parse_subclass {
+	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
 	return($i,$self);
 }
 
@@ -97,11 +107,6 @@ use strict;
 use warnings;
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma::ISA =
 	qw{Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS};
-sub parse {
-	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
-	my $self = $class->new($namelist);
-	return($i+1,$self);
-}
 sub set {
 	my ($self,$variable,$value,@index)=@_;
 	return(undef) unless (defined $variable);
@@ -125,12 +130,9 @@ sub init {
 	$self->{sk}=[];
 	return($self->SUPER::init($namelist,@args));
 }
-sub parse {
-	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
-	my $self;
-	($i,$self)=$class->SUPER::parse($namelist,$lines,$lines_cs,$o_lines,$i);
+sub _parse_subclass {
+	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
 	while (1) {
-		$i++;
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
 		my $o_line = $o_lines->[$i];
@@ -147,6 +149,7 @@ sub parse {
 			);
 			last;
 		}
+		$i++;
 	}
 	$self->{o_e}=$o_lines->[$i];
 	if ($#{$self->{nk}} < 2) {
@@ -226,13 +229,10 @@ sub init {
 	$self->{wk}  = [];
 	return($self->SUPER::init($namelist,@args));
 }
-sub parse {
-	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
-	my $self;
-	($i,$self)=$class->SUPER::parse($namelist,$lines,$lines_cs,$o_lines,$i);
+sub _parse_subclass {
+	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
 	my $nks;
 	while (1) {
-		$i++;
 		last if ((defined $nks) and ($#{$self->{k}} >= $nks-1));
 		last if ($i > $#{$lines});
 		next if ($lines_cs->[$i] =~ /^\s*$/);
@@ -251,6 +251,7 @@ sub parse {
 				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[4],$o_line+$+[4]);
 			last;
 		}
+		$i++;
 	}
 	$self->{o_e}=$o_lines->[$i];
 	if ((! defined $nks) or ($#{$self->{xk}} < $nks-1)) {
