@@ -75,7 +75,7 @@ sub add_group {
 	my $new_order     = $groups{$group_name};
 	my $after_idx     = $#{$self->{_groups}};
 	my @present_order = map { $groups{$_->{name}->get()} } @{$self->{_groups}};
-	for (my $i=0; $i<@present_order; $i++) {
+	for (my $i=0; $i<$#present_order; $i++) {
 		if (($new_order > $present_order[$i]) and ($new_order < $present_order[$i+1])) {
 			$after_idx = $i;
 			last;
