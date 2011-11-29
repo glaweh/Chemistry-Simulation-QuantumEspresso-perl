@@ -4,6 +4,7 @@ use warnings;
 use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Index;
 use Fortran::Namelist::Editor::Value;
+my $DEBUG = 0;
 @Fortran::Namelist::Editor::Assignment::ISA = qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
 	my ($self,$namelist,$o_b,$o_e,@options)=@_;
@@ -125,11 +126,11 @@ sub add_instance {
 		die "Trying to assemble assignments with different names";
 	}
 	if (defined $instance->{index}) {
-		print STDERR "interpreting var '$name' as array (reason: index)\n";
+		print STDERR "interpreting var '$name' as array (reason: index)\n" if ($DEBUG > 0);
 		$switch_to_array = 1;
 	}
 	if ($#{$instance->{value}} > 0) {
-		print STDERR "interpreting var '$name' as array (reason: multiple values)\n";
+		print STDERR "interpreting var '$name' as array (reason: multiple values)\n" if ($DEBUG > 0);
 		$switch_to_array = 1;
 	}
 	if ($switch_to_array) {
