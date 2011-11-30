@@ -20,9 +20,22 @@ sub convcell2espresso {
 		$celldm(3).=$cos(0);
 	} elsif ($bravais =~ /^t.$/) {
 		$celldm(pdl(0,2)).=$lengths(pdl(0,2));
+	} elsif ($bravais eq 'oA') {
+		$ibrav = 9;
+		$celldm(0:2) .= $lengths(0:2)->rotate(-1);
+	} elsif ($bravais eq 'oB') {
+		$ibrav = 9;
+		$celldm(0:2) .= $lengths(0:2)->rotate(1);
+	} elsif ($bravais eq 'oC') {
+		$ibrav = 9;
+		$celldm(0:2) .= $lengths(0:2);
 	} elsif ($bravais =~ /^o.$/) {
 		$celldm(0:2).=$lengths(0:2);
-	} elsif ($bravais =~ /^m.$/) {
+	} elsif ($bravais =~ /m[CS]/) {
+		$ibrav = 13;
+		$celldm(0:2).=$lengths(pdl(0,2,1));
+		$celldm(3).=$cos(1);
+	} elsif ($bravais =~ /^mP$/) {
 		$celldm(0:2).=$lengths(pdl(0,2,1));
 		$celldm(3).=$cos(1);
 	} elsif ($bravais eq 'aP') {
