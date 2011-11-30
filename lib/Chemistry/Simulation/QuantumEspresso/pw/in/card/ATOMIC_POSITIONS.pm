@@ -2,6 +2,7 @@ package Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS;
 use strict;
 use warnings;
 use Chemistry::Simulation::QuantumEspresso::pw::in::card;
+use Scalar::Util qw{blessed};
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
 	my ($self,$namelist,@args)=@_;
@@ -28,14 +29,7 @@ sub parse {
 		if (defined $2) {
 			$self->{units}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);
 		} else {
-			substr($lines->[$i],$+[1],0) = ' alat';
-			substr($lines_cs->[$i],$+[1],0) = ' alat';
-			foreach (@{$o_lines}) {
-				$_+=5 if ($_ > $o_line);
-			}
-			my $adj;
-			($self->{units},$adj)=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','alat');
-			$self->_adjust_offsets($adj);
+			$self->{units} = 'alat';
 		}
 	}
 
@@ -70,6 +64,20 @@ sub parse {
 		warn "Card 'ATOMIC_POSITIONS' incomplete";
 	}
 	return($i,$self);
+}
+
+sub _get_units {
+	my ($self,$value)=@_;
+	return($self->{units}->get()) if (blessed($self->{units}));
+	return($self->{units});
+}
+
+sub _set_units {
+	my ($self,$value)=@_;
+	return($self->{units}->set($value)) if (blessed($self->{units}));
+	my $adj;
+	($self->{units},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{o_e},' ',$value);
+	return($adj);
 }
 
 sub get_species {
@@ -120,7 +128,7 @@ sub get {
 		$h->{if_pos}   = $self->get('if_pos');
 		return($h);
 	}
-	return($self->{units}->get()) if ($variable eq 'units');
+	return($self->_get_units()) if ($variable eq 'units');
 	if ($variable eq 'species') {
 		if ($#index < 0) {
 			return([ map { $_->{species}->get() } @{$self->{_atom}} ]);
@@ -184,7 +192,7 @@ sub _set_vec {
 sub set {
 	my ($self,$var,$value,@index) = @_;
 	if ($var eq 'units') {
-		return($self->{units}->set($value));
+		return($self->_set_units($value));
 	} else {
 		return($self->_set_vec($var,$value,@index));
 	}
