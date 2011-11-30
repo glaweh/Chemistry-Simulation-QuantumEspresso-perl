@@ -237,7 +237,7 @@ sub delete {
 	my $is_empty = 0;
 	my $adjust_id;
 	if (exists $self->{groups}->{$group}) {
-		if ($#setting >=0) {
+		if (defined $setting[0]) {
 			($is_empty,$adjust_id) = $self->{groups}->{$group}->delete(@setting);
 		} else {
 			$adjust_id = $self->_remove_group($group);
