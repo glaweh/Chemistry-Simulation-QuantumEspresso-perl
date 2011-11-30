@@ -28,14 +28,7 @@ sub parse {
 			$units=lc($2);
 			$units_o=Fortran::Namelist::Editor::Token->new($namelist,$-[2]+$o_line,$+[2]+$o_line);
 		} else {
-			$units='tpiba';
-			substr($lines->[$i],$+[1],0) = ' tpiba';
-			substr($lines_cs->[$i],$+[1],0) = ' tpiba';
-			foreach (@{$o_lines}) {
-				$_+=6 if ($_ > $o_line);
-			}
-			my $adj;
-			($units_o,$adj)=Fortran::Namelist::Editor::Token->insert($namelist,$name->{o_e},' ','tpiba');
+			$units=$units_o='tpiba';
 		}
 		# check for units
 		if ($class =~ /K_POINTS$/) {
@@ -57,6 +50,20 @@ sub parse {
 	return($self->_parse_subclass($lines,$lines_cs,$o_lines,$i+1));
 }
 
+sub _get_units {
+	my ($self,$value)=@_;
+	return($self->{units}->get()) if (blessed($self->{units}));
+	return($self->{units});
+}
+
+sub _set_units {
+	my ($self,$value)=@_;
+	return($self->{units}->set($value)) if (blessed($self->{units}));
+	my $adj;
+	($self->{units},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{o_e},' ',$value);
+	return($adj);
+}
+
 sub _parse_subclass {
 	my ($self,$lines,$lines_cs,$o_lines,$i) = @_;
 	return($i,$self);
@@ -66,10 +73,10 @@ sub get {
 	my ($self,$variable,@index)=@_;
 	unless (defined $variable) {
 		my $h;
-		$h->{units} = $self->get('units');
+		$h->{units} = $self->_get_units();
 		return($h);
 	}
-	return($self->{units}->get()) if ($variable eq 'units');
+	return($self->_get_units()) if ($variable eq 'units');
 	return(undef);
 }
 
@@ -286,9 +293,9 @@ sub set {
 	return(undef) unless (defined $value);
 	if ($variable eq 'units') {
 		if ($value =~ /^(?:automatic|gamma)$/) {
-			die "cannot change units from '" . $self->get('units') . "' to '$value'";
+			die "cannot change units from '" . $self->_get_units() . "' to '$value'";
 		}
-		return(undef);
+		return($self->_set_units($value));
 	}
 	my @adj;
 	my $nks = $self->get('nks');
