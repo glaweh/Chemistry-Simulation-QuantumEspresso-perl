@@ -164,14 +164,22 @@ use strict;
 use warnings;
 @Fortran::Namelist::Editor::Value::Auto::ISA=qw{Fortran::Namelist::Editor::Value};
 sub new {
-	my ($class,$namelist,$o_b,$o_e) = @_;
+	my ($class,$namelist,$o_b,$o_e,$type) = @_;
 	my $val = $namelist->get_data($o_b,$o_e);
-	$class=detect_data($val);
+	if (defined $type) {
+		$class = "Fortran::Namelist::Editor::Value::$type";
+	} else {
+		$class=detect_data($val);
+	}
 	return($class->new($namelist,$o_b,$o_e));
 }
 sub insert {
-	my ($class,$namelist,$o_b,$separator,$value) = @_;
-	$class=detect_perl($value);
+	my ($class,$namelist,$o_b,$separator,$value,$type) = @_;
+	if (defined $type) {
+		$class = "Fortran::Namelist::Editor::Value::$type";
+	} else {
+		$class=detect_perl($value);
+	}
 	return($class->insert($namelist,$o_b,$separator,$value));
 }
 sub detect_data {

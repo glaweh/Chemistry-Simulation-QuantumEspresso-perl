@@ -52,7 +52,7 @@ sub delete {
 	return(1);
 }
 sub parse_value {
-	my ($self,$offset_b,$offset_e)=@_;
+	my ($self,$offset_b,$offset_e,$type)=@_;
 	my (undef,$data_v) = $self->{_namelist}->get_data($offset_b,$offset_e);
 	# insert a comma into each group of spaces unless there is already one
 	# commas are optional in namelists, this will make it easier to parse
@@ -69,7 +69,7 @@ sub parse_value {
 			)}gx) {
 		my $val;
 		if (defined($1)) {
-			$val=Fortran::Namelist::Editor::Value::Auto->new($self->{_namelist},$-[1]+$offset_b,$+[1]+$offset_b);
+			$val=Fortran::Namelist::Editor::Value::Auto->new($self->{_namelist},$-[1]+$offset_b,$+[1]+$offset_b,$type);
 		}
 		push @{$self->{value}},$val;
 	}
