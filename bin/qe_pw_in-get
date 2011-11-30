@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Chemistry::Simulation::QuantumEspresso::pw::in;
+use Data::Dumper;
+use Getopt::Std;
+my %opt;
+getopts('d',\%opt);
+
+my $fname = shift;
+my $in = Chemistry::Simulation::QuantumEspresso::pw::in->new({filename => $fname});
+my ($group,$var,@index) = split /\s*:\s*/,$ARGV[0] if ($#ARGV >=0);
+
+if ($opt{d}) {
+	print $in->dump;
+	exit(0);
+}
+
+my $val = $in->get($group,$var,@index);
+if (defined $val) {
+	if (ref $val) {
+		print Dumper($val) . "\n";
+	} else {
+		print "$val\n";
+	}
+}
+
