@@ -75,7 +75,9 @@ sub dump {
 	my $dd=Data::Dumper->new([ $self ]);
 	$dd->Sortkeys(sub { my $ref=shift; return([ sort grep { $_ ne '_namelist' } keys %{$ref} ]) });
 	$dd->Indent(1);
-	return($dd->Dump());
+	my $dump = $dd->Dump();
+	$dump =~ s/=>(\s+)([^'\n,]+)/=>$1'$2'/g;
+	return($dump);
 }
 
 # function, not method

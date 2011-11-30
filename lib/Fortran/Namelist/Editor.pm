@@ -254,6 +254,8 @@ sub dump_hash {
 	my $dd=Data::Dumper->new([ $h ]);
 	$dd->Sortkeys(sub { my $ref=shift; return([ sort keys %{$ref} ]) });
 	$dd->Indent(1);
-	return($dd->Dump());
+	my $dump = $dd->Dump();
+	$dump =~ s/=>(\s+)([^'\n,]+)/=>$1'$2'/g;
+	return($dump);
 }
 1;
