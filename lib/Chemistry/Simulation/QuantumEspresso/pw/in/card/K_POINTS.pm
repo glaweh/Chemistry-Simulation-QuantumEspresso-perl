@@ -248,6 +248,8 @@ sub _parse_subclass {
 		if ($lines_cs->[$i] =~ /^\s?(\s*\S+)\s*$/) {
 			$self->{nks}=Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 			$nks=$self->{nks}->get;
+			$i++;
+			next;
 		}
 		if ($lines_cs->[$i] =~ /^\s?(\s*\S+)\s(\s*\S+)\s(\s*\S+)\s(\s*\S+)/) {
 			push @{$self->{xk}},[
@@ -257,7 +259,6 @@ sub _parse_subclass {
 			];
 			push @{$self->{wk}},
 				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$o_line+$-[4],$o_line+$+[4]);
-			last;
 		}
 		$i++;
 	}
