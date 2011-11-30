@@ -2,6 +2,11 @@
 use strict;
 use warnings;
 use Chemistry::Simulation::QuantumEspresso::pw::in;
+use Getopt::Std;
+
+my %opt;
+getopts('d',\%opt);
+
 my $fname = shift;
 my $in = Chemistry::Simulation::QuantumEspresso::pw::in->new({filename => $fname});
 
@@ -12,6 +17,10 @@ foreach my $setting (@ARGV) {
 	} else {
 		$in->set($group,$var,$val,@index);
 	}
+}
+
+if ($opt{d}) {
+	print $in->dump;
 }
 
 $in->save($fname);
