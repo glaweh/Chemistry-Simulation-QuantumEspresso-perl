@@ -2,6 +2,7 @@ package Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS;
 use strict;
 use warnings;
 use Chemistry::Simulation::QuantumEspresso::pw::in::card;
+use Scalar::Util qw{blessed};
 @Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
 sub init {
 	my ($self,$namelist,@args)=@_;
@@ -27,14 +28,7 @@ sub parse {
 		if (defined $2) {
 			$self->{symmetry}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);
 		} else {
-			substr($lines->[$i],$+[1],0) = ' cubic';
-			substr($lines_cs->[$i],$+[1],0) = ' cubic';
-			foreach (@{$o_lines}) {
-				$_+=6 if ($_ > $o_line);
-			}
-			my $adj;
-			($self->{symmetry},$adj)=Fortran::Namelist::Editor::Token->insert($self->{_namelist},$o_line+$+[1],' ','cubic');
-			$self->_adjust_offsets($adj);
+			$self->{symmetry} = 'cubic';
 		}
 	}
 
@@ -60,6 +54,20 @@ sub parse {
 	return($i,$self);
 }
 
+sub _get_symmetry {
+	my ($self,$value)=@_;
+	return($self->{symmetry}->get()) if (blessed($self->{symmetry}));
+	return($self->{symmetry});
+}
+
+sub _set_symmetry {
+	my ($self,$value)=@_;
+	return($self->{symmetry}->set($value)) if (blessed($self->{symmetry}));
+	my $adj;
+	($self->{symmetry},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{o_e},' ',$value);
+	return($adj);
+}
+
 sub _get_vec {
 	my ($self,@index) = @_;
 	my @result;
@@ -80,10 +88,11 @@ sub get {
 	if (! defined $var) {
 		my $h = $self->SUPER::get();
 		$h->{v}=$self->_get_vec();
+		$h->{symmetry}=$self->_get_symmetry();
 		return($h);
 	} else {
 		if ($var eq 'symmetry') {
-			return($self->{symmetry}->get);
+			return($self->_get_symmetry());
 		} elsif ($var eq 'v') {
 			return($self->_get_vec(@index));
 		} else {
@@ -114,7 +123,7 @@ sub _set_vec {
 sub set {
 	my ($self,$var,$value,@index) = @_;
 	if ($var eq 'symmetry') {
-		return($self->{symmetry}->set($value));
+		return($self->_set_symmetry($value));
 	} elsif ($var eq 'v') {
 		return($self->_set_vec($value,@index));
 	}
