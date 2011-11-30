@@ -179,7 +179,6 @@ sub detect_data {
 	my ($class,$res);
 	foreach (qw{
 		Fortran::Namelist::Editor::Value::logical
-		Fortran::Namelist::Editor::Value::integer
 		Fortran::Namelist::Editor::Value::single
 		Fortran::Namelist::Editor::Value::double
 		Fortran::Namelist::Editor::Value::string}) {
