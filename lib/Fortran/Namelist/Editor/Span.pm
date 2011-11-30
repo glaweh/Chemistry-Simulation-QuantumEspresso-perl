@@ -74,6 +74,7 @@ sub dump {
 	my $self=shift;
 	my $dd=Data::Dumper->new([ $self ]);
 	$dd->Sortkeys(sub { my $ref=shift; return([ sort grep { $_ ne '_namelist' } keys %{$ref} ]) });
+	$dd->Indent(1);
 	return($dd->Dump());
 }
 
