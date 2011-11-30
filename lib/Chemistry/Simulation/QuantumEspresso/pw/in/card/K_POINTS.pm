@@ -262,7 +262,7 @@ sub _parse_subclass {
 		}
 		$i++;
 	}
-	$self->{o_e}=$o_lines->[$i+1];
+	$self->{o_e}=$o_lines->[$i];
 	if ((! defined $nks) or ($#{$self->{xk}} < $nks-1)) {
 		warn "Card 'K_POINTS' incomplete";
 	}
