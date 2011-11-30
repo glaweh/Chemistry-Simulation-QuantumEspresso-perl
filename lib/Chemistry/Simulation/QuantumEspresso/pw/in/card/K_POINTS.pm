@@ -43,7 +43,8 @@ sub parse {
 		$self=$class->new($namelist);
 		$self->{o_b} = $o_line;
 		$self->{name}=$name;
-		$self->{units}=$units_o
+		$self->{units}=$units_o;
+		$self->{o_e} = $lines->[$i+1];
 	} else {
 		die "Error parsing K_POINTS title";
 	}
@@ -158,7 +159,7 @@ sub _parse_subclass {
 		}
 		$i++;
 	}
-	$self->{o_e}=$o_lines->[$i];
+	$self->{o_e}=$o_lines->[$i+1];
 	if ($#{$self->{nk}} < 2) {
 		warn "Card 'K_POINTS' incomplete";
 	}
@@ -260,7 +261,7 @@ sub _parse_subclass {
 		}
 		$i++;
 	}
-	$self->{o_e}=$o_lines->[$i];
+	$self->{o_e}=$o_lines->[$i+1];
 	if ((! defined $nks) or ($#{$self->{xk}} < $nks-1)) {
 		warn "Card 'K_POINTS' incomplete";
 	}
