@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Data::Dumper;
+use Chemistry::Simulation::QuantumEspresso::UPF;
+
+foreach my $fname_upf (@ARGV) {
+	if (! -f $fname_upf) {
+		print STDERR "file not found: '$fname_upf'\n";
+		next;
+	}
+	my $data = Chemistry::Simulation::QuantumEspresso::UPF::parse($fname_upf);
+	print STDERR Dumper($data);
+	my $core_hole=check_special("$fname_upf.core-hole",'NOHOLE');
+	my $use_case=check_special("$fname_upf.special",'GENERAL');
+ 	printf "%3s %6.3f %4s %20s %30s %s\n",
+		@{$data}{'element','z_valence','pseudo_type','functional'},
+		$use_case,$fname_upf;
+}
+
+sub check_special {
+	my ($fname,$default)=@_;
+	my $result=$default;
+	if (-f $fname) {
+		my $fh;
+		open($fh,$fname);
+		$result=join(",",grep { ! /^\s*$/ } map { chomp; s/#.*$//; s/\s+/_/g; $_ } <$fh>);
+		close($fname);
+	}
+	return $result;
+}
+
