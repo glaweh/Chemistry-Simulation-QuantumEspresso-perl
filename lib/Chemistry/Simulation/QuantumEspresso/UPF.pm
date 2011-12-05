@@ -169,6 +169,31 @@ sub read_header_upf_v1 {
 	$header_line=$exit=0;
 	while (<$upf>) {
 		chomp;
+		if (s/\s*<PP_INFO>/\*/i) {
+			$header_line=1;
+		}
+		next unless ($header_line);
+		if (s/\s*<\/PP_INFO>\s*//i) {
+			$exit=1;
+		}
+		next if (/^\s*$/);
+		my @line = split;
+		if ($header_line == 5) {
+			if ($line[0] == 1) {
+				$data{relativistic} = 'scalar';
+			} elsif ($line[0] == 2) {
+				$data{relativistic} = 'full';
+			} else {
+				$data{relativistic} = 'no';
+			}
+		}
+		$header_line++;
+	} continue {
+		last if ($exit);
+	}
+	$header_line=$exit=0;
+	while (<$upf>) {
+		chomp;
 # 		printf "%03d '%s'\n",$header_line,$_;
 		if (s/\s*<PP_HEADER>\s*//i) {
 			$header_line=1;
