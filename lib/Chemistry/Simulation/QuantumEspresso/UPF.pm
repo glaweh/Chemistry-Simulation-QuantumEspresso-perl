@@ -92,6 +92,7 @@ my %dft_long_to_short = (
 	# Henning's additions
 	"sla+pw+pbe+pbe" => "pbe",
 	"sla+pw+tpss+tpss" => "tpss",
+	"sla+pw+nogx+nogc" => "pw",
 );
 
 my @header_fields_types = (
