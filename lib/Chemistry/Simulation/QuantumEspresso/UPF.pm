@@ -178,6 +178,12 @@ sub read_header_upf_v1 {
 		}
 		next if (/^\s*$/);
 		my @line = split;
+		if ($header_line == 3) {
+			if (/^\s*Author:\s*(.*?)\s*Generation date:\s*(.*?)\s*$/) {
+				$data{author}=$1;
+				$data{date}=$2;
+			}
+		}
 		if ($header_line == 5) {
 			if ($line[0] == 1) {
 				$data{relativistic} = 'scalar';
