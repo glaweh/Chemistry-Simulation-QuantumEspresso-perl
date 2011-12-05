@@ -187,8 +187,14 @@ sub read_header_upf_v1 {
 				case 3 { $data{pseudo_type}=$pseudo_type_map{$line[0]} }
 				case 4 { $data{core_correction}=($line[0] =~ /tT/); }
 				case 5 { $data{functional} = map_to_short_dft(@line[0 .. 3]); }
-				case 8 { (@data{'wfc_cutoff','rho_cutoff'}) = @line[0,1]; }
-				case 11 { (@data{'number_of_wfc','number_of_proj'}) = @line[0,1]; }
+				case 8 {
+					$data{wfc_cutoff}=$line[0];
+					$data{rho_cutoff} = $line[1];
+				}
+				case 11 {
+					$data{number_of_wfc}=$line[0];
+					$data{number_of_proj}=$line[1];
+				}
 			}
 		} else {
 			push @{$data{wavefunctions}}, {
