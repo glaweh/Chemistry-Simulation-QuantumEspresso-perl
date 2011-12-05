@@ -208,6 +208,9 @@ sub read_header_upf_v1 {
 	}
 	close($upf);
 	if ($header_line > 0) {
+		$data{relativistic} = 'no' unless (defined $data{relativistic});
+		$data{is_ultrasoft} = ($data{pseudo_type} eq 'US' ? 1 : 0);
+		$data{is_paw} = ($data{pseudo_type} eq 'PAW' ? 1 : 0);
 		return \%data;
 	} else {
 		return undef;
