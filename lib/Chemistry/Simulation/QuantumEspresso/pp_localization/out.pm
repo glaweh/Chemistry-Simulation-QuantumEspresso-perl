@@ -63,6 +63,20 @@ sub parse {
 	my (@e_from,@e_to,@n_pnts,@loc_param,@dos);
 	while (<$fh>) {
 		chomp;
+		if (/^\s*from (\S+)\s*:\s*error\s*#\s*(\d+)/) {
+			my ($err_name,$err_num)=($1,$2);
+			my @err_msg;
+			while (<$fh>) {
+				chomp;
+				last if (/%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%/);
+				s/^\s*//;
+				s/\s*$//;
+				push @err_msg,$_;
+			}
+			$data->{error}->{$err_name}->[0]=$err_num;
+			$data->{error}->{$err_name}->[1]=join("\n",@err_msg);
+			next;
+		}
 		$hot = 0 if ($hot and /^\s+-+/);
 		if ($hot) {
 			next unless (/^\s*(\S+)\s+(\S+)\|\s*(\S+)\|\s*(\S+)\s+(\S+)/);
