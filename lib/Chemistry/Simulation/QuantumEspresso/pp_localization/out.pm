@@ -80,7 +80,6 @@ sub parse {
 		$hot = 0 if ($hot and /^\s+-{2,}/);
 		if ($hot) {
 			next unless (/^\s*(\S+)\s+(\S+)\|\s*(\S+)\|\s*(\S+)\s+(\S+)/);
-			print STDERR "$_\n";
 			push @e_from   ,$1;
 			push @e_to     ,$2;
 			push @n_pnts   ,$3;
