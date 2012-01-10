@@ -77,7 +77,7 @@ sub parse {
 			$data->{error}->{$err_name}->[1]=join("\n",@err_msg);
 			next;
 		}
-		$hot = 0 if ($hot and /^\s+-+/);
+		$hot = 0 if ($hot and /^\s+-{2,}/);
 		if ($hot) {
 			next unless (/^\s*(\S+)\s+(\S+)\|\s*(\S+)\|\s*(\S+)\s+(\S+)/);
 			print STDERR "$_\n";
@@ -87,7 +87,7 @@ sub parse {
 			push @loc_param,$4;
 			push @dos      ,$5;
 		}
-		$hot = 1 if (/^ene: from    to/);
+		$hot = 1 if (/^ene:\s+from\s+to/);
 	}
 	$data->{e_from}    = pdl(@e_from);
 	$data->{e_to}      = pdl(@e_to);
