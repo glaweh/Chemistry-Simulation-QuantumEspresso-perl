@@ -63,14 +63,14 @@ use warnings;
 @Fortran::Namelist::Editor::Value::integer::ISA=qw{Fortran::Namelist::Editor::Value};
 sub to_perl {
 	my ($self,$val)=@_;
-	if ($val =~ /^\h*(\d+)$/) {
+	if ($val =~ /^[ \t]*(\d+)$/) {
 		return($1);
 	}
 	return(undef);
 }
 sub to_data {
 	my ($self,$val)=@_;
-	return(undef) unless ($val =~ /^\h*\d+$/);
+	return(undef) unless ($val =~ /^[ \t]*\d+$/);
 	return($val,$val);
 }
 
@@ -80,7 +80,7 @@ use warnings;
 @Fortran::Namelist::Editor::Value::double::ISA=qw{Fortran::Namelist::Editor::Value};
 sub to_perl {
 	my ($self,$val)=@_;
-	if ($val=~m{^\h*
+	if ($val=~m{^[ \t]*
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*\.\d+       ##    with decimal point
@@ -95,7 +95,7 @@ sub to_perl {
 }
 sub to_data {
 	my ($self,$val)=@_;
-	if ($val=~m{^(\h*)
+	if ($val=~m{^([ \t]*)
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*\.\d+       ##    with decimal point
@@ -115,7 +115,7 @@ use warnings;
 @Fortran::Namelist::Editor::Value::single::ISA=qw{Fortran::Namelist::Editor::Value};
 sub to_perl {
 	my ($self,$val)=@_;
-	if ($val=~m{\h*
+	if ($val=~m{[ \t]*
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*(\.\d+)     ##    group 2: decimal point and digits
@@ -130,7 +130,7 @@ sub to_perl {
 }
 sub to_data {
 	my ($self,$val)=@_;
-	if ($val=~m{\h*
+	if ($val=~m{[ \t]*
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*(\.\d+)     ##    group 2: decimal point and digits
