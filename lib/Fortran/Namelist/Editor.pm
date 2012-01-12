@@ -3,10 +3,11 @@ use strict;
 use warnings;
 use Carp;
 use Data::Dumper;
+use Clone;
 use Scalar::Util qw(reftype blessed);
 use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Group;
-@Fortran::Namelist::Editor::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
+@Fortran::Namelist::Editor::ISA=qw{Fortran::Namelist::Editor::ContainerSpan Clone};
 
 sub init {
 	my $self=shift;
