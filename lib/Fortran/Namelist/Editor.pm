@@ -35,6 +35,9 @@ sub init {
 	$self->{groups}      = {};
 	$self->{indent}      = '';
 
+	# modification detection
+	$self->{changed} = 0;
+
 	if ($self->{data}) {
 		$self->{data_cs}=$self->find_comments_and_strings();
 		$self->find_groups();
@@ -65,6 +68,7 @@ sub set_data {
 	$value_cs     = $value unless (defined $value_cs);
 	substr($self->{data},$o_b,$length)    = $value;
 	substr($self->{data_cs},$o_b,$length) = $value_cs;
+	$self->{changed} = 1;
 	return([0,0,$self->{_adjust_id}]) if ($delta == 0);
 	my $o_e_before = $self->{o_e};
 	my $adj=$self->_adjust_offsets([$o_b,$delta]);
