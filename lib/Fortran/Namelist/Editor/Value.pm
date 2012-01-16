@@ -150,7 +150,7 @@ use warnings;
 @Fortran::Namelist::Editor::Value::logical::ISA=qw{Fortran::Namelist::Editor::Value};
 sub to_perl {
 	my ($self,$val)=@_;
-	return(undef) unless ($val=~/^\W*([tTfF])/);
+	return(undef) unless ($val=~/^\.?([tTfF])/);
 	return(lc($1) eq 'f' ? 0 : 1);
 }
 sub to_data {
