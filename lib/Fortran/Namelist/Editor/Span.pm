@@ -34,7 +34,7 @@ sub set {
 }
 sub get {
 	my $self=shift;
-	return(($self->{_namelist}->get_data($self->{o_b},$self->{o_e}))[1]);
+	return(scalar($self->{_namelist}->get_data($self->{o_b},$self->{o_e})));
 }
 sub insert {
 	my ($class,$namelist,$offset,$separator,@value)=@_;
