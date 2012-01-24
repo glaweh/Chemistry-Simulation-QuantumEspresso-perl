@@ -684,7 +684,7 @@ sub parse_bands {
 			$hot=0;
 			last if (($ik==$nk-1) and ($expect_occupation==0));
 		}
-		if (/^\s*k =\s*(.*)(?:\s+\(\s*(\d+) PWs\))?\s+(?:bands|band energies) \(ev\):\s*$/) {
+		if (/^\s*k =\s*(.*?)(?:\s+\(\s*(\d+) PWs\))?\s+(?:bands|band energies) \(ev\):\s*$/) {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse_bands',$fh_parsed,$fh_line)
 				if ($annotated_debug_fh);
