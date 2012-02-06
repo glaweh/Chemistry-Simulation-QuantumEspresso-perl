@@ -139,6 +139,7 @@ sub add_instance {
 		return($self->add_instance($instance));
 	}
 	push @{$self->{instances}},$instance;
+	$self->_update_offsets_from_instances();
 	if (blessed $instance->{value}->[0] and $instance->{value}->[0]->can('get')) {
 		$self->{value}        = $instance->{value}->[0];
 	} else {
@@ -184,6 +185,16 @@ sub insert {
 	return($self,$adj) if (wantarray);
 	return($self);
 }
+sub _update_offsets_from_instances {
+	my $self = shift;
+	my ($o_b,$o_e);
+	foreach my $instance (@{$self->{instances}}) {
+		$o_b = $instance->{o_b} if ((! defined $o_b) or ($instance->{o_b} < $o_b));
+		$o_e = $instance->{o_e} if ((! defined $o_e) or ($instance->{o_e} > $o_e));
+	}
+	$self->{o_b}=$o_b;
+	$self->{o_e}=$o_e;
+}
 
 package Fortran::Namelist::Editor::Array;
 use strict;
@@ -203,6 +214,7 @@ sub _switch_to_array {
 sub add_instance {
 	my ($self,$instance) = @_;
 	push @{$self->{instances}},$instance;
+	$self->_update_offsets_from_instances();
 	if (defined $instance->{index}) {
 		if ($#{$instance->{value}} > 0) {
 			die "only 1d-values are implemented";
@@ -293,7 +305,9 @@ sub set {
 		$where=$where->[$_];
 	}
 	if (blessed($where) and $where->can('get')) {
-		return($where->set($value));
+		my @res = $where->set($value);
+		$self->_update_offsets_from_instances();
+		return(@res);
 	} else {
 		# insert new statement after the last
 		my ($o_insert,@adj,$a);
@@ -303,6 +317,7 @@ sub set {
 		$self->add_instance($a) if (defined $a);
 		$adj[1]->[1]+=$adj[0]->[1];
 		$self->_adjust_offsets($adj[1]);
+		$self->_update_offsets_from_instances();
 		return($adj[1]);
 	}
 }
@@ -328,6 +343,9 @@ sub delete {
 	$where->[$lasti]=undef;
 	my $is_empty=0;
 	$is_empty=1 if ($#{$self->{instances}} < 0);
+	if ($is_empty == 0) {
+		$self->_update_offsets_from_instances();
+	}
 	if (wantarray) {
 		my $adj = pop @adj;
 		map { $adj->[1]+=$_->[1] } @adj;
