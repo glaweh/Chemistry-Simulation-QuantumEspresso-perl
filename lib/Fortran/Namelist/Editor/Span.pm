@@ -52,8 +52,9 @@ sub delete {
 	return(1);
 }
 sub _adjust_offsets {
+	return(undef) unless (defined $_[1]);
+	return(undef) if ($_[0]->{o_e} < $_[1]->[0]);
 	my ($self,$adjust_opt) = @_;
-	return(undef) unless (defined $adjust_opt);
 	my ($start,$delta,$adjust_id) = @{$adjust_opt};
 	if (! defined $adjust_id) {
 		$global_adjust_id++ if ($delta!=0);
