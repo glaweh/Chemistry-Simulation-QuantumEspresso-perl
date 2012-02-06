@@ -48,6 +48,7 @@ sub delete {
 	}
 	# remove the string from data/data_cs
 	my $adj=$self->{_namelist}->set_data($offset_b,$offset_e,$replacement);
+	$self->{_namelist}->_remove_GOT_entry($self->{_o});
 	return(1,$adj) if (wantarray);
 	return(1);
 }
@@ -96,8 +97,6 @@ sub insert {
 	$adj->[0]     = $o_b;
 	$adj->[1]     = $o_e-$o_b;
 	$o_b          = $name_o->{_o}->[0];
-	$name_o->{_adjusted}  = $adj->[2];
-	$index_o->{_adjusted} = $adj->[2] if ($index_o);
 	my $a         = $class->new($namelist,$o_b,$o_e,$name_o,$index_o,[ $val_o ]);
 	return($a,$adj) if (wantarray);
 	return($a);
@@ -316,7 +315,6 @@ sub set {
 			$self->{name}->get,$value,@index,blessed($self->{instances}->[0]->{value}->[0]));
 		$self->add_instance($a) if (defined $a);
 		$adj[1]->[1]+=$adj[0]->[1];
-		$self->_adjust_offsets($adj[1]);
 		$self->_update_offsets_from_instances();
 		return($adj[1]);
 	}

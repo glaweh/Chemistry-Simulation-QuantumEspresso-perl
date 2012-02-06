@@ -98,7 +98,6 @@ sub insert {
 	($self->{name},$adj[0])  = Fortran::Namelist::Editor::CaseSensitiveToken->insert($namelist,$o_b,$separator,$name);
 	($self->{units},$adj[1]) = Fortran::Namelist::Editor::Token->insert($namelist,$self->{name}->{_o}->[1],' ',$units);
 	$self->{_o}->[1] = $self->{units}->{_o}->[1];
-	$self->{_adjusted} = $self->{units}->{_adjusted};
 
 	push @adj,$self->_insert_subclass(@args);
 	my $adj=Fortran::Namelist::Editor::Span::summarize_adj(@adj);
@@ -213,7 +212,6 @@ sub _insert_subclass {
 	my $offset=$self->{_namelist}->refine_offset_forward($self->{_o}->[1],qr{([^\n]+)}s);
 	my $adj = $self->{_namelist}->set_data($offset,$offset,$to_insert);
 	$self->{_o}->[1] += length($to_insert);
-	$self->{_adjusted} = $adj->[2];
 	$offset+=length($self->{_namelist}->{indent})+1;
 	for (my $i=0;$i<3;$i++) {
 		push @{$self->{nk}},Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$offset,$offset+$length[$i]);
@@ -363,7 +361,6 @@ sub _insert_subclass {
 	$self->{wk} = \@wk_o;
 	$self->{xk} = \@xk_o;
 	$self->{_o}->[1] += length($to_insert);
-	$self->{_adjusted} = $adj->[2];
 	return($adj)
 }
 1;

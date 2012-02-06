@@ -24,7 +24,7 @@ sub init {
 		}
 	}
 	$data='' unless (defined $data);
-	$self->SUPER::init(undef,0,length($data));
+	$self->SUPER::init();
 	$self->{_get_reroot} = 'groups';
 
 	$self->{filename}    = $opts{filename};
@@ -37,6 +37,9 @@ sub init {
 
 	# modification detection
 	$self->{changed} = 0;
+
+	$self->{_global_offset_table} = [ [ 0, length($data) ] ];
+	$self->{_o} = $self->{_global_offset_table}->[0];
 
 	if ($self->{data}) {
 		$self->{data_cs}=$self->find_comments_and_strings();
@@ -73,6 +76,18 @@ sub set_data {
 	my $o_e_before = $self->{_o}->[1];
 	my $adj=$self->_adjust_offsets([$o_b,$delta]);
 	$self->{_o}->[1]+=$delta if ($o_b == $o_e_before);
+	return($adj);
+}
+sub _adjust_offsets {
+	my ($self,$adj) = @_;
+	my ($start,$delta,$adjust_id) = @{$adj};
+	warn "start is undef" unless (defined $start);
+	foreach my $g (@{$self->{_global_offset_table}}) {
+		next unless (defined $g);
+		next if ($g->[1] < $start);
+		$g->[0]+=$delta if ($g->[0] > $start);
+		$g->[1]+=$delta if ($g->[1] > $start);
+	}
 	return($adj);
 }
 sub insert_new_line_before {
@@ -261,5 +276,24 @@ sub dump_hash {
 	my $dump = $dd->Dump();
 	$dump =~ s/=>(\s+)([^'\n,]+)/=>$1'$2'/g;
 	return($dump);
+}
+sub _new_GOT_entry {
+	my ($self,$o_b,$o_e) = @_;
+	push @{$self->{_global_offset_table}},[ $o_b, $o_e ];
+	return($self->{_global_offset_table}->[-1]);
+}
+sub _remove_GOT_entry {
+	my ($self,$entry) = @_;
+	foreach my $g (@{$self->{_global_offset_table}}) {
+		next unless (defined $g);
+		if ($g == $entry) {
+			$g = undef;
+			last;
+		}
+	}
+	return(1);
+}
+sub DESTROY {
+	return(1);
 }
 1;

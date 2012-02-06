@@ -3,8 +3,6 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-our $global_adjust_id = 0;
-
 sub new {
 	my $class = shift;
 	my $self  = {};
@@ -14,15 +12,15 @@ sub new {
 sub init {
 	my ($self,$namelist,$o_b,$o_e) = @_;
 	$self->{_namelist} = $namelist;
-	$self->{_o}       = [ $o_b, $o_e ];
-	$self->{_adjusted} = $global_adjust_id;
+	if (defined $namelist) {
+		$self->{_o} = $namelist->_new_GOT_entry($o_b,$o_e);
+	}
 	return($self);
 }
 sub set {
 	my ($self,$val) = @_;
 	my ($adjust_opt) = $self->{_namelist}->set_data(@{$self->{_o}},$val);
 	my $delta = $adjust_opt->[1];
-	$self->_adjust_offsets($adjust_opt);
 	$self->{_o}->[1] = $self->{_o}->[0]+$delta if (($delta > 0) and ($self->{_o}->[0] == $self->{_o}->[1]));
 	return($adjust_opt);
 }
@@ -45,20 +43,9 @@ sub delete {
 	return(1,$adj) if (wantarray);
 	return(1);
 }
-sub _adjust_offsets {
-	return(undef) unless (defined $_[1]);
-	return(undef) if ($_[0]->{_o}->[1] < $_[1]->[0]);
-	my ($self,$adjust_opt) = @_;
-	my ($start,$delta,$adjust_id) = @{$adjust_opt};
-	if (! defined $adjust_id) {
-		$global_adjust_id++ if ($delta!=0);
-		$adjust_opt->[2] = $adjust_id = $global_adjust_id;
-	}
-	return(undef) if (($self->{_adjusted} == $adjust_id) or ($self->{_o}->[1] < $start));
-	$self->{_adjusted}=$adjust_id;
-	$self->{_o}->[0]+=$delta if ((defined $self->{_o}->[0]) and ($self->{_o}->[0] > $start));
-	$self->{_o}->[1]+=$delta if ((defined $self->{_o}->[1]) and ($self->{_o}->[1] > $start));
-	return($adjust_opt);
+sub DESTROY {
+	my $self = shift;
+	$self->{_namelist}->_remove_GOT_entry($self->{_o}) if (defined $self->{_namelist});
 }
 sub length {
 	my ($self)=@_;
@@ -90,7 +77,6 @@ sub summarize_adj {
 package Fortran::Namelist::Editor::ContainerSpan;
 use strict;
 use warnings;
-use Scalar::Util qw(blessed);
 @Fortran::Namelist::Editor::ContainerSpan::ISA=qw{Fortran::Namelist::Editor::Span};
 sub init {
 	my ($self,$namelist,$o_b,$o_e) = @_;
@@ -116,26 +102,6 @@ sub get {
 	}
 	return(\%h);
 }
-sub _adjust_offsets {
-	return(undef) unless (defined $_[1]);
-	return(undef) if ($_[0]->{_o}->[1] < $_[1]->[0]);
-	my ($self,$adjust_opt) = @_;
-	$adjust_opt=$self->SUPER::_adjust_offsets($adjust_opt);
-	return(undef) unless (defined $adjust_opt);
-	my @stack=values %{$self};
-	while ($#stack >= 0) {
-		my $elem=pop @stack;
-		if (blessed($elem)) {
-			$elem->_adjust_offsets($adjust_opt) if ($elem->can('_adjust_offsets'));
-		} elsif (ref $elem eq 'ARRAY') {
-			push @stack,@{$elem};
-		} elsif (ref $elem eq 'HASH') {
-			push @stack,values %{$elem};
-		}
-	}
-	return($adjust_opt);
-}
-
 package Fortran::Namelist::Editor::Token;
 use strict;
 use warnings;

@@ -69,7 +69,6 @@ sub set {
 	($self->{vars}->{$variable},$adj[1]) = Fortran::Namelist::Editor::Variable->insert(
 		$self->{_namelist},$offset_b,"",$variable,$value,@index);
 	$adj[1]->[1]+=$adj[0]->[1];
-	$self->_adjust_offsets($adj[1]);
 	return($adj[1]);
 }
 sub delete {
