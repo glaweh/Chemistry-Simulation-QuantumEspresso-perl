@@ -24,7 +24,7 @@ sub parse {
 	}
 	if ($title =~ /^\s*(ATOMIC_POSITIONS)(?:\s+\S*(alat|bohr|angstrom|crystal)\S*)?/i) {
 		my $o_line = $o_lines->[$i];
-		$self->{o_b} = $o_line;
+		$self->{_o}->[0] = $o_line;
 		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 		if (defined $2) {
 			$self->{units}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);
@@ -59,7 +59,7 @@ sub parse {
 			push @{$self->{atom}->{$atom->{species}->get}},$atom;
 		}
 	}
-	$self->{o_e}=$o_lines->[$i]-1;
+	$self->{_o}->[1]=$o_lines->[$i]-1;
 	if ($#{$self->{_atom}} < $nat-1) {
 		warn "Card 'ATOMIC_POSITIONS' incomplete";
 	}
@@ -76,7 +76,7 @@ sub _set_units {
 	my ($self,$value)=@_;
 	return($self->{units}->set($value)) if (blessed($self->{units}));
 	my $adj;
-	($self->{units},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{o_e},' ',$value);
+	($self->{units},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
 	return($adj);
 }
 
@@ -144,7 +144,7 @@ sub _insert_ifpos {
 	my ($self,$value,$atom) = @_;
 	return(undef) unless defined ($value);
 	return(undef) if (defined $atom->{if_pos});
-	my $o_b = $atom->{o_e};
+	my $o_b = $atom->{_o}->[1];
 	my $adj=$self->{_namelist}->set_data($o_b,$o_b,"  " . join("  ",@{$value}));
 	for (my $i=0;$i<3;$i++) {
 		push @{$atom->{if_pos}},

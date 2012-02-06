@@ -14,27 +14,26 @@ sub new {
 sub init {
 	my ($self,$namelist,$o_b,$o_e) = @_;
 	$self->{_namelist} = $namelist;
-	$self->{o_b}       = $o_b;
-	$self->{o_e}       = $o_e;
+	$self->{_o}       = [ $o_b, $o_e ];
 	$self->{_adjusted} = $global_adjust_id;
 	return($self);
 }
 sub is_between {
 	my ($self,$o_b,$o_e) = @_;
-	return(0) unless (defined $self->{o_e} and defined $self->{o_b});
-	return(($self->{o_b}>=$o_b) and ($self->{o_e} <=$o_e));
+	return(0) unless (defined $self->{_o}->[0] and defined $self->{_o}->[1]);
+	return(($self->{_o}->[0]>=$o_b) and ($self->{_o}->[1] <=$o_e));
 }
 sub set {
 	my ($self,$val) = @_;
-	my ($adjust_opt) = $self->{_namelist}->set_data($self->{o_b},$self->{o_e},$val);
+	my ($adjust_opt) = $self->{_namelist}->set_data(@{$self->{_o}},$val);
 	my $delta = $adjust_opt->[1];
 	$self->_adjust_offsets($adjust_opt);
-	$self->{o_e} = $self->{o_b}+$delta if (($delta > 0) and ($self->{o_b} == $self->{o_e}));
+	$self->{_o}->[1] = $self->{_o}->[0]+$delta if (($delta > 0) and ($self->{_o}->[0] == $self->{_o}->[1]));
 	return($adjust_opt);
 }
 sub get {
 	my $self=shift;
-	return(scalar($self->{_namelist}->get_data($self->{o_b},$self->{o_e})));
+	return(scalar($self->{_namelist}->get_data(@{$self->{_o}})));
 }
 sub insert {
 	my ($class,$namelist,$offset,$separator,@value)=@_;
@@ -47,29 +46,29 @@ sub insert {
 }
 sub delete {
 	my ($self)=@_;
-	my $adj=$self->{_namelist}->set_data($self->{o_b},$self->{o_e},'');
+	my $adj=$self->{_namelist}->set_data(@{$self->{_o}},'');
 	return(1,$adj) if (wantarray);
 	return(1);
 }
 sub _adjust_offsets {
 	return(undef) unless (defined $_[1]);
-	return(undef) if ($_[0]->{o_e} < $_[1]->[0]);
+	return(undef) if ($_[0]->{_o}->[1] < $_[1]->[0]);
 	my ($self,$adjust_opt) = @_;
 	my ($start,$delta,$adjust_id) = @{$adjust_opt};
 	if (! defined $adjust_id) {
 		$global_adjust_id++ if ($delta!=0);
 		$adjust_opt->[2] = $adjust_id = $global_adjust_id;
 	}
-	return(undef) if (($self->{_adjusted} == $adjust_id) or ($self->{o_e} < $start));
+	return(undef) if (($self->{_adjusted} == $adjust_id) or ($self->{_o}->[1] < $start));
 	$self->{_adjusted}=$adjust_id;
-	$self->{o_b}+=$delta if ((defined $self->{o_b}) and ($self->{o_b} > $start));
-	$self->{o_e}+=$delta if ((defined $self->{o_e}) and ($self->{o_e} > $start));
+	$self->{_o}->[0]+=$delta if ((defined $self->{_o}->[0]) and ($self->{_o}->[0] > $start));
+	$self->{_o}->[1]+=$delta if ((defined $self->{_o}->[1]) and ($self->{_o}->[1] > $start));
 	return($adjust_opt);
 }
 sub length {
 	my ($self)=@_;
-	return(0) unless (defined $self->{o_e} and defined $self->{o_b});
-	return($self->{o_e}-$self->{o_b});
+	return(0) unless (defined $self->{_o}->[0] and defined $self->{_o}->[1]);
+	return($self->{_o}->[1]-$self->{_o}->[0]);
 }
 sub dump {
 	my $self=shift;
@@ -102,7 +101,7 @@ sub init {
 	my ($self,$namelist,$o_b,$o_e) = @_;
 	$self->SUPER::init($namelist,$o_b,$o_e);
 	@{$self->{_get_ignore_patterns}} = (
-		qr/^o_.*[eb]$/,
+		qr/^_o$/,
 		qr/^_namelist$/,
 		qr/^_get_ignore_patterns$/,
 		qr/^_get_reroot$/,
@@ -124,7 +123,7 @@ sub get {
 }
 sub _adjust_offsets {
 	return(undef) unless (defined $_[1]);
-	return(undef) if ($_[0]->{o_e} < $_[1]->[0]);
+	return(undef) if ($_[0]->{_o}->[1] < $_[1]->[0]);
 	my ($self,$adjust_opt) = @_;
 	$adjust_opt=$self->SUPER::_adjust_offsets($adjust_opt);
 	return(undef) unless (defined $adjust_opt);

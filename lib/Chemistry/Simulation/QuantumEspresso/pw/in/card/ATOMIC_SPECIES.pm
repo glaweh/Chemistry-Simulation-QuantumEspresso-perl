@@ -15,7 +15,7 @@ sub init {
 sub parse {
 	my ($class,$namelist,$lines,$lines_cs,$o_lines,$i) = @_;
 	my $self = $class->new($namelist);
-	my $o_line = $self->{o_b} = $o_lines->[$i];
+	my $o_line = $self->{_o}->[0] = $o_lines->[$i];
 	if ($lines_cs->[$i] =~ /^\s*(ATOMIC_SPECIES)/) {
 		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 	}
@@ -37,7 +37,7 @@ sub parse {
 			last;
 		}
 	}
-	$self->{o_e}=$o_lines->[$i]-1;
+	$self->{_o}->[1]=$o_lines->[$i]-1;
 	if ($#{$self->{_species}} < $ntyp-1) {
 		warn "Card 'ATOMIC_SPECIES' incomplete";
 	}

@@ -21,8 +21,8 @@ sub init {
 }
 sub find_vars {
 	my ($self)=@_;
-	my $offset_b = $self->{name}->{o_e};
-	my $offset_e = $self->{o_e}-1;
+	my $offset_b = $self->{name}->{_o}->[1];
+	my $offset_e = $self->{_o}->[1]-1;
 	my (undef,$data_n) = $self->{_namelist}->get_data($offset_b,$offset_e);
 	my @offsets;
 	# scan data_n for variables: name, optionally index, followed by '='
@@ -65,7 +65,7 @@ sub set {
 	}
 	# insert at end of group's data section
 	my ($offset_b,@adj);
-	($offset_b,$adj[0])=$self->{_namelist}->insert_new_line_before($self->{o_e});
+	($offset_b,$adj[0])=$self->{_namelist}->insert_new_line_before($self->{_o}->[1]);
 	($self->{vars}->{$variable},$adj[1]) = Fortran::Namelist::Editor::Variable->insert(
 		$self->{_namelist},$offset_b,"",$variable,$value,@index);
 	$adj[1]->[1]+=$adj[0]->[1];
@@ -86,7 +86,7 @@ sub delete {
 }
 sub indent_histogram {
 	my ($self,$hist) = @_;
-	my $data = $self->{_namelist}->get_data($self->{o_b},$self->{o_e});
+	my $data = $self->{_namelist}->get_data(@{$self->{_o}});
 	while ($data =~ m{\n([ \t]*)[^/\s]}gs) {
 		$hist->{$1}++;
 	}
@@ -95,9 +95,9 @@ sub indent_histogram {
 sub insert {
 	my ($class,$namelist,$o_b,$separator,$name) = @_;
 	my ($name_o,$adj1)  = Fortran::Namelist::Editor::Token->insert($namelist,$o_b,$separator,$name);
-	my $adj2 = $namelist->set_data($name_o->{o_e},$name_o->{o_e},"\n/");
+	my $adj2 = $namelist->set_data($name_o->{_o}->[1],$name_o->{_o}->[1],"\n/");
 	$adj2->[1]+=$adj1->[1];
-	my $self=$class->new($namelist,$o_b,$name_o->{o_e}+2,$name_o);
+	my $self=$class->new($namelist,$o_b,$name_o->{_o}->[1]+2,$name_o);
 	return($self,$adj2) if (wantarray);
 	return($self);
 }

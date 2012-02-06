@@ -41,10 +41,10 @@ sub parse {
 			}
 		}
 		$self=$class->new($namelist);
-		$self->{o_b} = $o_line;
+		$self->{_o}->[0] = $o_line;
 		$self->{name}=$name;
 		$self->{units}=$units_o;
-		$self->{o_e} = $lines->[$i+1];
+		$self->{_o}->[1] = $lines->[$i+1];
 	} else {
 		die "Error parsing K_POINTS title";
 	}
@@ -61,7 +61,7 @@ sub _set_units {
 	my ($self,$value)=@_;
 	return($self->{units}->set($value)) if (blessed($self->{units}));
 	my $adj;
-	($self->{units},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{o_e},' ',$value);
+	($self->{units},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
 	return($adj);
 }
 
@@ -94,9 +94,9 @@ sub insert {
 	my $self = $class->new($namelist);
 	my @adj;
 	($self->{name},$adj[0])  = Fortran::Namelist::Editor::CaseSensitiveToken->insert($namelist,$o_b,$separator,$name);
-	($self->{units},$adj[1]) = Fortran::Namelist::Editor::Token->insert($namelist,$self->{name}->{o_e},' ',$units);
-	$self->{o_b} = $o_b;
-	$self->{o_e} = $self->{units}->{o_e};
+	($self->{units},$adj[1]) = Fortran::Namelist::Editor::Token->insert($namelist,$self->{name}->{_o}->[1],' ',$units);
+	$self->{_o}->[0] = $o_b;
+	$self->{_o}->[1] = $self->{units}->{_o}->[1];
 	$self->{_adjusted} = $self->{units}->{_adjusted};
 
 	push @adj,$self->_insert_subclass(@args);
@@ -159,7 +159,7 @@ sub _parse_subclass {
 		}
 		$i++;
 	}
-	$self->{o_e}=$o_lines->[$i+1];
+	$self->{_o}->[1]=$o_lines->[$i+1];
 	if ($#{$self->{nk}} < 2) {
 		warn "Card 'K_POINTS' incomplete";
 	}
@@ -209,9 +209,9 @@ sub _insert_subclass {
 	map { $grid[$_] = 0 unless (defined $grid[$_]) } 3 .. 5;
 	my $to_insert = sprintf("\n%s%2d %2d %2d %2d %2d %2d",$self->{_namelist}->{indent},@grid);
 	my @length = map { my $l=length($_); $l=2 if ($l<2) } @grid;
-	my $offset=$self->{_namelist}->refine_offset_forward($self->{o_e},qr{([^\n]+)}s);
+	my $offset=$self->{_namelist}->refine_offset_forward($self->{_o}->[1],qr{([^\n]+)}s);
 	my $adj = $self->{_namelist}->set_data($offset,$offset,$to_insert);
-	$self->{o_e} += length($to_insert);
+	$self->{_o}->[1] += length($to_insert);
 	$self->{_adjusted} = $adj->[2];
 	$offset+=length($self->{_namelist}->{indent})+1;
 	for (my $i=0;$i<3;$i++) {
@@ -262,7 +262,7 @@ sub _parse_subclass {
 		}
 		$i++;
 	}
-	$self->{o_e}=$o_lines->[$i];
+	$self->{_o}->[1]=$o_lines->[$i];
 	if ((! defined $nks) or ($#{$self->{xk}} < $nks-1)) {
 		warn "Card 'K_POINTS' incomplete";
 	}
@@ -340,7 +340,7 @@ sub _insert_subclass {
 	my $nindent = "\n" . $self->{_namelist}->{indent};
 	my $lindent = length($nindent);
 	my $to_insert = sprintf("%s%4d",$nindent,$nks);
-	my $o_b=$self->{_namelist}->refine_offset_forward($self->{o_e},qr{([^\n]+)}s);
+	my $o_b=$self->{_namelist}->refine_offset_forward($self->{_o}->[1],qr{([^\n]+)}s);
 	my $offset = $o_b+$lindent;
 	my $nks_o = Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$offset,$offset+4);
 	$offset+=4;
@@ -361,7 +361,7 @@ sub _insert_subclass {
 	$self->{nks} = $nks_o;
 	$self->{wk} = \@wk_o;
 	$self->{xk} = \@xk_o;
-	$self->{o_e} += length($to_insert);
+	$self->{_o}->[1] += length($to_insert);
 	$self->{_adjusted} = $adj->[2];
 	return($adj)
 }

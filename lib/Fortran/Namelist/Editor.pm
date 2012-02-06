@@ -49,8 +49,8 @@ sub get_data {
 	my ($self,$o_b,$o_e)=@_;
 	confess "o_b is undefined" unless (defined $o_b);
 	confess "o_e is undefined" unless (defined $o_e);
-	return(undef) if ($o_e > $self->{o_e});
-	return(undef) if ($o_b > $self->{o_e});
+	return(undef) if ($o_e > $self->{_o}->[1]);
+	return(undef) if ($o_b > $self->{_o}->[1]);
 	my $length = $o_e-$o_b;
 	return(substr($self->{data},$o_b,$length),
 		substr($self->{data_cs},$o_b,$length)) if (wantarray);
@@ -60,8 +60,8 @@ sub set_data {
 	my ($self,$o_b,$o_e,$value,$value_cs)=@_;
 	confess "o_b is undefined" unless (defined $o_b);
 	confess "o_e is undefined" unless (defined $o_e);
-	return(undef) if ($o_e > $self->{o_e});
-	return(undef) if ($o_b > $self->{o_e});
+	return(undef) if ($o_e > $self->{_o}->[1]);
+	return(undef) if ($o_b > $self->{_o}->[1]);
 	my $length    = $o_e-$o_b;
 	my $newlength = length($value);
 	my $delta     = $newlength-$length;
@@ -70,9 +70,9 @@ sub set_data {
 	substr($self->{data_cs},$o_b,$length) = $value_cs;
 	$self->{changed} = 1;
 	return([0,0,$self->{_adjust_id}]) if ($delta == 0);
-	my $o_e_before = $self->{o_e};
+	my $o_e_before = $self->{_o}->[1];
 	my $adj=$self->_adjust_offsets([$o_b,$delta]);
-	$self->{o_e}+=$delta if ($o_b == $o_e_before);
+	$self->{_o}->[1]+=$delta if ($o_b == $o_e_before);
 	return($adj);
 }
 sub insert_new_line_before {
@@ -101,7 +101,7 @@ sub find_comments_and_strings {
 	my $self = shift;
 	my (@strings,@comments);
 	# working copy
-	my $d = $self->get_data($self->{o_b},$self->{o_e});
+	my $d = $self->get_data(@{$self->{_o}});
 	# find all fortran !-style comments and quoted strings
 	while ($d =~ m{
 			                   ## f90 comments start with !, end with EOL
@@ -114,35 +114,33 @@ sub find_comments_and_strings {
 			)                  ##group2-end
 		}xsg) {
 		if (defined $2) {
-			my %string=(
-				o_b => $-[2],
-				o_e => $+[2],
+			my @string=(
+				$-[2],$+[2],
 			);
-			push @strings,\%string;
+			push @strings,\@string;
 		} else {
-			my %comment=(
-				o_b => $-[1],
-				o_e => $+[1],
+			my @comment=(
+				$-[1],$+[1],
 			);
-			push @comments,\%comment;
+			push @comments,\@comment;
 		}
 	}
 	# replace comments by same-length sequence of space
 	foreach my $c (@comments) {
-		my $len=$c->{o_e}-$c->{o_b};
-		substr($d,$c->{o_b},$len) = ' ' x $len;
+		my $len=$c->[1]-$c->[0];
+		substr($d,$c->[0],$len) = ' ' x $len;
 	}
 	# replace strings by same-length sequence of underscores
 	foreach my $s (@strings) {
-		my $len=$s->{o_e}-$s->{o_b};
-		substr($d,$s->{o_b},$len) = '_' x $len;
+		my $len=$s->[1]-$s->[0];
+		substr($d,$s->[0],$len) = '_' x $len;
 	}
 	return($d);
 }
 
 sub find_groups {
 	my $self=shift;
-	my (undef,$data_cs) = $self->get_data($self->{o_b},$self->{o_e});
+	my (undef,$data_cs) = $self->get_data(@{$self->{_o}});
 	while ($data_cs =~ m{(?:^|\n)[ \t]*(&\S+)[^/]*/}gs) {
 		push @{$self->{_groups}},
 			Fortran::Namelist::Editor::Group->new($self,$-[1],$+[0],$-[1],$+[1]);
@@ -227,7 +225,7 @@ sub _remove_group {
 	my $group_ref = $self->{groups}->{$group_name};
 	@{$self->{_groups}} = grep { $_ != $group_ref } @{$self->{_groups}};
 	delete($self->{groups}->{$group_name});
-	$self->set_data($group_ref->{o_b},$group_ref->{o_e},'');
+	$self->set_data(@{$group_ref->{_o}},'');
 }
 
 sub set {

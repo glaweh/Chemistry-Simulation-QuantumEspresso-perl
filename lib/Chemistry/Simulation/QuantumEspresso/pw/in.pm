@@ -22,8 +22,8 @@ sub init {
 sub parse_cards {
 	my $self=shift;
 	# cards are between end of last group and end of file
-	my $o_cards=$self->{_groups}->[-1]->{o_e};
-	my ($data,$data_cs) = $self->get_data($o_cards,$self->{o_e});
+	my $o_cards=$self->{_groups}->[-1]->{_o}->[1];
+	my ($data,$data_cs) = $self->get_data($o_cards,$self->{_o}->[1]);
 	# cards can be worked on line-by-line
 	my @lines_cs = map { "$_\n" } split('\n',$data_cs);
 	my @lines;
@@ -82,7 +82,7 @@ sub add_group {
 		}
 	}
 	return($self->SUPER::add_group($group_name,$after_idx,@options)) unless ($is_card);
-	my $offset_b    = $self->{_groups}->[$after_idx]->{o_e};
+	my $offset_b    = $self->{_groups}->[$after_idx]->{_o}->[1];
 	$offset_b = $self->insert_new_line_after($offset_b,'');
 	my $class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::' . $group_name;
 	my $card  = $class->insert($self,$offset_b,'',$group_name,@options);

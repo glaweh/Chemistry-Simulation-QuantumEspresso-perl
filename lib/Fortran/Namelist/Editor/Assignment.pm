@@ -30,13 +30,13 @@ sub init {
 }
 sub delete {
 	my $self=shift;
-	my $offset_b=$self->{o_b};
-	my $offset_e=$self->{o_e};
+	my $offset_b=$self->{_o}->[0];
+	my $offset_e=$self->{_o}->[1];
 	my $replacement='';
 	# extend area to whitespace up to preceeding newline
 	$offset_b=$self->{_namelist}->refine_offset_back($offset_b,qr{([\n,])[ \t]*}s);
 	$offset_e=$self->{_namelist}->refine_offset_forward($offset_e,qr{([ \t]*,)}s);
-	my $chopped_comma_after= ($offset_e != $self->{o_e});
+	my $chopped_comma_after= ($offset_e != $self->{_o}->[1]);
 	$offset_e=$self->{_namelist}->refine_offset_forward($offset_e,qr{([ \t]*)}s);
 	my $data=$self->{_namelist}->get_data($offset_b,$offset_e+1);
 	if ($data !~ /\n$/) {
@@ -88,14 +88,14 @@ sub insert {
 	}
 	my ($name_o,$index_o,$val_o,$o_e,$adj);
 	$name_o       = Fortran::Namelist::Editor::Token->insert($namelist,$o_b,$separator,$name);
-	$o_e          = $name_o->{o_e};
+	$o_e          = $name_o->{_o}->[1];
 	$index_o      = Fortran::Namelist::Editor::Index->insert($namelist,$o_e,'',@index);
-	$o_e          = $index_o->{o_e} if (defined $index_o);
+	$o_e          = $index_o->{_o}->[1] if (defined $index_o);
 	($val_o,$adj) = $type->insert($namelist,$o_e,' = ',$value);
-	$o_e          = $val_o->{o_e};
+	$o_e          = $val_o->{_o}->[1];
 	$adj->[0]     = $o_b;
 	$adj->[1]     = $o_e-$o_b;
-	$o_b          = $name_o->{o_b};
+	$o_b          = $name_o->{_o}->[0];
 	$name_o->{_adjusted}  = $adj->[2];
 	$index_o->{_adjusted} = $adj->[2] if ($index_o);
 	my $a         = $class->new($namelist,$o_b,$o_e,$name_o,$index_o,[ $val_o ]);
@@ -189,11 +189,11 @@ sub _update_offsets_from_instances {
 	my $self = shift;
 	my ($o_b,$o_e);
 	foreach my $instance (@{$self->{instances}}) {
-		$o_b = $instance->{o_b} if ((! defined $o_b) or ($instance->{o_b} < $o_b));
-		$o_e = $instance->{o_e} if ((! defined $o_e) or ($instance->{o_e} > $o_e));
+		$o_b = $instance->{_o}->[0] if ((! defined $o_b) or ($instance->{_o}->[0] < $o_b));
+		$o_e = $instance->{_o}->[1] if ((! defined $o_e) or ($instance->{_o}->[1] > $o_e));
 	}
-	$self->{o_b}=$o_b;
-	$self->{o_e}=$o_e;
+	$self->{_o}->[0]=$o_b;
+	$self->{_o}->[1]=$o_e;
 }
 
 package Fortran::Namelist::Editor::Array;
@@ -311,7 +311,7 @@ sub set {
 	} else {
 		# insert new statement after the last
 		my ($o_insert,@adj,$a);
-		($o_insert,$adj[0])=$self->{_namelist}->insert_new_line_after($self->{instances}->[-1]->{o_e});
+		($o_insert,$adj[0])=$self->{_namelist}->insert_new_line_after($self->{instances}->[-1]->{_o}->[1]);
 		($a,$adj[1]) = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_insert,'',
 			$self->{name}->get,$value,@index,blessed($self->{instances}->[0]->{value}->[0]));
 		$self->add_instance($a) if (defined $a);

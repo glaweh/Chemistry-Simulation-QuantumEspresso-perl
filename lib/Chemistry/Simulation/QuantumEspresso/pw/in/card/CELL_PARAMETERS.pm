@@ -23,7 +23,7 @@ sub parse {
 	}
 	if ($title =~ /^\s*(CELL_PARAMETERS)(?:\s+\S*(cubic|hexagonal)\S*)?/i) {
 		my $o_line = $o_lines->[$i];
-		$self->{o_b}=$o_line;
+		$self->{_o}->[0]=$o_line;
 		$self->{name}=Fortran::Namelist::Editor::CaseSensitiveToken->new($self->{_namelist},$o_line+$-[1],$o_line+$+[1]);
 		if (defined $2) {
 			$self->{symmetry}=Fortran::Namelist::Editor::Token->new($self->{_namelist},$o_line+$-[2],$o_line+$+[2]);
@@ -47,7 +47,7 @@ sub parse {
 			push @{$self->{v}},$vec;
 		}
 	}
-	$self->{o_e}=$o_lines->[$i]-1;
+	$self->{_o}->[1]=$o_lines->[$i]-1;
 	if ($#{$self->{v}} < 2) {
 		warn "Card 'CELL_PARAMETERS' incomplete";
 	}
@@ -64,7 +64,7 @@ sub _set_symmetry {
 	my ($self,$value)=@_;
 	return($self->{symmetry}->set($value)) if (blessed($self->{symmetry}));
 	my $adj;
-	($self->{symmetry},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{o_e},' ',$value);
+	($self->{symmetry},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
 	return($adj);
 }
 

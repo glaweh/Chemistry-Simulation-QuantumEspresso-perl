@@ -15,7 +15,7 @@ sub init {
 
 sub parse {
 	my $self=shift;
-	my $data=$self->{_namelist}->get_data($self->{o_b},$self->{o_e});
+	my $data=$self->{_namelist}->get_data(@{$self->{_o}});
 	return($self) if ($data=~m{^\s*$}); # no index
 	# remove enclosing brackets
 	if ((my $nbrackets = ($data =~ s{\(([^\)]+)\)}{ $1 }g)) != 1) {
@@ -42,7 +42,7 @@ sub parse {
 		die "Don't know how to parse '$data'";
 	}
 	while ($data=~m{(\d+)}gxs) {
-		push @{$self->{element}},Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$-[1]+$self->{o_b},$+[1]+$self->{o_b});
+		push @{$self->{element}},Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$-[1]+$self->{_o}->[0],$+[1]+$self->{_o}->[0]);
 	}
 	return($self);
 }
