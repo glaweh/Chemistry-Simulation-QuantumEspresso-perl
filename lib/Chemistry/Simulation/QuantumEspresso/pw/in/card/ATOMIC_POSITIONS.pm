@@ -75,9 +75,8 @@ sub _get_units {
 sub _set_units {
 	my ($self,$value)=@_;
 	return($self->{units}->set($value)) if (blessed($self->{units}));
-	my $adj;
-	($self->{units},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
-	return($adj);
+	$self->{units} = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
+	return(1);
 }
 
 sub get_species {
@@ -145,37 +144,36 @@ sub _insert_ifpos {
 	return(undef) unless defined ($value);
 	return(undef) if (defined $atom->{if_pos});
 	my $o_b = $atom->{_o}->[1];
-	my $adj=$self->{_namelist}->set_data($o_b,$o_b,"  " . join("  ",@{$value}));
+	$self->{_namelist}->set_data($o_b,$o_b,"  " . join("  ",@{$value}));
 	for (my $i=0;$i<3;$i++) {
 		push @{$atom->{if_pos}},
 			Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$o_b+2,$o_b+2+length($value->[$i]));
 		$o_b=$o_b+2+length($value->[$i]);
 	}
-	return($adj);
+	return(1);
 }
 
 sub _set_vec {
 	my ($self,$var,$value,@index) = @_;
-	my @adj;
 	my $nat = $self->{_namelist}->get('&system','nat');
 	if ($#index < 0) {
 		die "dimension mismatch" unless ((ref($value) eq 'ARRAY') and ($#{$value}==$nat-1));
 		for (my $i=0;$i<$nat;$i++) {
 			if (defined $self->{_atom}->[$i]->{$var}) {
 				for (my $j=0;$j<3;$j++) {
-					push @adj,$self->{_atom}->[$i]->{$var}->[$j]->set_padded(sprintf('%14.10f',$value->[$i]->[$j]));
+					$self->{_atom}->[$i]->{$var}->[$j]->set_padded(sprintf('%14.10f',$value->[$i]->[$j]));
 				}
 			} else {
-				push @adj,$self->_insert_ifpos($value->[$i],$self->{_atom}->[$i]);
+				$self->_insert_ifpos($value->[$i],$self->{_atom}->[$i]);
 			}
 		}
 	} elsif ($#index==0) {
 		if (defined $self->{_atom}->[$index[0]]->{$var}) {
 			for (my $i=0;$i<3;$i++) {
-				push @adj,$self->{_atom}->[$index[0]]->{$var}->[$i]->set_padded($value->[$i]);
+				$self->{_atom}->[$index[0]]->{$var}->[$i]->set_padded($value->[$i]);
 			}
 		} else {
-			push @adj,$self->_insert_ifpos($value,$self->{_atom}->[$index[0]]);
+			$self->_insert_ifpos($value,$self->{_atom}->[$index[0]]);
 		}
 	} else {
 		if (defined $self->{_atom}->[$index[0]]->{$var}) {
@@ -186,7 +184,7 @@ sub _set_vec {
 			return($self->_insert_ifpos($setting,$self->{_atom}->[$index[0]]));
 		}
 	}
-	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
+	return(1);
 }
 
 sub set {

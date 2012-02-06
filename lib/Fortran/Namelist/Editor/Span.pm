@@ -19,10 +19,9 @@ sub init {
 }
 sub set {
 	my ($self,$val) = @_;
-	my ($adjust_opt) = $self->{_namelist}->set_data(@{$self->{_o}},$val);
-	my $delta = $adjust_opt->[1];
+	my $delta = $self->{_namelist}->set_data(@{$self->{_o}},$val);
 	$self->{_o}->[1] = $self->{_o}->[0]+$delta if (($delta > 0) and ($self->{_o}->[0] == $self->{_o}->[1]));
-	return($adjust_opt);
+	return(1);
 }
 sub get {
 	my $self=shift;
@@ -30,17 +29,14 @@ sub get {
 }
 sub insert {
 	my ($class,$namelist,$offset,$separator,@value)=@_;
-	my $adj1=$namelist->set_data($offset,$offset,$separator);
-	my $self=$class->new($namelist,$offset+$adj1->[1],$offset+$adj1->[1]);
-	my $adj2=$self->set(@value);
-	$adj2->[1]+=$adj1->[1];
-	return($self,$adj2) if (wantarray);
+	my $delta=$namelist->set_data($offset,$offset,$separator);
+	my $self=$class->new($namelist,$offset+$delta,$offset+$delta);
+	$self->set(@value);
 	return($self);
 }
 sub delete {
 	my ($self)=@_;
-	my $adj=$self->{_namelist}->set_data(@{$self->{_o}},'');
-	return(1,$adj) if (wantarray);
+	$self->{_namelist}->set_data(@{$self->{_o}},'');
 	return(1);
 }
 sub DESTROY {
@@ -62,18 +58,6 @@ sub dump {
 	return($dump);
 }
 
-# function, not method
-sub summarize_adj {
-	my @adj;
-	foreach my $a (@_) {
-		next unless (defined $a);
-		next unless ($a->[1] != 0);
-		$adj[0] = $a->[0] if ((! defined $adj[0]) or ($adj[0]>$a->[0]));
-		$adj[1] = (defined $adj[1] ? $adj[1]+$a->[1] : $a->[1]);
-		$adj[2] = $a->[2] if ((! defined $adj[2]) or ($adj[2]<$a->[2]));
-	}
-	return(\@adj);
-}
 package Fortran::Namelist::Editor::ContainerSpan;
 use strict;
 use warnings;

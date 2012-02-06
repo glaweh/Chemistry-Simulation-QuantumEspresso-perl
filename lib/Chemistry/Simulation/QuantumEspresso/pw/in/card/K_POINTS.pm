@@ -60,9 +60,8 @@ sub _get_units {
 sub _set_units {
 	my ($self,$value)=@_;
 	return($self->{units}->set($value)) if (blessed($self->{units}));
-	my $adj;
-	($self->{units},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
-	return($adj);
+	$self->{units} = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
+	return(1);
 }
 
 sub _parse_subclass {
@@ -94,16 +93,11 @@ sub insert {
 	my $self = $class->new($namelist);
 	$self->{_o}->[0] = $o_b;
 	$self->{_o}->[1] = $o_b;
-	my @adj;
-	($self->{name},$adj[0])  = Fortran::Namelist::Editor::CaseSensitiveToken->insert($namelist,$o_b,$separator,$name);
-	($self->{units},$adj[1]) = Fortran::Namelist::Editor::Token->insert($namelist,$self->{name}->{_o}->[1],' ',$units);
+	$self->{name}    = Fortran::Namelist::Editor::CaseSensitiveToken->insert($namelist,$o_b,$separator,$name);
+	$self->{units}   = Fortran::Namelist::Editor::Token->insert($namelist,$self->{name}->{_o}->[1],' ',$units);
 	$self->{_o}->[1] = $self->{units}->{_o}->[1];
 
-	push @adj,$self->_insert_subclass(@args);
-	my $adj=Fortran::Namelist::Editor::Span::summarize_adj(@adj);
-
-	return($self,$adj) if (wantarray);
-	return($self);
+	return($self->_insert_subclass(@args));
 }
 
 sub _insert_subclass {
@@ -189,19 +183,18 @@ sub set {
 			die "cannot change units from 'automatic' to '$value'";
 		}
 	}
-	my @adj;
 	if (($variable eq 'nk') or ($variable eq 'sk')) {
 		if ($#index < 0) {
 			for (my $i=0; $i<3; $i++) {
-				push @adj,$self->{$variable}->[$i]->set_padded($value->[$i]);
+				$self->{$variable}->[$i]->set_padded($value->[$i]);
 			}
 		} else {
-			push @adj,$self->{$variable}->[$index[0]]->set_padded($value);
+			$self->{$variable}->[$index[0]]->set_padded($value);
 		}
 	} else {
 		die "unknown variable '$variable'";
 	}
-	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
+	return(1);
 }
 sub _insert_subclass {
 	my ($self,@grid) = @_;
@@ -210,8 +203,8 @@ sub _insert_subclass {
 	my $to_insert = sprintf("\n%s%2d %2d %2d %2d %2d %2d",$self->{_namelist}->{indent},@grid);
 	my @length = map { my $l=length($_); $l=2 if ($l<2) } @grid;
 	my $offset=$self->{_namelist}->refine_offset_forward($self->{_o}->[1],qr{([^\n]+)}s);
-	my $adj = $self->{_namelist}->set_data($offset,$offset,$to_insert);
-	$self->{_o}->[1] += length($to_insert);
+	my $delta =$self->{_namelist}->set_data($offset,$offset,$to_insert);
+	$self->{_o}->[1] += $delta;
 	$offset+=length($self->{_namelist}->{indent})+1;
 	for (my $i=0;$i<3;$i++) {
 		push @{$self->{nk}},Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$offset,$offset+$length[$i]);
@@ -221,7 +214,7 @@ sub _insert_subclass {
 		push @{$self->{sk}},Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$offset,$offset+$length[$i]);
 		$offset+=$length[$i]+1;
 	}
-	return($adj)
+	return($self)
 }
 
 package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list;
@@ -298,36 +291,35 @@ sub set {
 		}
 		return($self->_set_units($value));
 	}
-	my @adj;
 	my $nks = $self->get('nks');
 	if ($variable eq 'xk') {
 		if ($#index < 0) {
 			die "dimension mismatch" if ($#{$value} != $nks-1);
 			for (my $i=0; $i<$nks;$i++) {
 				for (my $j=0; $j<3; $j++) {
-					push @adj,$self->{xk}->[$i]->[$j]->set_padded($value->[$i]->[$j]);
+					$self->{xk}->[$i]->[$j]->set_padded($value->[$i]->[$j]);
 				}
 			}
 		} elsif ($#index == 0) {
 			for (my $j=0;$j<3;$j++) {
-				push @adj,$self->{xk}->[$index[0]]->[$j]->set_padded($value->[$j]);
+				$self->{xk}->[$index[0]]->[$j]->set_padded($value->[$j]);
 			}
 		} elsif ($#index == 1) {
-			push @adj,$self->{xk}->[$index[0]]->[$index[1]]->set_padded($value);
+			$self->{xk}->[$index[0]]->[$index[1]]->set_padded($value);
 		}
 	} elsif ($variable eq 'wk') {
 		if ($#index < 0) {
 			die "dimension mismatch" if ($#{$value} != $nks-1);
 			for (my $i=0; $i<$nks;$i++) {
-				push @adj,$self->{wk}->[$i]->set_padded($value->[$i]);
+				$self->{wk}->[$i]->set_padded($value->[$i]);
 			}
 		} elsif ($#index == 0) {
-			push @adj,$self->{wk}->[$index[0]]->set_padded($value);
+			$self->{wk}->[$index[0]]->set_padded($value);
 		}
 	} else {
 		die "unknown variable '$variable'";
 	}
-	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
+	return(1);
 }
 sub _insert_subclass {
 	my ($self,$xk,$wk) = @_;
@@ -341,7 +333,7 @@ sub _insert_subclass {
 	my $to_insert = sprintf("%s%4d",$nindent,$nks);
 	my $o_b=$self->{_namelist}->refine_offset_forward($self->{_o}->[1],qr{([^\n]+)}s);
 	my $offset = $o_b+$lindent;
-	my $nks_o = Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},$offset,$offset+4);
+	my @nks_o = ($offset, $offset+4);
 	$offset+=4;
 	my (@xk_o,@wk_o);
 	for (my $i=0;$i<=$#{$xk};$i++) {
@@ -349,18 +341,22 @@ sub _insert_subclass {
 		$offset+=$lindent;
 		my @length = map { my $l=length($_); $l=14 if ($l < 14) } @{$xk->[$i]};
 		for (my $j=0;$j<3;$j++) {
-			push @{$xk_o[$i]},
-				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$offset,$offset+$length[$j]);
+			push @{$xk_o[$i]},[$offset,$offset+$length[$j]];
 			$offset+=$length[$j]+1;
 		}
-		push @wk_o,Fortran::Namelist::Editor::Value::single->new($self->{_namelist},$offset,$offset+length($wk[$i]));
+		push @wk_o,[$offset,$offset+length($wk[$i])];
 		$offset+=length($wk[$i]);
 	}
-	my $adj = $self->{_namelist}->set_data($o_b,$o_b,$to_insert);
-	$self->{nks} = $nks_o;
-	$self->{wk} = \@wk_o;
-	$self->{xk} = \@xk_o;
+	$self->{_namelist}->set_data($o_b,$o_b,$to_insert);
+	$self->{nks} = Fortran::Namelist::Editor::Value::integer->new($self->{_namelist},@nks_o);
+	for (my $i=0;$i<=$#{$xk};$i++) {
+		push @{$self->{xk}},[
+			map { 
+				Fortran::Namelist::Editor::Value::single->new($self->{_namelist},@{$_})
+			} @{$xk_o[$i]} ];
+		push @{$self->{wk}},Fortran::Namelist::Editor::Value::single->new($self->{_namelist},@{$wk_o[$i]});
+	}
 	$self->{_o}->[1] += length($to_insert);
-	return($adj)
+	return($self)
 }
 1;

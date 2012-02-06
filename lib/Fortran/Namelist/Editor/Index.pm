@@ -50,9 +50,9 @@ sub parse {
 sub set {
 	my ($self,@index)=@_;
 	$self->{element}=[];
-	my $adj=$self->SUPER::set(index2fortranstring(@index));
+	$self->SUPER::set(index2fortranstring(@index));
 	$self->parse;
-	return($adj);
+	return(1);
 }
 
 sub get {

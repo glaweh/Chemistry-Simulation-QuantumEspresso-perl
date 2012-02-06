@@ -72,23 +72,21 @@ sub set_data {
 	substr($self->{data},$o_b,$length)    = $value;
 	substr($self->{data_cs},$o_b,$length) = $value_cs;
 	$self->{changed} = 1;
-	return([0,0,$self->{_adjust_id}]) if ($delta == 0);
+	return(0) if ($delta == 0);
 	my $o_e_before = $self->{_o}->[1];
-	my $adj=$self->_adjust_offsets([$o_b,$delta]);
+	$self->_adjust_offsets($o_b,$delta);
 	$self->{_o}->[1]+=$delta if ($o_b == $o_e_before);
-	return($adj);
+	return($delta);
 }
 sub _adjust_offsets {
-	my ($self,$adj) = @_;
-	my ($start,$delta,$adjust_id) = @{$adj};
-	warn "start is undef" unless (defined $start);
+	my ($self,$start,$delta) = @_;
 	foreach my $g (@{$self->{_global_offset_table}}) {
 		next unless (defined $g);
 		next if ($g->[1] < $start);
 		$g->[0]+=$delta if ($g->[0] > $start);
 		$g->[1]+=$delta if ($g->[1] > $start);
 	}
-	return($adj);
+	return(1);
 }
 sub insert_new_line_before {
 	my ($self,$offset,$indent,$content) = @_;
@@ -96,9 +94,8 @@ sub insert_new_line_before {
 	$content = '' unless (defined $content);
 	my $to_insert="\n$indent$content";
 	$offset=$self->refine_offset_back($offset,qr{(\n[^\n]*)});
-	my $adjust_opt=$self->set_data($offset,$offset,$to_insert);
-	$offset=$adjust_opt->[0]+$adjust_opt->[1];
-	return($offset,$adjust_opt) if (wantarray);
+	my $delta=$self->set_data($offset,$offset,$to_insert);
+	$offset+=$delta;
 	return($offset);
 }
 sub insert_new_line_after {
@@ -107,9 +104,8 @@ sub insert_new_line_after {
 	$content = '' unless (defined $content);
 	my $to_insert="\n$indent$content";
 	$offset=$self->refine_offset_forward($offset,qr{([^\n]+)}s);
-	my $adjust_opt=$self->set_data($offset,$offset,$to_insert);
-	$offset=$adjust_opt->[0]+$adjust_opt->[1];
-	return($offset,$adjust_opt) if (wantarray);
+	my $delta=$self->set_data($offset,$offset,$to_insert);
+	$offset+=$delta;
 	return($offset);
 }
 sub find_comments_and_strings {
@@ -254,16 +250,14 @@ sub set {
 sub delete {
 	my ($self,$group,@setting)=@_;
 	my $is_empty = 0;
-	my $adjust_id;
 	if (exists $self->{groups}->{$group}) {
 		if (defined $setting[0]) {
-			($is_empty,$adjust_id) = $self->{groups}->{$group}->delete(@setting);
+			$is_empty = $self->{groups}->{$group}->delete(@setting);
 		} else {
-			$adjust_id = $self->_remove_group($group);
+			$self->_remove_group($group);
 		}
 	}
 	$is_empty = 1 if ($#{$self->{_groups}} < 0);
-	return($is_empty,$adjust_id) if (wantarray);
 	return($is_empty);
 }
 

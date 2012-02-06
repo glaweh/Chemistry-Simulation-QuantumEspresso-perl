@@ -47,9 +47,8 @@ sub delete {
 		}
 	}
 	# remove the string from data/data_cs
-	my $adj=$self->{_namelist}->set_data($offset_b,$offset_e,$replacement);
+	$self->{_namelist}->set_data($offset_b,$offset_e,$replacement);
 	$self->{_namelist}->_remove_GOT_entry($self->{_o});
-	return(1,$adj) if (wantarray);
 	return(1);
 }
 sub parse_value {
@@ -87,18 +86,15 @@ sub insert {
 			$type="Fortran::Namelist::Editor::Value::$t";
 		}
 	}
-	my ($name_o,$index_o,$val_o,$o_e,$adj);
+	my ($name_o,$index_o,$val_o,$o_e);
 	$name_o       = Fortran::Namelist::Editor::Token->insert($namelist,$o_b,$separator,$name);
+	$o_b          = $name_o->{_o}->[0];
 	$o_e          = $name_o->{_o}->[1];
 	$index_o      = Fortran::Namelist::Editor::Index->insert($namelist,$o_e,'',@index);
 	$o_e          = $index_o->{_o}->[1] if (defined $index_o);
-	($val_o,$adj) = $type->insert($namelist,$o_e,' = ',$value);
+	$val_o        = $type->insert($namelist,$o_e,' = ',$value);
 	$o_e          = $val_o->{_o}->[1];
-	$adj->[0]     = $o_b;
-	$adj->[1]     = $o_e-$o_b;
-	$o_b          = $name_o->{_o}->[0];
 	my $a         = $class->new($namelist,$o_b,$o_e,$name_o,$index_o,[ $val_o ]);
-	return($a,$adj) if (wantarray);
 	return($a);
 }
 
@@ -163,25 +159,17 @@ sub delete {
 	if ($#index>=0) {
 		die "variable '" . $self->{name}->get . "' was classified as scalar, not array"
 	}
-	my @adj;
 	foreach my $instance (@{$self->{instances}}) {
-		my (undef,$adj) = $instance->delete;
-		push @adj,$adj;
-	}
-	if (wantarray) {
-		my $adj = pop @adj;
-		map { $adj->[1]+=$_->[1] } @adj;
-		return(1,$adj);
+		$instance->delete;
 	}
 	return(1);
 }
 sub insert {
 	my ($class,$namelist,$o_b,$separator,$name,$value,@index) = @_;
-	my ($a,$adj) = Fortran::Namelist::Editor::Assignment->insert($namelist,$o_b,
+	my $a = Fortran::Namelist::Editor::Assignment->insert($namelist,$o_b,
 		$separator,$name,$value,@index);
 	my $self=$class->new($namelist);
 	$self->add_instance($a);
-	return($self,$adj) if (wantarray);
 	return($self);
 }
 sub _update_offsets_from_instances {
@@ -309,14 +297,13 @@ sub set {
 		return(@res);
 	} else {
 		# insert new statement after the last
-		my ($o_insert,@adj,$a);
-		($o_insert,$adj[0])=$self->{_namelist}->insert_new_line_after($self->{instances}->[-1]->{_o}->[1]);
-		($a,$adj[1]) = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_insert,'',
+		my ($o_insert,$a);
+		$o_insert=$self->{_namelist}->insert_new_line_after($self->{instances}->[-1]->{_o}->[1]);
+		$a       = Fortran::Namelist::Editor::Assignment->insert($self->{_namelist},$o_insert,'',
 			$self->{name}->get,$value,@index,blessed($self->{instances}->[0]->{value}->[0]));
 		$self->add_instance($a) if (defined $a);
-		$adj[1]->[1]+=$adj[0]->[1];
 		$self->_update_offsets_from_instances();
-		return($adj[1]);
+		return(1);
 	}
 }
 sub delete {
@@ -324,13 +311,11 @@ sub delete {
 	my ($self,@index)=@_;
 	return($self->SUPER::delete) if ($#index<0);
 	return(0) unless (defined $self->get(@index));
-	my @adj;
 	for (my $i=0;$i<=$#{$self->{instances}};$i++) {
 		my $instance=$self->{instances}->[$i];
 		next unless ($instance->{index}->is_equal(@index));
-		my (undef,$adj)=$instance->delete;
+		$instance->delete;
 		$self->{instances}->[$i]=undef;
-		push @adj,$adj;
 	}
 	@{$self->{instances}}  = grep { defined $_ } @{$self->{instances}};
 	my $where = $self->{value};
@@ -343,11 +328,6 @@ sub delete {
 	$is_empty=1 if ($#{$self->{instances}} < 0);
 	if ($is_empty == 0) {
 		$self->_update_offsets_from_instances();
-	}
-	if (wantarray) {
-		my $adj = pop @adj;
-		map { $adj->[1]+=$_->[1] } @adj;
-		return($is_empty,$adj);
 	}
 	return($is_empty);
 }

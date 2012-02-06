@@ -63,9 +63,8 @@ sub _get_symmetry {
 sub _set_symmetry {
 	my ($self,$value)=@_;
 	return($self->{symmetry}->set($value)) if (blessed($self->{symmetry}));
-	my $adj;
-	($self->{symmetry},$adj) = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
-	return($adj);
+	$self->{symmetry} = Fortran::Namelist::Editor::Token->insert($self->{_namelist},$self->{name}->{_o}->[1],' ',$value);
+	return(1);
 }
 
 sub _get_vec {
@@ -103,21 +102,20 @@ sub get {
 
 sub _set_vec {
 	my ($self,$value,@index) = @_;
-	my @adj;
 	if ($#index < 0) {
 		for (my $i=0;$i<3;$i++) {
 			for (my $j=0;$j<3;$j++) {
-				push @adj,$self->{v}->[$i]->[$j]->set_padded($value->[$i]->[$j]);
+				$self->{v}->[$i]->[$j]->set_padded($value->[$i]->[$j]);
 			}
 		}
 	} elsif ($#index==0) {
 		for (my $i=0;$i<3;$i++) {
-			push @adj,$self->{v}->[$index[0]]->[$i]->set_padded($value->[$i]);
+			$self->{v}->[$index[0]]->[$i]->set_padded($value->[$i]);
 		}
 	} else {
 		return($self->{v}->[$index[0]]->[$index[1]]->set_padded($value));
 	}
-	return(Fortran::Namelist::Editor::Span::summarize_adj(@adj));
+	return(1);
 }
 
 sub set {

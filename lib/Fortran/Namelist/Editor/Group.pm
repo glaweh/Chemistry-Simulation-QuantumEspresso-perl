@@ -64,23 +64,19 @@ sub set {
 		return($self->{vars}->{$variable}->set($value,@index));
 	}
 	# insert at end of group's data section
-	my ($offset_b,@adj);
-	($offset_b,$adj[0])=$self->{_namelist}->insert_new_line_before($self->{_o}->[1]);
-	($self->{vars}->{$variable},$adj[1]) = Fortran::Namelist::Editor::Variable->insert(
+	my $offset_b=$self->{_namelist}->insert_new_line_before($self->{_o}->[1]);
+	$self->{vars}->{$variable} = Fortran::Namelist::Editor::Variable->insert(
 		$self->{_namelist},$offset_b,"",$variable,$value,@index);
-	$adj[1]->[1]+=$adj[0]->[1];
-	return($adj[1]);
+	return(1);
 }
 sub delete {
 	my ($self,$variable,@index) = @_;
 	my $is_empty=0;
-	my $adjust_opt;
 	if (exists $self->{vars}->{$variable}) {
-		($is_empty,$adjust_opt) = $self->{vars}->{$variable}->delete(@index);
+		$is_empty = $self->{vars}->{$variable}->delete(@index);
 		delete ($self->{vars}->{$variable}) if ($is_empty);
 	}
 	$is_empty = 1 if (! keys %{$self->{vars}});
-	return($is_empty,$adjust_opt) if (wantarray);
 	return($is_empty);
 }
 sub indent_histogram {
@@ -93,11 +89,9 @@ sub indent_histogram {
 }
 sub insert {
 	my ($class,$namelist,$o_b,$separator,$name) = @_;
-	my ($name_o,$adj1)  = Fortran::Namelist::Editor::Token->insert($namelist,$o_b,$separator,$name);
-	my $adj2 = $namelist->set_data($name_o->{_o}->[1],$name_o->{_o}->[1],"\n/");
-	$adj2->[1]+=$adj1->[1];
+	my $name_o = Fortran::Namelist::Editor::Token->insert($namelist,$o_b,$separator,$name);
+	$namelist->set_data($name_o->{_o}->[1],$name_o->{_o}->[1],"\n/");
 	my $self=$class->new($namelist,$o_b,$name_o->{_o}->[1]+2,$name_o);
-	return($self,$adj2) if (wantarray);
 	return($self);
 }
 1;
