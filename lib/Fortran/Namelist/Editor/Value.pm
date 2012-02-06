@@ -115,7 +115,7 @@ use warnings;
 @Fortran::Namelist::Editor::Value::single::ISA=qw{Fortran::Namelist::Editor::Value};
 sub to_perl {
 	my ($self,$val)=@_;
-	if ($val=~m{[ \t]*
+	if ($val=~m{^[ \t]*
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
 			(?:\d*(\.\d+)     ##    group 2: decimal point and digits
@@ -123,7 +123,7 @@ sub to_perl {
 			\d+)              ##    without decimal point
 		)
 		(?:[eE]([+-]?\d+))?   ## group3: exponent with optional sign
-		}x) {
+		$}x) {
 		return($1);
 	}
 	return(undef);
