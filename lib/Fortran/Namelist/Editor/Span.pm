@@ -59,7 +59,7 @@ sub _adjust_offsets {
 		$global_adjust_id++ if ($delta!=0);
 		$adjust_opt->[2] = $adjust_id = $global_adjust_id;
 	}
-	return(undef) if ($self->{_adjusted} == $adjust_id);
+	return(undef) if (($self->{_adjusted} == $adjust_id) or ($self->{o_e} < $start));
 	$self->{_adjusted}=$adjust_id;
 	$self->{o_b}+=$delta if ((defined $self->{o_b}) and ($self->{o_b} > $start));
 	$self->{o_e}+=$delta if ((defined $self->{o_e}) and ($self->{o_e} > $start));
