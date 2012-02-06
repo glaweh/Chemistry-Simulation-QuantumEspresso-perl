@@ -18,11 +18,6 @@ sub init {
 	$self->{_adjusted} = $global_adjust_id;
 	return($self);
 }
-sub is_between {
-	my ($self,$o_b,$o_e) = @_;
-	return(0) unless (defined $self->{_o}->[0] and defined $self->{_o}->[1]);
-	return(($self->{_o}->[0]>=$o_b) and ($self->{_o}->[1] <=$o_e));
-}
 sub set {
 	my ($self,$val) = @_;
 	my ($adjust_opt) = $self->{_namelist}->set_data(@{$self->{_o}},$val);
