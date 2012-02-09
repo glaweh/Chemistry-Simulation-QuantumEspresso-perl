@@ -42,7 +42,7 @@ sub convcell2espresso {
 		$celldm(0:2).=$lengths(0:2);
 		$celldm(3:5).=$cos(0:2);
 	} else {
-		warn "Not implemented for bravais=$bravais!";
+		$@="Not implemented for bravais=$bravais!";
 		return(undef);
 	}
 	$celldm(1:2)/=$celldm(0);
