@@ -205,6 +205,11 @@ sub parse {
 			$data->{ntyp}=$1;
 			next;
 		}
+		if (/^\s*unit-cell volume\s*=\s*(\d+(?:\.\d+)?)/) {
+			$fh_parsed=__LINE__-1;
+			$data->{volume}=$1;
+			next;
+		}
 		if (/^\s*number of Kohn-Sham states=\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$data->{nbnd}=$1;
