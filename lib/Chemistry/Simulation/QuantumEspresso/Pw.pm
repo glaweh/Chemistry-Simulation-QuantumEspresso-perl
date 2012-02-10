@@ -215,6 +215,16 @@ sub parse {
 			$data->{nbnd}=$1;
 			next;
 		}
+		if (/^\s*kinetic-energy\s+cutoff\s*=\s*(\d+(?:\.\d+)?)/) {
+			$fh_parsed=__LINE__-1;
+			$data->{ecutwfc}=$1;
+			next;
+		}
+		if (/^\s*charge\s+density\s+cutoff\s*=\s*(\d+(?:\.\d+)?)/) {
+			$fh_parsed=__LINE__-1;
+			$data->{ecutrho}=$1;
+			next;
+		}
 		if (/^\s*number of electrons\s*=\s*([0-9\.]+)/) {
 			$fh_parsed=__LINE__-1;
 			$data->{nelec}=$1;
