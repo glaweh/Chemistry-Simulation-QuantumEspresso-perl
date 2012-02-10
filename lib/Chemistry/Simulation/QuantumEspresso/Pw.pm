@@ -210,7 +210,7 @@ sub parse {
 			$data->{volume}=$1;
 			next;
 		}
-		if (/^\s*number of Kohn-Sham states=\s*(\d+)/) {
+		if (/^\s*number of Kohn-Sham states\s*=\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$data->{nbnd}=$1;
 			next;
