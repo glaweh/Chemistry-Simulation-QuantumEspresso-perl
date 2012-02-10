@@ -2,6 +2,7 @@ package Fortran::Namelist::Editor::Span;
 use strict;
 use warnings;
 use Data::Dumper;
+use Scalar::Util qw{weaken};
 
 sub new {
 	my $class = shift;
@@ -13,6 +14,7 @@ sub init {
 	my ($self,$namelist,$o_b,$o_e) = @_;
 	$self->{_namelist} = $namelist;
 	if (defined $namelist) {
+		weaken($self->{_namelist});
 		$self->{_o} = $namelist->_new_GOT_entry($o_b,$o_e);
 	}
 	return($self);
