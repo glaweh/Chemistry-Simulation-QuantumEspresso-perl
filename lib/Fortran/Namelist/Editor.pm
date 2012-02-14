@@ -92,8 +92,13 @@ sub insert_new_line_before {
 	my ($self,$offset,$indent,$content) = @_;
 	$indent  = $self->{indent} unless (defined $indent);
 	$content = '' unless (defined $content);
-	my $to_insert="\n$indent$content";
-	$offset=$self->refine_offset_back($offset,qr{(\n[^\n]*)});
+	$offset=$self->refine_offset_back($offset,qr{((?:\n|^)[^\n]*)});
+	my $to_insert;
+	if ($offset == 0) {
+		$to_insert = "$indent$content\n";
+	} else {
+		$to_insert = "\n$indent$content";
+	}
 	my $delta=$self->set_data($offset,$offset,$to_insert);
 	$offset+=$delta;
 	return($offset);
