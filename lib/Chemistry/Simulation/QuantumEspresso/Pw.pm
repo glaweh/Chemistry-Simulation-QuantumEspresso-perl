@@ -205,6 +205,11 @@ sub parse {
 			$data->{ntyp}=$1;
 			next;
 		}
+		if (/^\s*bravais-lattice\s+index\s*=\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$data->{ibrav}=$1;
+			next;
+		}
 		if (/^\s*unit-cell volume\s*=\s*(\d+(?:\.\d+)?)/) {
 			$fh_parsed=__LINE__-1;
 			$data->{volume}=$1;
