@@ -165,10 +165,16 @@ sub espresso_amat {
 	return(wantarray ? ($amat,$conv_cell,$special_axis,$centering) : $amat);
 }
 
+sub bmat_from_amat {
+	my $amat = shift;
+	my $bmat = crossp($amat->transpose->rotate(2)->transpose,$amat->transpose->rotate(1)->transpose)/det($amat);
+	return($bmat);
+}
+
 our (@ISA, @EXPORT_OK);
 BEGIN {
 	require Exporter;
 	@ISA = qw(Exporter);
-	@EXPORT_OK = qw(&convcell2espresso &espresso_amat);  # symbols to export on request
+	@EXPORT_OK = qw(&convcell2espresso &espresso_amat &bmat_from_amat);  # symbols to export on request
 }
 1;
