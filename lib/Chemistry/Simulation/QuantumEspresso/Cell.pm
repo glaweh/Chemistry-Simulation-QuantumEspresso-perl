@@ -6,6 +6,8 @@ use PDL::NiceSlice;
 our @bravais=qw/free cP cF cI hP hR tP tI oP oS oF oI mP mS aP/;
 our %ibrav=map { ($bravais[$_],$_) } 0 .. $#bravais;
 
+my $PI = 2*acos(0);
+
 sub convcell2espresso {
 	my ($bravais,$lengths,$cos)=@_;
 	my $celldm=zeroes(double,6)/0; # a piddle of NaNs
@@ -167,7 +169,7 @@ sub espresso_amat {
 
 sub bmat_from_amat {
 	my $amat = shift;
-	my $bmat = crossp($amat->transpose->rotate(2)->transpose,$amat->transpose->rotate(1)->transpose)/det($amat);
+	my $bmat = 2*$PI*crossp($amat->transpose->rotate(2)->transpose,$amat->transpose->rotate(1)->transpose)/det($amat);
 	return($bmat);
 }
 
