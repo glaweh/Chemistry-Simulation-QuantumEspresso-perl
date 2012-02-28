@@ -278,6 +278,16 @@ sub parse {
 			$data->{version}=$vers_num;
 			next;
 		}
+		if (/^\s*Parallel version .*, running on\s*(\d+)\s+processors/) {
+			$fh_parsed=__LINE__-1;
+			$data->{nproc} = $1;
+			next;
+		}
+		if (/^\s*R & G space division:  proc\/pool =\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$data->{nproc_pool} = $1;
+			next;
+		}
 		if (/^\s*k =.* (?:bands|band energies) \(ev\):/) {
 			$fh_parsed=__LINE__-1;
 			$data->{bands}=parse_bands($fh,$startup->{nk},$startup->{nbnd},$fh_line,$options);
