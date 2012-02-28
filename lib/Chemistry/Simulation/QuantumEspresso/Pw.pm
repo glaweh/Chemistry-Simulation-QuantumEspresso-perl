@@ -278,9 +278,19 @@ sub parse {
 			$data->{version}=$vers_num;
 			next;
 		}
-		if (/^\s*Parallel version .*, running on\s*(\d+)\s+processors/) {
+		if (/^\s*Parallel version \(MPI\), running on\s*(\d+)\s+processors/) {
 			$fh_parsed=__LINE__-1;
 			$data->{nproc} = $1;
+			next;
+		}
+		if (/^\s*Number of MPI processes:\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$data->{nproc} = $1;
+			next;
+		}
+		if (/^\s*Threads\/MPI process:\s*(\d+)/) {
+			$fh_parsed=__LINE__-1;
+			$data->{omp_num_threads} = $1;
 			next;
 		}
 		if (/^\s*R & G space division:  proc\/pool =\s*(\d+)/) {
