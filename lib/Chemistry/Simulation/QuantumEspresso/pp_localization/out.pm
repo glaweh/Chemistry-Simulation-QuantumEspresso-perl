@@ -88,11 +88,11 @@ sub parse {
 		}
 		$hot = 1 if (/^ene:\s+from\s+to/);
 	}
-	$data->{e_from}    = pdl(@e_from);
-	$data->{e_to}      = pdl(@e_to);
-	$data->{n_pnts}    = pdl(long,@n_pnts);
-	$data->{loc_param} = pdl(@loc_param);
-	$data->{dos}       = pdl(@dos);
+	$data->{e_from}    = pdl(\@e_from);
+	$data->{e_to}      = pdl(\@e_to);
+	$data->{n_pnts}    = pdl(long,\@n_pnts);
+	$data->{loc_param} = pdl(\@loc_param);
+	$data->{dos}       = pdl(\@dos);
 
 	close($fh);
 	if ($options->{CACHE}>0) {
