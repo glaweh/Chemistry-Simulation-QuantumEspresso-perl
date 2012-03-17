@@ -304,6 +304,21 @@ sub parse {
 			$fh_line='';
 			next;
 		}
+		if (/^\s*warning: symmetry operation #\s*(\d+)\s*not allowed.   fractional translation:/) {
+			$fh_parsed=__LINE__-1;
+			my $irot=$1;
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			$fh_line=<$fh>;
+			if ($fh_line =~ /^\s*(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+in crystal coordinates/) {
+				$fh_parsed=__LINE__-1;
+				push @{$data->{fractional_translation_not_allowed}},{
+					irot=>$irot,
+					ft  =>[ $1, $2, $3 ],
+				};
+			} else {
+				$fh_parsed=undef;
+			}
+		}
 
 		if (/^\s*crystal axes: \(cart\. coord/) {
 			$fh_parsed=__LINE__-1;
