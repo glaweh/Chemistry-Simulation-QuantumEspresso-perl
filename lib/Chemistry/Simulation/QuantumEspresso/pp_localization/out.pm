@@ -21,7 +21,7 @@ use warnings;
 use PDL;
 use PDL::NiceSlice;
 
-my $version=1.0;
+my $version=1.1;
 
 sub parse {
 	use Fcntl ":seek";
@@ -60,7 +60,7 @@ sub parse {
 	$data->{SOURCEFILE}=$fname;
 
 	my $hot = 0;
-	my (@e_from,@e_to,@n_pnts,@loc_param,@dos);
+	my (@e_from,@e_to,@n_pnts,@loc_param,@dos,@atomic_loc_dos);
 	while (<$fh>) {
 		chomp;
 		if (/^\s*from (\S+)\s*:\s*error\s*#\s*(\d+)/) {
@@ -79,12 +79,16 @@ sub parse {
 		}
 		$hot = 0 if ($hot and /^\s+-{2,}/);
 		if ($hot) {
-			next unless (/^\s*(\S+)\s+(\S+)\|\s*(\S+)\|\s*(\S+)\s+(\S+)/);
-			push @e_from   ,$1;
-			push @e_to     ,$2;
-			push @n_pnts   ,$3;
-			push @loc_param,$4;
-			push @dos      ,$5;
+			if (/^\s*(\S+)\s+(\S+)\|\s*(\S+)\|\s*(\S+)\s+(\S+)/) {
+				push @e_from   ,$1;
+				push @e_to     ,$2;
+				push @n_pnts   ,$3;
+				push @loc_param,$4;
+				push @dos      ,$5;
+				push @atomic_loc_dos,[];
+			} elsif (/^\s*Atomic\s+loc_dos\s+(\d+)\s+([+-]?(?:\d*\.\d+|\d+)(?:[eE][+-]?\d+)?)/) {
+				$atomic_loc_dos[-1]->[$1-1]=$2;
+			}
 		}
 		$hot = 1 if (/^ene:\s+from\s+to/);
 	}
@@ -93,6 +97,7 @@ sub parse {
 	$data->{n_pnts}    = pdl(long,\@n_pnts);
 	$data->{loc_param} = pdl(\@loc_param);
 	$data->{dos}       = pdl(\@dos);
+	$data->{atomic_loc_dos} = pdl(\@atomic_loc_dos);
 
 	close($fh);
 	if ($options->{CACHE}>0) {
