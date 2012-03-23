@@ -173,10 +173,23 @@ sub bmat_from_amat {
 	return($bmat);
 }
 
+sub amat_from_pw_in {
+	my $in = shift;
+	my $ibrav  = $in->get('&system','ibrav');
+	my $celldm=zeroes(6);
+	map { my $c=$in->get('&system','celldm',$_); $celldm($_).=$c if (defined $c) } 0 .. 5;
+	if ($ibrav == 0) {
+		my $cell_param = pdl($in->get('CELL_PARAMETERS','v'));
+		return($cell_param*$celldm(0));
+	} else {
+		return(espresso_amat($ibrav,$celldm));
+	}
+}
+
 our (@ISA, @EXPORT_OK);
 BEGIN {
 	require Exporter;
 	@ISA = qw(Exporter);
-	@EXPORT_OK = qw(&convcell2espresso &espresso_amat &bmat_from_amat);  # symbols to export on request
+	@EXPORT_OK = qw(&convcell2espresso &espresso_amat &bmat_from_amat &amat_from_pw_in);  # symbols to export on request
 }
 1;
