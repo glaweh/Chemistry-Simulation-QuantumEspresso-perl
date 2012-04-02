@@ -6,6 +6,14 @@ use PDL::NiceSlice;
 our @bravais=qw/free cP cF cI hP hR tP tI oP oS oF oI mP mS aP/;
 our %ibrav=map { ($bravais[$_],$_) } 0 .. $#bravais;
 
+our @bravais_symm_class=qw/cubic
+	cubic cubic cubic
+	hexagonal hexagonal
+	cubic cubic
+	cubic cubic cubic cubic
+	cubic cubic
+	cubic/;
+
 my $PI = 2*acos(0);
 
 sub convcell2espresso {
@@ -175,15 +183,24 @@ sub bmat_from_amat {
 
 sub amat_from_pw_in {
 	my $in = shift;
+	my $want_conv = shift;
 	my $ibrav  = $in->get('&system','ibrav');
 	my $celldm=zeroes(6);
 	map { my $c=$in->get('&system','celldm',$_); $celldm($_).=$c if (defined $c) } 0 .. 5;
+	my ($amat,$symm_class);
 	if ($ibrav == 0) {
 		my $cell_param = pdl($in->get('CELL_PARAMETERS','v'));
-		return($cell_param*$celldm(0));
+		$amat=$cell_param*$celldm(0);
+		$symm_class=$in->get('CELL_PARAMETERS','symmetry');
 	} else {
-		return(espresso_amat($ibrav,$celldm));
+		if ($want_conv) {
+			(undef,$amat) = espresso_amat($ibrav,$celldm);
+		} else {
+			$amat=espresso_amat($ibrav,$celldm);
+		}
+		$symm_class=$bravais_symm_class[$ibrav];
 	}
+	return($symm_class,$amat);
 }
 
 our (@ISA, @EXPORT_OK);
