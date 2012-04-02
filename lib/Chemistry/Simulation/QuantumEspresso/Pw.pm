@@ -253,6 +253,11 @@ sub parse {
 			$data->{sym_inversion}=0;
 			next;
 		}
+		if (/^\s*isym\s+=\s*(\d+)\s*(.*?)\s*$/) {
+			$fh_parsed=__LINE__-1;
+			$data->{symm_name}->[$1-1]=$2;
+			next;
+		}
 		## BEGIN stuff found in version 3.2
 		if (/^\s*nbndx\s*=\s*(\d+)\s*nbnd\s*=\s*(\d+)\s*natomwfc\s*=\s*(\d+)\s*npwx\s*=\s*(\d+)\s*$/) {
 			$fh_parsed=__LINE__-1;
