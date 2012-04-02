@@ -30,23 +30,31 @@ sub init {
 	$self->{filename}    = $opts{filename};
 	$self->{data}        = $data;
 
+	# modification detection
+	$self->{changed} = 0;
+
+	$self->reset_data_structures();
+
+	$self->parse_data() if ($self->{data});
+	return($self);
+}
+sub reset_data_structures {
+	my $self = shift;
 	# internal data structures
 	$self->{_groups}     = [];
 	$self->{groups}      = {};
 	$self->{indent}      = '';
 
-	# modification detection
-	$self->{changed} = 0;
-
-	$self->{_global_offset_table} = [ [ 0, length($data) ] ];
+	$self->{_global_offset_table} = [ [ 0, length($self->{data}) ] ];
 	$self->{_o} = $self->{_global_offset_table}->[0];
-
-	if ($self->{data}) {
-		$self->{data_cs}=$self->find_comments_and_strings();
-		$self->find_groups();
-		$self->find_indent();
-	}
 	return($self);
+}
+sub parse_data {
+	my $self=shift;
+	$self->{data_cs}=$self->find_comments_and_strings();
+	$self->find_groups();
+	$self->find_indent();
+	return(1);
 }
 sub get_data {
 	my ($self,$o_b,$o_e)=@_;

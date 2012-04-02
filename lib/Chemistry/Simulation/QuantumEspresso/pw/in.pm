@@ -12,10 +12,10 @@ use Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS;
 my @groups = qw{&control &system &electrons &ions &cell ATOMIC_SPECIES ATOMIC_POSITIONS K_POINTS CELL_PARAMETERS OCCUPATIONS CONSTRAINTS};
 my %groups = map { $groups[$_],$_ } 0 .. $#groups;
 
-sub init {
+sub parse_data {
 	my $self=shift;
-	my $r=$self->SUPER::init(@_);
-	die "Fortran::Namelist::Editor->init(" . join(',',@_) . ") failed" unless ($r);
+	my $r=$self->SUPER::parse_data;
+	die "Fortran::Namelist::Editor->parse_data(" . join(',',@_) . ") failed" unless ($r);
 	$self->parse_cards;
 	return($self);
 }
