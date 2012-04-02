@@ -14,7 +14,8 @@ my %groups = map { $groups[$_],$_ } 0 .. $#groups;
 
 sub init {
 	my $self=shift;
-	$self->SUPER::init(@_);
+	my $r=$self->SUPER::init(@_);
+	die "Fortran::Namelist::Editor->init(" . join(',',@_) . ") failed" unless ($r);
 	$self->parse_cards;
 	return($self);
 }
@@ -22,7 +23,14 @@ sub init {
 sub parse_cards {
 	my $self=shift;
 	# cards are between end of last group and end of file
-	my $o_cards=$self->{_groups}->[-1]->{_o}->[1];
+	my $o_cards;
+	if ($#{$self->{_groups}} >= 0) {
+		$o_cards=$self->{_groups}->[-1]->{_o}->[1] if ($#{$self->{_groups}} >= 0);
+	} else {
+		warn "No groups found, start parsing cards at beginning of data";
+		$o_cards=$self->{_o}->[0];
+	}
+
 	my ($data,$data_cs) = $self->get_data($o_cards,$self->{_o}->[1]);
 	# cards can be worked on line-by-line
 	my @lines_cs = map { "$_\n" } split('\n',$data_cs);
