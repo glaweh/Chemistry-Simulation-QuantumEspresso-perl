@@ -258,6 +258,7 @@ sub parse {
 			$data->{symm_name}->[$1-1]=$2;
 			next;
 		}
+		# symmop with explicite ft given
 		if (/^\s*(cryst|cart)\.\s*s\(\s*(\d+)\s*\)\s*=\s*\(\s*([0-9eEdD\.+-]+)\s+([0-9eEdD\.+-]+)\s+([0-9eEdD\.+-]+)\s*\)\s*f\s*=\(\s*([0-9eEdD\.+-]+)\s*\)/) {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
