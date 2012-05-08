@@ -284,6 +284,30 @@ sub parse {
 			}
 			next;
 		}
+		# symmop without explicite ft given
+		if (/^\s*(cryst|cart)\.\s*s\(\s*(\d+)\s*\)\s*=\s*\(\s*([0-9eEdD\.+-]+)\s+([0-9eEdD\.+-]+)\s+([0-9eEdD\.+-]+)\s*\)/) {
+			$fh_parsed=__LINE__-1;
+			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+			$fh_line='';
+			my $units = $1;
+			my $isym  = $2-1;
+			my $s  = zeroes(3,3);
+			my $ft = zeroes(3);
+			$data->{"symm_$units"}->{s}->[$isym]=$s;
+			$data->{"symm_${units}"}->{ft}->[$isym]=$ft;
+			$s(:,0) .= pdl([$3,$4,$5]);
+			for (my $i=1; $i<3;$i++) {
+				$_=<$fh>;
+				if (/^\s*\(\s*([0-9eEdD\.+-]+)\s+([0-9eEdD\.+-]+)\s+([0-9eEdD\.+-]+)\s*\)/) {
+					$fh_parsed = __LINE__-1;
+					$s(:,$i) .= pdl([$1,$2,$3]);
+				} else {
+					$fh_parsed = undef;
+				}
+				annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$_) if ($annotated_debug_fh);
+			}
+			next;
+		}
 		## BEGIN stuff found in version 3.2
 		if (/^\s*nbndx\s*=\s*(\d+)\s*nbnd\s*=\s*(\d+)\s*natomwfc\s*=\s*(\d+)\s*npwx\s*=\s*(\d+)\s*$/) {
 			$fh_parsed=__LINE__-1;
