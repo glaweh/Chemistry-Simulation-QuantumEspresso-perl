@@ -201,7 +201,7 @@ sub _insert_subclass {
 	map { $grid[$_] = 1 unless (defined $grid[$_]) } 0 .. 2;
 	map { $grid[$_] = 0 unless (defined $grid[$_]) } 3 .. 5;
 	my $to_insert = sprintf("\n%s%2d %2d %2d %2d %2d %2d",$self->{_namelist}->{indent},@grid);
-	my @length = map { my $l=length($_); $l=2 if ($l<2) } @grid;
+	my @length = map { my $l=length($_); $l=2 if ($l<2); $l } @grid;
 	my $offset=$self->{_namelist}->refine_offset_forward($self->{_o}->[1],qr{([^\n]+)}s);
 	my $delta =$self->{_namelist}->set_data($offset,$offset,$to_insert);
 	$self->{_o}->[1] += $delta;
