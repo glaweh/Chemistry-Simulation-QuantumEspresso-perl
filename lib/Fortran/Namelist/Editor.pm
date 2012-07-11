@@ -236,7 +236,7 @@ sub add_group {
 			$after_index--;
 		}
 	}
-	my $offset_b    = $self->{_groups}->[$after_index]->{o_e};
+	my $offset_b    = $self->{_groups}->[$after_index]->{_o}->[1];
 	$offset_b = $self->insert_new_line_after($offset_b,'');
 	my $group = Fortran::Namelist::Editor::Group->insert($self,$offset_b,'',$group_name,@options);
 	splice(@{$self->{_groups}},$after_index+1,0,$group);
