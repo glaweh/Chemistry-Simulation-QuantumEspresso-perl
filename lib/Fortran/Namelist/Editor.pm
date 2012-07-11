@@ -29,6 +29,7 @@ sub init {
 
 	$self->{filename}    = $opts{filename};
 	$self->{data}        = $data;
+	$self->{data_cs}     = '';
 
 	# modification detection
 	$self->{changed} = 0;
