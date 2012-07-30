@@ -79,7 +79,7 @@ sub parse {
 		}
 		$hot = 0 if ($hot and /^\s+-{2,}/);
 		if ($hot) {
-			if (/^\s*(\S+)\s+(\S+)\|\s*(\S+)\|\s*(\S+)\s+(\S+)/) {
+			if (/^\s*(\S+)\s+(\S+)\s*\|\s*(\S+)\s*\|\s*(\S+)\s+(\S+)/) {
 				push @e_from   ,$1;
 				push @e_to     ,$2;
 				push @n_pnts   ,$3;
