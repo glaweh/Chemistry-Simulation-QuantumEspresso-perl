@@ -149,6 +149,15 @@ sub get {
 }
 sub set {
 	my ($self,$value,@index) = @_;
+	my $type;
+	if (defined $index[-1] and $index[-1] !~ /^\d+$/) {
+		my $t = pop @index;
+		if ($t =~ /:/) {
+			$type=$t;
+		} else {
+			$type="Fortran::Namelist::Editor::Value::$t";
+		}
+	}
 	if ($#index>=0) {
 		die "variable '" . $self->{name}->get . "' was classified as scalar, not array"
 	}
@@ -283,6 +292,15 @@ sub get {
 }
 sub set {
 	my ($self,$value,@index) = @_;
+	my $type;
+	if (defined $index[-1] and $index[-1] !~ /^\d+$/) {
+		my $t = pop @index;
+		if ($t =~ /:/) {
+			$type=$t;
+		} else {
+			$type="Fortran::Namelist::Editor::Value::$t";
+		}
+	}
 	if ($#index<0) {
 		die "variable '" . $self->{name}->get . "' was classified as array, not scalar"
 	}
