@@ -199,6 +199,13 @@ sub get {
 	return($self->{groups}->{$group}->get(@options));
 }
 
+sub get_type {
+	my ($self,$group,@options)=@_;
+	return(undef) unless (defined $group);
+	return(undef) unless (exists $self->{groups}->{$group});
+	return($self->{groups}->{$group}->get_type(@options));
+}
+
 sub save {
 	my ($self,$filename)=@_;
 	my $fh;

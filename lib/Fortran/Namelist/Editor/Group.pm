@@ -58,6 +58,12 @@ sub get {
 	return(undef) unless (exists $self->{vars}->{$variable});
 	return($self->{vars}->{$variable}->get(@index));
 }
+sub get_type {
+	my ($self,$variable,@index) = @_;
+	return(undef) unless (defined $variable);
+	return(undef) unless (exists $self->{vars}->{$variable});
+	return($self->{vars}->{$variable}->get_type(@index));
+}
 sub set {
 	my ($self,$variable,$value,@index) = @_;
 	if (exists $self->{vars}->{$variable}) {

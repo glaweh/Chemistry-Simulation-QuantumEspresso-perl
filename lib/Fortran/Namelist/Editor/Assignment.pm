@@ -147,6 +147,11 @@ sub get {
 	return(undef) unless (blessed($self->{value}) and $self->{value}->can('get'));
 	return($self->{value}->get);
 }
+sub get_type {
+	my $self=shift;
+	return(undef) unless (defined $self->{value});
+	return(blessed($self->{value}));
+}
 sub set {
 	my ($self,$value,@index) = @_;
 	my $type;
