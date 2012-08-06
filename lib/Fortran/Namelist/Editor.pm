@@ -78,6 +78,10 @@ sub set_data {
 	my $newlength = length($value);
 	my $delta     = $newlength-$length;
 	$value_cs     = $value unless (defined $value_cs);
+	if ($delta == 0) {
+		my $old_data    = substr($self->{data},$o_b,$length);
+		return(0) if ($old_data eq $value);
+	}
 	substr($self->{data},$o_b,$length)    = $value;
 	substr($self->{data_cs},$o_b,$length) = $value_cs;
 	$self->{changed} = 1;
