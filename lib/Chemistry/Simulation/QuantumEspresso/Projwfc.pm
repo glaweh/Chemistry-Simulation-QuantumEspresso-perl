@@ -58,19 +58,20 @@ sub parse {
 		return(undef);
 	}
 	$data->{SOURCEFILE}=$fname;
+	chomp(my @lines=<$fh>);
+	close($fh);
 
-	my $nktot=0;
-	my $nbnd=0;
-	my $nstates=0;
+	my $nstates = grep { /^\s+state #/  } @lines;
+	my $nktot   = grep { /^\s+k\s+=\s+/ } @lines;
+	my $nbnd    = 0;
 
 	# first count stuff for later static allocation...
-	while (<$fh>) {
-		chomp;
-		$nstates++ if (/^\s+state #/);
-		$nktot++   if (/^\s+k\s+=\s+/);
+	foreach (@lines) {
 		# count bands on first kpoint
-		$nbnd++    if (($nktot==1) and (/^\s+e\s+=\s+/));
+		last if ($nbnd and /^\s+k\s+=\s+/);
+		$nbnd++    if (/^=*\s+e(?:\(\s*\d+\))?\s*=\s+/);
 	}
+	print STDERR "n: $nstates $nktot $nbnd\n";
 
 	# allocate piddles
 	my ($kvec,$projbnd,$psi2,$projstates,$ebnd);
@@ -80,28 +81,25 @@ sub parse {
 	$psi2       = $data->{psi2}       = zeroes($nbnd,$nktot);
 	$projstates = $data->{projstates} = zeroes(long,4,$nstates);
 
-	if (! seek($fh,0,SEEK_SET)) {
-		print "couldn't rewind file $fname\n" if ($options->{DEBUG}>0);
-		return(undef);
-	}
-
 	# now do the real parse run
 	my $nk=0;
-	while (<$fh>) {
-		chomp;
+	my $i=0;
+	while ($i<=$#lines) {
+		$_=$lines[$i++];
 		if (/state #\s*(\d+): atom\s*(\d+)\s*\(\s*(\S+)\s*\), wfc\s*(\d+)\s*\(l=\s*(\d+)\s*m=\s*(\d+)\s*\)/) {
+			print STDERR "sa\n";
 			$data->{atoms}->[$2-1]=$3;
 			$projstates(:,$1-1) .= pdl(long,$2-1,$4-1,$5,$6);
 			next;
 		}
 		if (/^Lowdin Charges/) {
-			$data->{lowdin}= parse_lowdin($fh,$options);
+			$data->{lowdin}= parse_lowdin(\@lines,\$i,$options);
 			next;
 		}
 		if (/^\s*k\s*=\s*([0-9\.-]+)\s+([0-9\.-]+)\s+([0-9\.-]+)\s*$/) {
 			$kvec(:,$nk;-).=pdl($1,$2,$3);
 			print STDERR "found k $nk: " . $kvec(:,$nk;-) . "\n" if ($options->{DEBUG} > 1);
-			parse_band_projection($fh,$options,
+			parse_band_projection(\@lines,\$i,$options,
 				$ebnd(:,$nk;-),
 				$projbnd(:,:,$nk;-),
 				$psi2(:,$nk;-)
@@ -110,7 +108,7 @@ sub parse {
 		}
 		print STDERR 'parse unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
-	close($fh);
+	print STDERR "ff\n";
 	if ($options->{CACHE}>0) {
 		if (fdump($data,$cachefile)) {
 			print STDERR "Written to cachefile $cachefile\n" if ($options->{DEBUG}>0);
@@ -121,12 +119,13 @@ sub parse {
 }
 
 sub parse_lowdin {
-	my $fh=shift;
+	my $lines=shift;
+	my $ir   =shift;
 	my $options=shift;
 	my $result;
 	my $atom=0;
-	while (<$fh>) {
-		chomp;
+	while (${$ir} <= $#{$lines}) {
+		$_=$lines->[${$ir}++];
 		s/^\s*//;
 		if (/Spilling Parameter:\s*(\S+)/) {
 			$result->{spilling}=$1;
@@ -148,12 +147,12 @@ sub parse_lowdin {
 }
 
 sub parse_band_projection {
-	my ($fh,$options,$ebnd_k,$projbnd_k,$psi2_k) = @_;
+	my ($lines,$ir,$options,$ebnd_k,$projbnd_k,$psi2_k) = @_;
 	my $nbnd=0;
-	while (<$fh>) {
-		chomp;
+	while (${$ir}<=$#{$lines}) {
+		$_=$lines->[${$ir}++];
 		last if (/^\s*$/);
-		if (/\s*e\s*=\s*([0-9\.-]+)\s*eV/) {
+		if (/^=*\s+e(?:\(\s*\d+\))?\s*=\s*([0-9\.-]+)\s*eV/) {
 			$ebnd_k($nbnd).=$1;
 			print STDERR "e=$1\n" if ($options->{DEBUG}>2);
 			next;
