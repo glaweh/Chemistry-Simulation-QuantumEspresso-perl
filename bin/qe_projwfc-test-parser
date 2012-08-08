@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+# Tool for testing the QE pw.x output parser
+# Copyright (C) 2010 Henning Glawe <glaweh@debian.org>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+use strict;
+use warnings;
+use PDL;
+use PDL::NiceSlice;
+use PDL::IO::Dumper;
+use Chemistry::Simulation::QuantumEspresso::Projwfc;
+
+if ($#ARGV<0) {
+	print STDERR "usage: $0 [-v <lvl>] <pp-out-file>\n";
+	exit 2;
+}
+
+my $fname=$ARGV[0];
+my $debugfname="$fname.test.annotate";
+my $pho=Chemistry::Simulation::QuantumEspresso::Projwfc::parse($fname, {DEBUG_UNPARSED=>1, ANNOTATED_DEBUG_FILE=>$debugfname, CACHE=>0});
+fdump($pho,"$fname.test.pdld");
+exit 0;
