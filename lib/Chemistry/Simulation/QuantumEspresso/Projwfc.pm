@@ -87,7 +87,6 @@ sub parse {
 	while ($i<=$#lines) {
 		$_=$lines[$i++];
 		if (/state #\s*(\d+): atom\s*(\d+)\s*\(\s*(\S+)\s*\), wfc\s*(\d+)\s*\(l=\s*(\d+)\s*m=\s*(\d+)\s*\)/) {
-			print STDERR "sa\n";
 			$data->{atoms}->[$2-1]=$3;
 			$projstates(:,$1-1) .= pdl(long,$2-1,$4-1,$5,$6);
 			next;
@@ -108,7 +107,6 @@ sub parse {
 		}
 		print STDERR 'parse unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
-	print STDERR "ff\n";
 	if ($options->{CACHE}>0) {
 		if (fdump($data,$cachefile)) {
 			print STDERR "Written to cachefile $cachefile\n" if ($options->{DEBUG}>0);
