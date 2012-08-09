@@ -71,7 +71,6 @@ sub parse {
 		last if ($nbnd and /^\s+k\s+=\s+/);
 		$nbnd++    if (/^=*\s+e(?:\(\s*\d+\))?\s*=\s+/);
 	}
-	print STDERR "n: $nstates $nktot $nbnd\n";
 
 	# allocate piddles
 	my ($kvec,$projbnd,$psi2,$projstates,$ebnd);
