@@ -1,4 +1,4 @@
-package Chemistry::Simulation::QuantumEspresso::Ph;
+package Chemistry::Simulation::QuantumEspresso::ph::out;
 # Parser for Quantum Espresso's ph.x output
 # Copyright (C) 2010-2011 Henning Glawe <glaweh@debian.org>
 #
