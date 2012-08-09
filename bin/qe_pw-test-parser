@@ -21,7 +21,7 @@ use warnings;
 use PDL;
 use PDL::NiceSlice;
 use PDL::IO::Dumper;
-use Chemistry::Simulation::QuantumEspresso::Pw;
+use Chemistry::Simulation::QuantumEspresso::pw::out;
 
 if ($#ARGV<0) {
 	print STDERR "usage: $0 [-v <lvl>] <pw-out-file>\n";
@@ -30,6 +30,6 @@ if ($#ARGV<0) {
 
 my $fname=$ARGV[0];
 my $debugfname="$fname.test.annotate";
-my $pwo=Chemistry::Simulation::QuantumEspresso::Pw::parse($fname, {DEBUG_UNPARSED=>1, ANNOTATED_DEBUG_FILE=>$debugfname, CACHE=>0});
+my $pwo=Chemistry::Simulation::QuantumEspresso::pw::out::parse($fname, {DEBUG_UNPARSED=>1, ANNOTATED_DEBUG_FILE=>$debugfname, CACHE=>0});
 fdump($pwo,"$fname.test.pdld");
 exit 0;

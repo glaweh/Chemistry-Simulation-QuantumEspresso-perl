@@ -21,7 +21,7 @@ use warnings;
 use Getopt::Std;
 use PDL;
 use PDL::NiceSlice;
-use Chemistry::Simulation::QuantumEspresso::Pw;
+use Chemistry::Simulation::QuantumEspresso::pw::out;
 
 my $NAME='qe_pw-eval';
 if (@ARGV != 2) {
@@ -31,7 +31,7 @@ if (@ARGV != 2) {
 
 my $fname=$ARGV[0];
 my $code=$ARGV[1];
-my $iter=Chemistry::Simulation::QuantumEspresso::Pw::parse($fname, {DEBUG=>0});
+my $iter=Chemistry::Simulation::QuantumEspresso::pw::out::parse($fname, {DEBUG=>0});
 
 my $a=eval $code;
 die "eval error: $@" if ($@);
