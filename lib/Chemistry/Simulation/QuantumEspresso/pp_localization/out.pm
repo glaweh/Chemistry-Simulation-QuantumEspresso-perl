@@ -42,7 +42,7 @@ sub parse {
 	my $fh;
 	if (($options->{CACHE}>0) and (-r $cachefile)) {
 		my $cached_data=frestore($cachefile);
-		if ($cached_data->{version}==$version) {
+		if ((ref $cached_data eq 'HASH') and (defined $cached_data->{version}) and ($cached_data->{version}==$version)) {
 			$cached_data->{cached}=1;
 			print STDERR "Read from cachefile $cachefile\n" if ($options->{DEBUG}>0);
 			return($cached_data);
