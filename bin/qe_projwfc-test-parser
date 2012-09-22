@@ -22,6 +22,14 @@ use PDL;
 use Storable;
 use PDL::IO::Storable;
 use Chemistry::Simulation::QuantumEspresso::projwfc::out;
+use Getopt::Long;
+
+Getopt::Long::Configure(qw/bundling/);
+
+my $no_K;
+GetOptions(
+	noK => \$no_K,
+);
 
 if ($#ARGV<0) {
 	print STDERR "usage: $0 [-v <lvl>] <pp-out-file>\n";
@@ -30,6 +38,11 @@ if ($#ARGV<0) {
 
 my $fname=$ARGV[0];
 my $debugfname="$fname.test.annotate";
-my $pho=Chemistry::Simulation::QuantumEspresso::projwfc::out::parse($fname, {DEBUG_UNPARSED=>1, ANNOTATED_DEBUG_FILE=>$debugfname, CACHE=>0});
+my $pho=Chemistry::Simulation::QuantumEspresso::projwfc::out::parse($fname, {
+		DEBUG_UNPARSED=>1,
+		ANNOTATED_DEBUG_FILE=>$debugfname,
+		CACHE=>0,
+		PARSE_K_PROJ=> ($no_K ? 0 : 1),
+	});
 store($pho,"$fname.test.storable");
 exit 0;
