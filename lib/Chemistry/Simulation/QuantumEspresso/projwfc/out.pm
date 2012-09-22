@@ -32,7 +32,8 @@ sub parse {
 	my $cachefile="$fname.cache.storable";
 	my $options={
 		DEBUG=>0,
-		CACHE=>1
+		CACHE=>1,
+		PARSE_K_PROJ=>1,
 	};
 	if (defined $user_opt) {
 		foreach (keys %{$user_opt}) {
@@ -50,64 +51,87 @@ sub parse {
 		}
 	}
 
-	my $data={
-		version=>$version
-	};
-
 	if (! open($fh,$fname)) {
 		print "couldn't open $fname\n" if ($options->{DEBUG}>0);
 		return(undef);
 	}
-	$data->{SOURCEFILE}=$fname;
-	chomp(my @lines=<$fh>);
+	my @lines=<$fh>;
 	close($fh);
 
-	my $nstates = grep { /^\s+state #/  } @lines;
-	my $nktot   = grep { /^\s+k\s+=\s+/ } @lines;
-	my $nbnd    = 0;
-
-	# first count stuff for later static allocation...
-	foreach (@lines) {
-		# count bands on first kpoint
-		last if ($nbnd and /^\s+k\s+=\s+/);
-		$nbnd++    if (/^=*\s+e(?:\(\s*\d+\))?\s*=\s+/);
-	}
-
-	# allocate piddles
-	my ($kvec,$projbnd,$psi2,$projstates,$ebnd);
-	$kvec       = $data->{kvec}       = zeroes(3,$nktot);
-	$ebnd       = $data->{ebnd}     = zeroes($nbnd,$nktot);
-	$projbnd    = $data->{projbnd}    = zeroes($nstates,$nbnd,$nktot);
-	$psi2       = $data->{psi2}       = zeroes($nbnd,$nktot);
-	$projstates = $data->{projstates} = zeroes(long,4,$nstates);
-
-	# now do the real parse run
-	my $nk=0;
 	my $i=0;
-	while ($i<=$#lines) {
-		$_=$lines[$i++];
-		if (/state #\s*(\d+): atom\s*(\d+)\s*\(\s*(\S+)\s*\), wfc\s*(\d+)\s*\(l=\s*(\d+)\s*m=\s*(\d+)\s*\)/) {
-			$data->{atoms}->[$2-1]=$3;
-			$projstates(:,$1-1) .= pdl(long,$2-1,$4-1,$5,$6);
-			next;
+	my (@atoms,$projstates);
+	do {
+		my @projstates;
+		while ($i<=$#lines) {
+			$_=$lines[$i++];
+			last if (($#atoms>=0) and /^\s*$/);
+			if (/^\s*state #\s*(\d+): atom\s*(\d+)\s*\(\s*(\S+)\s*\), wfc\s*(\d+)\s*\(l=\s*(\d+)\s*m=\s*(\d+)\s*\)/) {
+				$atoms[$2-1]=$3;
+				push @projstates,[ $2-1, $4-1, $5, $6 ];
+			}
 		}
-		if (/^Lowdin Charges/) {
-			$data->{lowdin}= parse_lowdin(\@lines,\$i,$options);
-			next;
+		$projstates=pdl(long,\@projstates);
+	};
+	my ($kvec,$proj,$psi2,$ebnd);
+	if ($options->{PARSE_K_PROJ}) {
+		my (@kvec,@proj,@psi2,@ebnd);
+		while ($i<=$#lines) {
+			$_=$lines[$i++];
+			last if (/^\s*Lowdin Charges:/);
+			if (my @kvec_i=/^\s+k\s+=\s+(\S+)\s+(\S+)\s+(\S+)/) {
+				push @kvec, pdl(\@kvec_i);
+				my (@ebnd_k,@psi2_k,@idx_k,@proj_k);
+				while ($i<=$#lines) {
+					$_=$lines[$i++];
+					last if (/^\s*$/);
+					if (/^=+\s+e(?:\(\s*\d+\))?\s*=\s+(\S+)/) {
+						push @ebnd_k,$1;
+						my   $n_i=$#ebnd_k;
+						my   @psi2_k_n;
+						push @psi2_k,\@psi2_k_n;
+						while ($i<=$#lines) {
+							$_=$lines[$i++];
+							if (/^\s+\|psi\|\^2\s+=\s+(\S+)/) {
+								push @psi2_k_n, $1;
+								last;
+							}
+							while (/(\d+\.\d+)\*\[#\s*(\d+)\]/g) {
+								push @idx_k,  [ $2-1, $n_i ];
+								push @proj_k, $1;
+							}
+						}
+					}
+				}
+				push @ebnd,pdl(\@ebnd_k);
+				push @psi2,pdl(\@psi2_k);
+				my $proj_k=zeroes($projstates->dim(1),$#ebnd_k+1);
+				$proj_k->indexND(pdl(long,\@idx_k)).=pdl(\@proj_k);
+				push @proj,$proj_k;
+			}
 		}
-		if (/^\s*k\s*=\s*([0-9\.-]+)\s+([0-9\.-]+)\s+([0-9\.-]+)\s*$/) {
-			$kvec(:,$nk;-).=pdl($1,$2,$3);
-			print STDERR "found k $nk: " . $kvec(:,$nk;-) . "\n" if ($options->{DEBUG} > 1);
-			parse_band_projection(\@lines,\$i,$options,
-				$ebnd(:,$nk;-),
-				$projbnd(:,:,$nk;-),
-				$psi2(:,$nk;-)
-			);
-			$nk++;
+		$kvec=pdl(\@kvec);
+		$proj=pdl(\@proj);
+		$psi2=pdl(\@psi2);
+		$ebnd=pdl(\@ebnd);
+	} else {
+		while ($i<=$#lines) {
+			$_=$lines[$i++];
+			last if (/^\s*Lowdin Charges:/);
 		}
-		print STDERR 'parse unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
-	if ($options->{CACHE}>0) {
+	my $data = {
+		lowdin     => parse_lowdin(\@lines,\$i,$options),
+		kvec       => $kvec,
+		ebnd       => $ebnd,
+		projbnd    => $proj,
+		psi2       => $psi2,
+		projstates => $projstates,
+		atoms      => \@atoms,
+		version    => $version,
+		SOURCEFILE => $fname,
+	};
+
+	if ($options->{CACHE}>0 and $options->{PARSE_K_PROJ}) {
 		if (store($data,$cachefile)) {
 			print STDERR "Written to cachefile $cachefile\n" if ($options->{DEBUG}>0);
 		}
@@ -142,31 +166,6 @@ sub parse_lowdin {
 
 	}
 	return($result);
-}
-
-sub parse_band_projection {
-	my ($lines,$ir,$options,$ebnd_k,$projbnd_k,$psi2_k) = @_;
-	my $nbnd=0;
-	while (${$ir}<=$#{$lines}) {
-		$_=$lines->[${$ir}++];
-		last if (/^\s*$/);
-		if (/^=*\s+e(?:\(\s*\d+\))?\s*=\s*([0-9\.-]+)\s*eV/) {
-			$ebnd_k($nbnd).=$1;
-			print STDERR "e=$1\n" if ($options->{DEBUG}>2);
-			next;
-		}
-		if (/\|psi\|\^2\s*=\s*([0-9\.-]+)/) {
-			$psi2_k($nbnd).=$1;
-			$nbnd++;
-			next;
-		}
-		#pattern:
-		# 0.476*[#  29]
-		while (/([0-9.-]+)\*\[#\s*(\d+)\]/g) {
-			$projbnd_k($2-1,$nbnd).=$1;
-		}
-	}
-	return 1;
 }
 
 1;
