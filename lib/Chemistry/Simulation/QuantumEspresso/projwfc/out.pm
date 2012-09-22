@@ -20,15 +20,16 @@ use strict;
 use warnings;
 use PDL;
 use PDL::NiceSlice;
+use Storable;
+use PDL::IO::Storable;
 
 my $version=1.0;
 
 sub parse {
 	use Fcntl ":seek";
-	use PDL::IO::Dumper;
 	my $fname=shift;
 	my $user_opt=shift;
-	my $cachefile="$fname.cache.pdld";
+	my $cachefile="$fname.cache.storable";
 	my $options={
 		DEBUG=>0,
 		CACHE=>1
@@ -41,7 +42,7 @@ sub parse {
 
 	my $fh;
 	if (($options->{CACHE}>0) and (-r $cachefile)) {
-		my $cached_data=frestore($cachefile);
+		my $cached_data=retrieve($cachefile);
 		if ((ref $cached_data eq 'HASH') and (defined $cached_data->{version}) and ($cached_data->{version}==$version)) {
 			$cached_data->{cached}=1;
 			print STDERR "Read from cachefile $cachefile\n" if ($options->{DEBUG}>0);
@@ -107,7 +108,7 @@ sub parse {
 		print STDERR 'parse unparsed: ' . $_ . "\n" if ($options->{DEBUG} > 2);
 	}
 	if ($options->{CACHE}>0) {
-		if (fdump($data,$cachefile)) {
+		if (store($data,$cachefile)) {
 			print STDERR "Written to cachefile $cachefile\n" if ($options->{DEBUG}>0);
 		}
 	}

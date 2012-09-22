@@ -19,8 +19,8 @@
 use strict;
 use warnings;
 use PDL;
-use PDL::NiceSlice;
-use PDL::IO::Dumper;
+use Storable;
+use PDL::IO::Storable;
 use Chemistry::Simulation::QuantumEspresso::projwfc::out;
 
 if ($#ARGV<0) {
@@ -31,5 +31,5 @@ if ($#ARGV<0) {
 my $fname=$ARGV[0];
 my $debugfname="$fname.test.annotate";
 my $pho=Chemistry::Simulation::QuantumEspresso::projwfc::out::parse($fname, {DEBUG_UNPARSED=>1, ANNOTATED_DEBUG_FILE=>$debugfname, CACHE=>0});
-fdump($pho,"$fname.test.pdld");
+store($pho,"$fname.test.storable");
 exit 0;
