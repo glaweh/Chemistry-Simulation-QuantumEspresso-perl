@@ -6,6 +6,8 @@ use PDL::NiceSlice;
 our @bravais=qw/free cP cF cI hP hR tP tI oP oS oF oI mP mS aP/;
 our %ibrav=map { ($bravais[$_],$_) } 0 .. $#bravais;
 
+my $bohr2angstrom = 0.52917720859;
+
 our @bravais_symm_class=qw/cubic
 	cubic cubic cubic
 	hexagonal hexagonal
@@ -203,10 +205,30 @@ sub amat_from_pw_in {
 	return($symm_class,$amat);
 }
 
+sub cell_from_pw_in {
+	my $in = shift;
+	my $amat=amat_from_pw_in($in);
+	my $alat=$in->get('&system','celldm',0);
+	$alat=1 unless (defined $alat);
+	my $in_ap=$in->get('ATOMIC_POSITIONS');
+	my $ap = pdl($in_ap->{position});
+	if ($in_ap->{units} ne 'crystal') {
+		my $amat_inv = inv($amat);
+		if ($in_ap->{units} eq 'alat') {
+			$amat_inv *= $alat;
+		} elsif ($in_ap->{units} eq 'angstrom') {
+			$amat_inv /= $bohr2angstrom;
+		}
+		$ap = $ap x $amat_inv;
+	}
+	return($alat,$amat,$ap,$in_ap->{species}) if (wantarray);
+	return($ap);
+}
+
 our (@ISA, @EXPORT_OK);
 BEGIN {
 	require Exporter;
 	@ISA = qw(Exporter);
-	@EXPORT_OK = qw(&convcell2espresso &espresso_amat &bmat_from_amat &amat_from_pw_in);  # symbols to export on request
+	@EXPORT_OK = qw(&convcell2espresso &espresso_amat &bmat_from_amat &amat_from_pw_in &cell_from_pw_in);  # symbols to export on request
 }
 1;
