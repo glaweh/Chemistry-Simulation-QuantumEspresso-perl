@@ -123,6 +123,12 @@ my @header_fields_types = (
 	'number_of_wfc'  , 'integer',
 	'number_of_proj' , 'integer',
 );
+my @grid_fields_types = (
+    'mesh_r'         , 'double',
+    'mesh_rab'       , 'double',
+    'local'          , 'double',
+);
+our $READ_GRID_DATA = 0;
 our @fields;
 our %type;
 
@@ -136,6 +142,12 @@ sub init {
 		push @fields,$header_fields_types[$i];
 	}
 	%type = @header_fields_types;
+    if ($READ_GRID_DATA) {
+    	for (my $i=0; $i<$#grid_fields_types; $i+=2) {
+	    	push @fields,$grid_fields_types[$i];
+	    	$type{$grid_fields_types[$i]}=$grid_fields_types[$i+1];
+	    }
+    }
 }
 
 
@@ -238,6 +250,35 @@ sub read_header_upf_v1 {
 	} continue {
 		last if ($exit);
 	}
+    if ($READ_GRID_DATA) {
+        my $dest_field;
+        while (<$upf>) {
+            chomp;
+            next if (/^\s*$/);
+            if (/<\/PP_.*>/) {
+                if (defined $dest_field) {
+                    # print "l= $#{$data{$dest_field}}\n";
+                    $dest_field = undef;
+                }
+                next;
+            } elsif (/<PP_R>/) {
+                $dest_field = 'mesh_r';
+                next;
+            } elsif (/<PP_RAB>/) {
+                $dest_field = 'mesh_rab';
+                next;
+            } elsif (/<PP_LOCAL>/) {
+                $dest_field = 'local';
+                next;
+            }
+            if (defined $dest_field) {
+                push @{$data{$dest_field}}, split;
+            } else {
+                # print "r: $_\n";
+            }
+            $header_line++;
+        }
+    }
 	close($upf);
 	if ($header_line > 0) {
 		$data{relativistic} = 'no' unless (defined $data{relativistic});
@@ -272,19 +313,32 @@ sub header2data {
 		my $type = $type{$field};
 		my $val  = $header->{$field};
 		if (defined $val) {
-			$val =~ s/^\s+//;
-			$val =~ s/\s+$//;
-			if ($type eq 'double') {
-				$val =~ s/[dD]/e/;
-			} elsif ($type eq 'logical') {
-				if (uc($val) eq 'T') {
-					$val = 1;
-				} else {
-					$val = 0;
-				}
-			} elsif ($field eq 'element') {
-				$val=ucfirst(lc($val));
-			}
+            if (ref $val) {
+                if ($type eq 'double') {
+                    foreach (@{$val}) {
+                        s/[dDE]/e/g;
+                        $_+=0.0;
+                    }
+                } elsif ($type eq 'integer') {
+                    foreach (@{$val}) {
+                        $_+=0;
+                    }
+                }
+            } else {
+			    $val =~ s/^\s+//;
+			    $val =~ s/\s+$//;
+			    if ($type eq 'double') {
+			    	$val =~ s/[dD]/e/;
+			    } elsif ($type eq 'logical') {
+			    	if (uc($val) eq 'T') {
+			    		$val = 1;
+			    	} else {
+			    		$val = 0;
+			    	}
+			    } elsif ($field eq 'element') {
+			    	$val=ucfirst(lc($val));
+			    }
+            }
 		} else {
 			if ($field eq 'author') {
 				$val = 'anonymous';
