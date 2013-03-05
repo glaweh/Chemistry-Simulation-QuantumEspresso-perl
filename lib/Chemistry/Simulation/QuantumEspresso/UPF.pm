@@ -72,56 +72,56 @@ use Switch;
 #              "hse"   = "nox+pw+hse+pbc"    = HSE
 #              "b3lyp" = "b3lp+vwn+b3lp+b3lp"= B3LYP
 my %dft_short_to_long = (
-	"bp"    =>"sla+pz+b88+p86",
-	"pw91"  =>"sla+pw+ggx+ggc",
-	"blyp"  =>"sla+lyp+b88+blyp",
-	"pbe"   =>"sla+pw+pbx+pbc",
-	"revpbe"=>"sla+pw+rpb+pbc",
-	"pbesol"=>"sla+pw+psx+psc",
-	"hcth"  =>"nox+noc+hcth+hcth",
-	"olyp"  =>"nox+lyp+optx+blyp",
-	"tpss"  =>"sla+pw+meta+meta",
-	"wc"    =>"sla+pw+wcx+pbc",
-	"pbe0"  =>"pb0x+pw+pb0x+pbc",
-	"hse"   =>"nox+pw+hse+pbc",
-	"b3lyp" =>"b3lp+vwn+b3lp+b3lp",
+    "bp"    =>"sla+pz+b88+p86",
+    "pw91"  =>"sla+pw+ggx+ggc",
+    "blyp"  =>"sla+lyp+b88+blyp",
+    "pbe"   =>"sla+pw+pbx+pbc",
+    "revpbe"=>"sla+pw+rpb+pbc",
+    "pbesol"=>"sla+pw+psx+psc",
+    "hcth"  =>"nox+noc+hcth+hcth",
+    "olyp"  =>"nox+lyp+optx+blyp",
+    "tpss"  =>"sla+pw+meta+meta",
+    "wc"    =>"sla+pw+wcx+pbc",
+    "pbe0"  =>"pb0x+pw+pb0x+pbc",
+    "hse"   =>"nox+pw+hse+pbc",
+    "b3lyp" =>"b3lp+vwn+b3lp+b3lp",
 # Henning's additions
-	"pz"    =>"sla+pz+nogx+nogc"
+    "pz"    =>"sla+pz+nogx+nogc"
 );
 my %dft_long_to_short = (
-	# Henning's additions
-	"sla+pw+pbe+pbe" => "pbe",
-	"sla+pw+tpss+tpss" => "tpss",
-	"sla+pw+nogx+nogc" => "pw",
+    # Henning's additions
+    "sla+pw+pbe+pbe" => "pbe",
+    "sla+pw+tpss+tpss" => "tpss",
+    "sla+pw+nogx+nogc" => "pw",
 );
 
 my @header_fields_types = (
-	'generated'      , 'string',
-	'author'         , 'string',
-	'date'           , 'string',
-	'comment'        , 'string',
-	'element'        , 'string',
-	'pseudo_type'    , 'string',
-	'relativistic'   , 'string',
-	'is_ultrasoft'   , 'logical',
-	'is_paw'         , 'logical',
-	'is_coulomb'     , 'logical',
-	'has_so'         , 'logical',
-	'has_wfc'        , 'logical',
-	'has_gipaw'      , 'logical',
-	'paw_as_gipaw'   , 'logical',
-	'core_correction', 'logical',
-	'functional'     , 'string',
-	'z_valence'      , 'double',
-	'total_psenergy' , 'double',
-	'wfc_cutoff'     , 'double',
-	'rho_cutoff'     , 'double',
-	'l_max'          , 'integer',
-	'l_max_rho'      , 'integer',
-	'l_local'        , 'integer',
-	'mesh_size'      , 'integer',
-	'number_of_wfc'  , 'integer',
-	'number_of_proj' , 'integer',
+    'generated'      , 'string',
+    'author'         , 'string',
+    'date'           , 'string',
+    'comment'        , 'string',
+    'element'        , 'string',
+    'pseudo_type'    , 'string',
+    'relativistic'   , 'string',
+    'is_ultrasoft'   , 'logical',
+    'is_paw'         , 'logical',
+    'is_coulomb'     , 'logical',
+    'has_so'         , 'logical',
+    'has_wfc'        , 'logical',
+    'has_gipaw'      , 'logical',
+    'paw_as_gipaw'   , 'logical',
+    'core_correction', 'logical',
+    'functional'     , 'string',
+    'z_valence'      , 'double',
+    'total_psenergy' , 'double',
+    'wfc_cutoff'     , 'double',
+    'rho_cutoff'     , 'double',
+    'l_max'          , 'integer',
+    'l_max_rho'      , 'integer',
+    'l_local'        , 'integer',
+    'mesh_size'      , 'integer',
+    'number_of_wfc'  , 'integer',
+    'number_of_proj' , 'integer',
 );
 my @grid_fields_types = (
     'mesh_r'         , 'double',
@@ -134,19 +134,19 @@ our %type;
 
 # initialize vars
 sub init {
-	foreach my $short (keys %dft_short_to_long) {
-		my $long = $dft_short_to_long{$short};
-		$dft_long_to_short{$long}=$short;
-	}
-	for (my $i=0; $i<$#header_fields_types; $i+=2) {
-		push @fields,$header_fields_types[$i];
-	}
-	%type = @header_fields_types;
+    foreach my $short (keys %dft_short_to_long) {
+        my $long = $dft_short_to_long{$short};
+        $dft_long_to_short{$long}=$short;
+    }
+    for (my $i=0; $i<$#header_fields_types; $i+=2) {
+        push @fields,$header_fields_types[$i];
+    }
+    %type = @header_fields_types;
     if ($READ_GRID_DATA) {
-    	for (my $i=0; $i<$#grid_fields_types; $i+=2) {
-	    	push @fields,$grid_fields_types[$i];
-	    	$type{$grid_fields_types[$i]}=$grid_fields_types[$i+1];
-	    }
+        for (my $i=0; $i<$#grid_fields_types; $i+=2) {
+            push @fields,$grid_fields_types[$i];
+            $type{$grid_fields_types[$i]}=$grid_fields_types[$i+1];
+        }
     }
 }
 
@@ -154,102 +154,102 @@ sub init {
 
 # subroutines
 sub map_to_short_dft {
-	my $long=lc(join('+',@_));
-	if (exists $dft_long_to_short{$long}) {
-		return $dft_long_to_short{$long};
-	} else {
-		return $long;
-	}
+    my $long=lc(join('+',@_));
+    if (exists $dft_long_to_short{$long}) {
+        return $dft_long_to_short{$long};
+    } else {
+        return $long;
+    }
 }
 
 sub read_header_upf_v1 {
-	my $fname_upf=shift;
-	my %simple_fields=(
-		1 => 'version',
-		2 => 'element',
-		6 => 'z_valence',
-		7 => 'total_psenergy',
-		9 => 'l_max',
-		10 => 'mesh_size'
-	);
-	my %pseudo_type_map=(
-		US => 'USPP',
-		NC => 'NC',
-		PAW => 'PAW'
-	);
-	my ($upf,$header_line,$exit,%data);
-	open($upf,$fname_upf);
-	$header_line=$exit=0;
-	while (<$upf>) {
-		chomp;
-		if (s/\s*<PP_INFO>/\*/i) {
-			$header_line=1;
-		}
-		next unless ($header_line);
-		if (s/\s*<\/PP_INFO>\s*//i) {
-			$exit=1;
-		}
-		next if (/^\s*$/);
-		my @line = split;
-		if ($header_line == 3) {
-			if (/^\s*Author:\s*(.*?)\s*Generation date:\s*(.*?)\s*$/) {
-				$data{author}=$1;
-				$data{date}=$2;
-			}
-		}
-		if ($header_line == 5) {
-			if ($line[0] == 1) {
-				$data{relativistic} = 'scalar';
-			} elsif ($line[0] == 2) {
-				$data{relativistic} = 'full';
-			} else {
-				$data{relativistic} = 'no';
-			}
-		}
-		$header_line++;
-	} continue {
-		last if ($exit);
-	}
-	$header_line=$exit=0;
-	while (<$upf>) {
-		chomp;
-# 		printf "%03d '%s'\n",$header_line,$_;
-		if (s/\s*<PP_HEADER>\s*//i) {
-			$header_line=1;
-		}
-		next unless ($header_line);
-		if (s/\s*<\/PP_HEADER>\s*//i) {
-			$exit=1;
-		}
-		next if (/^\s*$/);
-		my @line=split;
-		if ($header_line <= 12) {
-			switch ($header_line) {
-				case (%simple_fields) {
-					$data{$simple_fields{$header_line}}=$line[0];
-				}
-				case 3 { $data{pseudo_type}=$pseudo_type_map{$line[0]} }
-				case 4 { $data{core_correction}=($line[0] =~ /tT/); }
-				case 5 { $data{functional} = map_to_short_dft(@line[0 .. 3]); }
-				case 8 {
-					$data{wfc_cutoff}=$line[0];
-					$data{rho_cutoff} = $line[1];
-				}
-				case 11 {
-					$data{number_of_wfc}=$line[0];
-					$data{number_of_proj}=$line[1];
-				}
-			}
-		} else {
-			push @{$data{wavefunctions}}, {
-				els  => $line[0],
-				lchi => $line[1],
-				oc   => $line[2] };
-		}
-		$header_line++;
-	} continue {
-		last if ($exit);
-	}
+    my $fname_upf=shift;
+    my %simple_fields=(
+        1 => 'version',
+        2 => 'element',
+        6 => 'z_valence',
+        7 => 'total_psenergy',
+        9 => 'l_max',
+        10 => 'mesh_size'
+    );
+    my %pseudo_type_map=(
+        US => 'USPP',
+        NC => 'NC',
+        PAW => 'PAW'
+    );
+    my ($upf,$header_line,$exit,%data);
+    open($upf,$fname_upf);
+    $header_line=$exit=0;
+    while (<$upf>) {
+        chomp;
+        if (s/\s*<PP_INFO>/\*/i) {
+            $header_line=1;
+        }
+        next unless ($header_line);
+        if (s/\s*<\/PP_INFO>\s*//i) {
+            $exit=1;
+        }
+        next if (/^\s*$/);
+        my @line = split;
+        if ($header_line == 3) {
+            if (/^\s*Author:\s*(.*?)\s*Generation date:\s*(.*?)\s*$/) {
+                $data{author}=$1;
+                $data{date}=$2;
+            }
+        }
+        if ($header_line == 5) {
+            if ($line[0] == 1) {
+                $data{relativistic} = 'scalar';
+            } elsif ($line[0] == 2) {
+                $data{relativistic} = 'full';
+            } else {
+                $data{relativistic} = 'no';
+            }
+        }
+        $header_line++;
+    } continue {
+        last if ($exit);
+    }
+    $header_line=$exit=0;
+    while (<$upf>) {
+        chomp;
+#       printf "%03d '%s'\n",$header_line,$_;
+        if (s/\s*<PP_HEADER>\s*//i) {
+            $header_line=1;
+        }
+        next unless ($header_line);
+        if (s/\s*<\/PP_HEADER>\s*//i) {
+            $exit=1;
+        }
+        next if (/^\s*$/);
+        my @line=split;
+        if ($header_line <= 12) {
+            switch ($header_line) {
+                case (%simple_fields) {
+                    $data{$simple_fields{$header_line}}=$line[0];
+                }
+                case 3 { $data{pseudo_type}=$pseudo_type_map{$line[0]} }
+                case 4 { $data{core_correction}=($line[0] =~ /tT/); }
+                case 5 { $data{functional} = map_to_short_dft(@line[0 .. 3]); }
+                case 8 {
+                    $data{wfc_cutoff}=$line[0];
+                    $data{rho_cutoff} = $line[1];
+                }
+                case 11 {
+                    $data{number_of_wfc}=$line[0];
+                    $data{number_of_proj}=$line[1];
+                }
+            }
+        } else {
+            push @{$data{wavefunctions}}, {
+                els  => $line[0],
+                lchi => $line[1],
+                oc   => $line[2] };
+        }
+        $header_line++;
+    } continue {
+        last if ($exit);
+    }
     if ($READ_GRID_DATA) {
         my $dest_field;
         while (<$upf>) {
@@ -279,40 +279,40 @@ sub read_header_upf_v1 {
             $header_line++;
         }
     }
-	close($upf);
-	if ($header_line > 0) {
-		$data{relativistic} = 'no' unless (defined $data{relativistic});
-		$data{is_ultrasoft} = ($data{pseudo_type} eq 'US' ? 1 : 0);
-		$data{is_paw} = ($data{pseudo_type} eq 'PAW' ? 1 : 0);
-		return \%data;
-	} else {
-		return undef;
-	}
+    close($upf);
+    if ($header_line > 0) {
+        $data{relativistic} = 'no' unless (defined $data{relativistic});
+        $data{is_ultrasoft} = ($data{pseudo_type} eq 'US' ? 1 : 0);
+        $data{is_paw} = ($data{pseudo_type} eq 'PAW' ? 1 : 0);
+        return \%data;
+    } else {
+        return undef;
+    }
 }
 sub read_header_upf_v2 {
-	my $fname_upf=shift;
-	my $upf;
-	eval {
-		$upf=XMLin($fname_upf,KeepRoot=>1);
-	};
-	if ((defined $upf) and (exists $upf->{UPF}) and (exists $upf->{UPF}->{PP_HEADER})) {
-		my %data=%{$upf->{UPF}->{PP_HEADER}};
-		$data{version}=$upf->{version};
-		$_=$data{functional};
-		$data{functional}=map_to_short_dft(split);
-		return \%data;
-	} else {
-		return undef;
-	}
+    my $fname_upf=shift;
+    my $upf;
+    eval {
+        $upf=XMLin($fname_upf,KeepRoot=>1);
+    };
+    if ((defined $upf) and (exists $upf->{UPF}) and (exists $upf->{UPF}->{PP_HEADER})) {
+        my %data=%{$upf->{UPF}->{PP_HEADER}};
+        $data{version}=$upf->{version};
+        $_=$data{functional};
+        $data{functional}=map_to_short_dft(split);
+        return \%data;
+    } else {
+        return undef;
+    }
 }
 
 sub header2data {
-	my $header=shift;
-	my %data;
-	foreach my $field (@fields) {
-		my $type = $type{$field};
-		my $val  = $header->{$field};
-		if (defined $val) {
+    my $header=shift;
+    my %data;
+    foreach my $field (@fields) {
+        my $type = $type{$field};
+        my $val  = $header->{$field};
+        if (defined $val) {
             if (ref $val) {
                 if ($type eq 'double') {
                     foreach (@{$val}) {
@@ -325,42 +325,42 @@ sub header2data {
                     }
                 }
             } else {
-			    $val =~ s/^\s+//;
-			    $val =~ s/\s+$//;
-			    if ($type eq 'double') {
-			    	$val =~ s/[dD]/e/;
-			    } elsif ($type eq 'logical') {
-			    	if (uc($val) eq 'T') {
-			    		$val = 1;
-			    	} else {
-			    		$val = 0;
-			    	}
-			    } elsif ($field eq 'element') {
-			    	$val=ucfirst(lc($val));
-			    }
+                $val =~ s/^\s+//;
+                $val =~ s/\s+$//;
+                if ($type eq 'double') {
+                    $val =~ s/[dD]/e/;
+                } elsif ($type eq 'logical') {
+                    if (uc($val) eq 'T') {
+                        $val = 1;
+                    } else {
+                        $val = 0;
+                    }
+                } elsif ($field eq 'element') {
+                    $val=ucfirst(lc($val));
+                }
             }
-		} else {
-			if ($field eq 'author') {
-				$val = 'anonymous';
-			} elsif ($field eq 'has_wfc') {
-				$val = $data{is_paw};
-			} elsif ($field eq 'l_max_rho') {
-				$val = 2*$data{l_max};
-			} elsif ($type eq 'string') {
-				$val = '';
-			} else {
-				$val = 0;
-			}
-		}
-		$data{$field}=$val;
-	}
-	return(\%data);
+        } else {
+            if ($field eq 'author') {
+                $val = 'anonymous';
+            } elsif ($field eq 'has_wfc') {
+                $val = $data{is_paw};
+            } elsif ($field eq 'l_max_rho') {
+                $val = 2*$data{l_max};
+            } elsif ($type eq 'string') {
+                $val = '';
+            } else {
+                $val = 0;
+            }
+        }
+        $data{$field}=$val;
+    }
+    return(\%data);
 }
 sub parse {
-	my $fname_upf = shift;
-	my $header;
-	$header=read_header_upf_v1($fname_upf) unless (defined ($header=read_header_upf_v2($fname_upf)));
-	return(header2data($header));
+    my $fname_upf = shift;
+    my $header;
+    $header=read_header_upf_v1($fname_upf) unless (defined ($header=read_header_upf_v2($fname_upf)));
+    return(header2data($header));
 }
 
 init();
