@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Chemistry::Simulation::QuantumEspresso::UPF;
+use PDL;
+use PDL::IO::Dumper;
+$Chemistry::Simulation::QuantumEspresso::UPF::READ_GRID_DATA=1;
+Chemistry::Simulation::QuantumEspresso::UPF::init();
+use Data::Dumper;
+
+foreach my $fname_upf (@ARGV) {
+	if (! -f $fname_upf) {
+		print STDERR "file not found: '$fname_upf'\n";
+		next;
+	}
+	my $data = Chemistry::Simulation::QuantumEspresso::UPF::parse($fname_upf);
+    my $mesh_r = pdl($data->{mesh_r});
+    my $local  = pdl($data->{local});
+    wcols "%15.10e %15.10e", $mesh_r, $local, "${fname_upf}_local.dat";
+}
