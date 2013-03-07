@@ -127,6 +127,7 @@ my @grid_fields_types = (
     'mesh_r'         , 'double',
     'mesh_rab'       , 'double',
     'local'          , 'double',
+    'rhoatom'        , 'double',
 );
 our $READ_GRID_DATA = 0;
 our @fields;
@@ -269,6 +270,9 @@ sub read_header_upf_v1 {
                 next;
             } elsif (/<PP_LOCAL>/) {
                 $dest_field = 'local';
+                next;
+            } elsif (/<PP_RHOATOM>/) {
+                $dest_field = 'rhoatom';
                 next;
             }
             if (defined $dest_field) {
