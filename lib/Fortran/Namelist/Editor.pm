@@ -3,11 +3,11 @@ use strict;
 use warnings;
 use Carp;
 use Data::Dumper;
-use Clone;
+use Storable;
 use Scalar::Util qw(reftype blessed);
 use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Group;
-@Fortran::Namelist::Editor::ISA=qw{Fortran::Namelist::Editor::ContainerSpan Clone};
+@Fortran::Namelist::Editor::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
 
 sub init {
 	my $self=shift;
@@ -319,5 +319,9 @@ sub _remove_GOT_entry {
 }
 sub DESTROY {
 	return(1);
+}
+sub clone {
+	my $self=shift;
+	return(Storable::dclone($self));
 }
 1;
