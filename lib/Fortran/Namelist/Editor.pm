@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Carp;
 use Data::Dumper;
-use Storable;
+use Clone;
 use Scalar::Util qw(reftype blessed);
 use Fortran::Namelist::Editor::Span;
 use Fortran::Namelist::Editor::Group;
@@ -322,6 +322,6 @@ sub DESTROY {
 }
 sub clone {
 	my $self=shift;
-	return(Storable::dclone($self));
+	return(Clone::clone($self));
 }
 1;
