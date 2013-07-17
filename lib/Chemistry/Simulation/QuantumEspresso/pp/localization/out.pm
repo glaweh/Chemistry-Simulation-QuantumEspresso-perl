@@ -61,7 +61,6 @@ sub parse {
 
 	my $hot = 0;
     my %accum;
-	my (@e_from,@e_to,@n_pnts,@loc_param,@dos,@atomic_loc_dos);
     my @fieldnames;
 	while (<$fh>) {
 		chomp;
@@ -95,13 +94,24 @@ sub parse {
 		}
 		$hot = 1 if (/^\|--- Localization --/);
 	}
-    foreach my $key (keys %accum) {
+    my %format;
+    foreach my $key (@fieldnames) {
         if ($key eq 'n_pnts') {
             $data->{$key} = pdl(long,$accum{$key});
+            $format{$key} = '%8d';
+        } elsif ($key eq 'center') {
+            $data->{$key} = pdl($accum{$key});
+            $format{$key} = '%9.3f';
+        } elsif ($key=~/_dos$/) {
+            $data->{$key} = pdl($accum{$key});
+            $format{$key} = '%12.4f';
         } else {
             $data->{$key} = pdl($accum{$key});
+            $format{$key} = '%16.9f';
         }
     }
+    $data->{format}=\%format;
+    $data->{fieldnames}=\@fieldnames;
 
 	close($fh);
 	if ($options->{CACHE}>0) {
