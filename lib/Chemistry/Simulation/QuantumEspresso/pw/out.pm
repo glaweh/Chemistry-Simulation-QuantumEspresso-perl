@@ -339,6 +339,11 @@ sub parse {
 			$data->{version}=$vers_num;
 			next;
 		}
+		if (/git_version:\s*GITAbrHash:\s*(.+?)\s*$/) {
+			$fh_parsed=__LINE__-1;
+            $data->{git_version}=$1;
+            next;
+        }
 		if (/^\s*Parallel version \(MPI\), running on\s*(\d+)\s+processors/) {
 			$fh_parsed=__LINE__-1;
 			$data->{nproc} = $1;

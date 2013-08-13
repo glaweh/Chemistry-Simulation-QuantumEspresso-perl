@@ -91,7 +91,11 @@ sub parse {
             for (my $i=0;$i<=$#fieldnames;$i++) {
                 push @{$accum{$fieldnames[$i]}},$line[$i];
             }
-		}
+		} elsif (/git_version:\s*GITAbrHash:\s*(.+?)\s*$/) {
+            $data->{git_version}=$1;
+        } elsif (/Program .+ v.(.+?)\s+starts on/) {
+            $data->{espresso_version}=$1;
+        }
 		$hot = 1 if (/^\|--- Localization --/);
 	}
     my %format;

@@ -80,9 +80,12 @@ sub parse {
 			$data->{gaussian}->{reason}=$1;
 			$data->{gaussian}->{ngauss}=$2;
 			$data->{gaussian}->{degauss}=$3;
-		}
-		if (/^\s*Tetrahedra used/) {
+		} elsif (/^\s*Tetrahedra used/) {
 			$data->{tetrahedra}=1;
+		} elsif (/git_version:\s*GITAbrHash:\s*(.+?)\s*$/) {
+            $data->{git_version}=$1;
+        } elsif (/Program .+ v.(.+?)\s+starts on/) {
+            $data->{espresso_version}=$1;
 		}
 	}
 
