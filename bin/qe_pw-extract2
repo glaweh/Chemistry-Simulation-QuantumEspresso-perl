@@ -16,7 +16,7 @@ foreach my $scf_out_fname (@ARGV) {
     my $data=Chemistry::Simulation::QuantumEspresso::pw::out::parse($scf_out_fname);
     if (defined $what) {
         my $val;
-        eval "\$val=\$data->$what";
+        eval "\$val=$what";
         print "$val\n";
     } else {
         print sdump($data);
