@@ -2,9 +2,24 @@
 use strict;
 use warnings;
 use Chemistry::Simulation::QuantumEspresso::pw::out;
-use Data::Dumper;
+use PDL;
+use PDL::IO::Dumper;
+use Getopt::Long;
 
-my $data=Chemistry::Simulation::QuantumEspresso::pw::out::parse($ARGV[0]);
+my $what;
 
-print Dumper($data);
+GetOptions(
+    "what|d=s" => \$what,
+);
+
+foreach my $scf_out_fname (@ARGV) {
+    my $data=Chemistry::Simulation::QuantumEspresso::pw::out::parse($scf_out_fname);
+    if (defined $what) {
+        my $val;
+        eval "\$val=\$data->$what";
+        print "$val\n";
+    } else {
+        print sdump($data);
+    }
+}
 exit(0);
