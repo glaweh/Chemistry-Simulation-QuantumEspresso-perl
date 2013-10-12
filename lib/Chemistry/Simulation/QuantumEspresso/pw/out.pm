@@ -385,12 +385,14 @@ sub parse {
 			} else {
 				$fh_parsed=undef;
 			}
+            next;
 		}
 
 		if (/^\s*Dense\s+grid:\s*(\d+)\s*G-vectors\s*FFT dimensions:\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/) {
 			$fh_parsed=__LINE__-1;
 			$data->{ngm_g}=$1;
 			$data->{nr}=[ $2, $3, $4 ];
+            next;
 		}
 
 		if (/^\s*crystal axes: \(cart\. coord/) {
