@@ -345,9 +345,9 @@ sub parse {
             $data->{git_version}=$1;
             next;
         }
-		if (/^\s*Parallel version \(MPI\), running on\s*(\d+)\s+processors/) {
+		if (/^\s*Parallel version \(MPI[^\)]*\), running on\s*(\d+)\s+processors/) {
 			$fh_parsed=__LINE__-1;
-			$data->{nproc} = $1;
+			$data->{nproc_total} = $1;
 			next;
 		}
 		if (/^\s*Number of MPI processes:\s*(\d+)/) {
@@ -365,6 +365,11 @@ sub parse {
 			$data->{nproc_pool} = $1;
 			next;
 		}
+        if (/^\s*K-points division:     npool     =\s*(\d+)/) {
+            $fh_parsed=__LINE__-1;
+            $data->{npool} = $1;
+            next;
+        }
 		if (/^\s*k =.* (?:bands|band energies) \(ev\):/) {
 			$fh_parsed=__LINE__-1;
 			$data->{bands}=parse_bands($fh,$startup->{nk},$startup->{nbnd},$fh_line,$options);
