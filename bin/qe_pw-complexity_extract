@@ -1,0 +1,78 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Chemistry::Simulation::QuantumEspresso::pw::out;
+use Storable;
+my $B = 2;
+
+my $complexity_fname=shift;
+my @scf_out_fname = grep { /\.(?:out|summary)$/i } @ARGV;
+die "no files matching *.out or *.summary" unless ($#scf_out_fname>=0);
+open(my $complexity_fh,'>',$complexity_fname);
+my $fstring_line="%6d %10d %15.4f %5d %5d %5d %15.8f    %5d %6d %6d %6d %6d    %5d %5d %5d    %5d %5d %5d\n";
+my $fstring_head="#%-5s %10s %-15s %5s %5s %5s %15s    %5s %6s %6s %6s %6s    %5s %5s %5s    %5s %5s %5s\n";
+printf $complexity_fh $fstring_head,
+    'cc','calc_tag',
+    'runtime','poolp','npool','N_it','N_h',
+    'nspin','N_k','nbnd','npw','nproj',
+    'nr1s','nr2s','nr3s',
+    'nr1','nr2','nr3';
+foreach my $scf_out_fname (@scf_out_fname) {
+    my $scf_out = Chemistry::Simulation::QuantumEspresso::pw::out::parse($scf_out_fname);
+    unless ((defined $scf_out) and (ref $scf_out eq 'ARRAY')) {
+        print STDERR "error parsing $scf_out_fname\n";
+        next;
+    }
+    my $runtime=0;
+    my $meta_fname=$scf_out_fname;
+    $meta_fname=~s/[^\/]+$/meta.storable/;
+    if (-f $meta_fname) {
+        my $meta=Storable::retrieve($meta_fname);
+        $runtime=$meta->{TIME_SCF};
+    }
+    my ($cc,$ct)=(0,0);
+    if ($scf_out_fname =~ /(?:^|\/)(\d+)\.(\d+)\//) {
+        $cc=$1;
+        $ct=$2;
+    }
+    my $setup = $scf_out->[0];
+    my $nproc      = (defined $setup->{nproc}      ? $setup->{nproc}      : 1);
+    my $nproc_pool = (defined $setup->{nproc_pool} ? $setup->{nproc_pool} : 1);
+    my $npool      = (defined $setup->{npool}      ? $setup->{npool}      : 1);
+    my $nthreads   = (defined $setup->{omp_num_threads} ? $setup->{omp_num_threads} : 1);
+    my $nbnd       = $setup->{nbnd};
+    my $npw        = $setup->{G_vecs}->{PW};
+    my ($nr1,$nr2,$nr3) = @{$setup->{nr}};
+    my ($nr1s,$nr2s,$nr3s) = (defined $setup->{nrs} ? @{$setup->{nrs}} : @{$setup->{nr}});
+    my $N_k        = $setup->{nk};
+    # total number of projectors
+    my $P=0;
+    my $nspin=1;
+    foreach my $species (@{$setup->{species}}) {
+        next unless (defined $species);
+        $nspin=2 if (defined $species->{starting_magnetization});
+        my $P_species=0;
+        foreach my $l (@{$species->{beta_l}}) {
+            next unless (defined $l);
+            $P_species+=2*$l+1;
+        }
+        $P+=$P_species*($#{$setup->{species_atoms}->{$species->{label}}}+1);
+    }
+    my $N_h=0;
+    my $N_iter=0;
+    if (defined $scf_out->[-1]->{iteration}) {
+        $N_iter=$scf_out->[-1]->{iteration};
+        # average number of iterations in diagonalization
+        foreach my $iter (@{$scf_out}) {
+            next unless (defined $iter->{avg_iter});
+            $N_h+=$iter->{avg_iter};
+        }
+        $N_h/=$N_iter; 
+    }
+    printf $complexity_fh $fstring_line,
+        $cc,$ct,
+        $runtime,$nproc_pool,$npool,$N_iter,$N_h,
+        $nspin,$N_k,$nbnd,$npw,$P,
+        $nr1s,$nr2s,$nr3s,
+        $nr1,$nr2,$nr3;
+}
