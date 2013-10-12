@@ -23,7 +23,7 @@ use PDL::IO::Dumper;
 use PDL::NiceSlice;
 
 my $parser_version_major=1;
-my $parser_version_minor=6;
+my $parser_version_minor=7;
 
 sub annotate_debug($$$$) {
 	my ($fh,$sub,$parsed,$data)=@_;
