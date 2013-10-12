@@ -387,6 +387,67 @@ sub parse {
 			}
             next;
 		}
+        if (/^\s*(?:G-vector sticks info|Parallelization info)/) {
+            $fh_parsed=__LINE__-1;
+            annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+            # skip heading
+            $fh_line=<$fh>;
+            annotate_debug($annotated_debug_fh,'parse',0,$fh_line) if ($annotated_debug_fh);
+            $fh_line=<$fh>;
+            annotate_debug($annotated_debug_fh,'parse',0,$fh_line) if ($annotated_debug_fh);
+            while (<$fh>) {
+                if (/^\s*$/) {
+                    annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$_) if ($annotated_debug_fh);
+                    last;
+                }
+                my @l=split;
+                if ($#l != 6) {
+                    annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$_) if ($annotated_debug_fh);
+                    next;
+                }
+                if ($l[0] eq 'Sum') {
+                    annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$_) if ($annotated_debug_fh);
+                    $data->{sticks} = {
+                        dense=>$l[1],
+                        smooth=>$l[2],
+                        PW=>$l[3],
+                    };
+                    $data->{G_vecs} = {
+                        dense=>$l[4],
+                        smooth=>$l[5],
+                        PW=>$l[6],
+                    };
+                } elsif ($l[0] eq 'Min') {
+                    annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$_) if ($annotated_debug_fh);
+                    $data->{sticks_min} = {
+                        dense=>$l[1],
+                        smooth=>$l[2],
+                        PW=>$l[3],
+                    };
+                    $data->{G_vecs_min} = {
+                        dense=>$l[4],
+                        smooth=>$l[5],
+                        PW=>$l[6],
+                    };
+                } elsif ($l[0] eq 'Max') {
+                    annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$_) if ($annotated_debug_fh);
+                    $data->{sticks_max} = {
+                        dense=>$l[1],
+                        smooth=>$l[2],
+                        PW=>$l[3],
+                    };
+                    $data->{G_vecs_max} = {
+                        dense=>$l[4],
+                        smooth=>$l[5],
+                        PW=>$l[6],
+                    };
+                } else {
+                    annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$_) if ($annotated_debug_fh);
+                }
+            }
+            $fh_line='';
+            next;
+        }
 
 		if (/^\s*Dense\s+grid:\s*(\d+)\s*G-vectors\s*FFT dimensions:\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/) {
 			$fh_parsed=__LINE__-1;
