@@ -185,9 +185,10 @@ sub parse {
 			$data->{E_Fermi}=$1;
 			next;
 		}
-		if (/^\s*ethr =\s*(\S+),/) {
+		if (/^\s*ethr =\s*(\S+),\s*avg # of iterations =\s*(\S+)/) {
 			$fh_parsed=__LINE__-1;
 			$data->{ethr}=$1;
+            $data->{avg_iter}=$2;
 			next;
 		}
 		if (/^\s*number of k points=\s*(\d+)/) {
