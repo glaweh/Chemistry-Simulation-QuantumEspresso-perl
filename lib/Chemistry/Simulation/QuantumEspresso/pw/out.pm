@@ -456,6 +456,13 @@ sub parse {
             next;
 		}
 
+		if (/^\s*Smooth\s+grid:\s*(\d+)\s*G-vectors\s*FFT dimensions:\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/) {
+			$fh_parsed=__LINE__-1;
+			$data->{ngmtot}=$1;
+			$data->{nr1}=[ $2, $3, $4 ];
+            next;
+		}
+
 		if (/^\s*crystal axes: \(cart\. coord/) {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
