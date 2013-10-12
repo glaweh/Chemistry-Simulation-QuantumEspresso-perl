@@ -426,6 +426,35 @@ sub parse {
 			}
 			next;
 		}
+        if (/^\s*PseudoPot. #\s*(\d+)\s*for\s*(\S+)\s*read from file:/) {
+            $fh_parsed=__LINE__-1;
+            my $pp_idx=$1;
+            my $pp_species=$2;
+            annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
+            $_=<$fh>;
+            if (m/^\s*(.*?)\s*$/) {
+                annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$_) if ($annotated_debug_fh);
+                $data->{species}->[$pp_idx]->{pp_filename}=$1;
+            }
+            while (($_=<$fh>)!~/^\s*$/) {
+                if (/^\s*Using radial grid of\s*(\d+)\s*points,\s*(\d+)\s*beta functions with:/) {
+                    my $this_fh_parsed = __LINE__-1;
+                    $data->{species}->[$pp_idx]->{radial_grid}=$1;
+                    $data->{species}->[$pp_idx]->{n_beta}=$2;
+                    annotate_debug($annotated_debug_fh,'parse',$this_fh_parsed,$_) if ($annotated_debug_fh);
+                    next;
+                }
+                if (/^\s*l\((\d+)\)\s*=\s*(\d+)/) {
+                    my $this_fh_parsed = __LINE__-1;
+                    $data->{species}->[$pp_idx]->{beta_l}->[$1]=$2;
+                    annotate_debug($annotated_debug_fh,'parse',$this_fh_parsed,$_) if ($annotated_debug_fh);
+                    next;
+                }
+                annotate_debug($annotated_debug_fh,'parse',0,$_) if ($annotated_debug_fh);
+            }
+            $fh_line="\n";
+            next;
+        }
 		if (/^\s*atomic species   valence    mass     pseudopotential/) {
 			$fh_parsed=__LINE__-1;
 			annotate_debug($annotated_debug_fh,'parse',$fh_parsed,$fh_line) if ($annotated_debug_fh);
