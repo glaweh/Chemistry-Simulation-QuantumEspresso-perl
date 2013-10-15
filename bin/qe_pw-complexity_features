@@ -1,0 +1,97 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use PDL;
+use PDL::NiceSlice;
+my $B = pdl(2);
+
+my $complexity_fname=shift;
+die "usage $0 <complexity.dat>" unless ((defined $complexity_fname) and (-s $complexity_fname));
+my ($cc,$calc_tag,
+    $runtime,$poolp,$npool,$N_it,$N_h,
+    $nspin,$N_k,$nbnd,$npw,$nproj,
+    $nr1s,$nr2s,$nr3s,
+    $nr1,$nr2,$nr3) = rcols($complexity_fname,{
+            TYPES=>[
+                long,long,
+                double,long,long,long,double,
+                long,long,long,long,long,
+                long,long,long,
+                long,long,long ]});
+my $M  = $nbnd;
+my $P  = $nproj;
+my ($N,$mu,$nu);
+my ($npw_pp,$nr3s_pp,$nr3_pp);
+do {
+    # calculate with 'wasted' processors, i.e. commensurate to the grids
+    my $mod;
+    $mod     = $npw % $poolp;
+    $npw_pp  = $npw / $poolp + ($mod > 0) * 4;
+    $mod     = $nr3s % $poolp;
+    $nr3s_pp = $nr3s / $poolp + ($mod > 0)*4;
+    $mod     = $nr3  % $poolp;
+    $nr3_pp  = $nr3  / $poolp + ($mod > 0)*4;
+
+    $N  = $npw_pp;
+    $nu = $nr1s * $nr2s * $nr3s_pp; 
+    $mu = $nr1 * $nr2 * $nr3_pp; 
+};
+
+my $init_N_it = $N_it + 0.5;
+my $runtime_iter = $runtime / double($init_N_it);
+
+wcols '%15.10g    %15.10g    %10d %10d %10d %5d    %5d %5d %5d',
+    $runtime_iter, $N_h, $N_k, $nbnd, $npw_pp, $nproj, $nr1, $nr2, $nr3_pp,
+    'fuckit.dat';
+# [ double,    double,    long, long, long, long,    long, long, long ]
+
+my $fstring_raw        = '%15.10g    %10d %15.10g    %10d %10d %10d %10d %5d';
+my $header_raw = sprintf('#%-14s    %10s %15s    %10s %10s %10s %10s %5s',
+    qw/iter_time N_k N_h M N nu mu P/);
+my @raw_data = (
+    $runtime_iter,
+    $N_k, $N_h,
+    $M, $N, $nu, $mu, $P
+);
+
+my $pre_a = double($N_it) * double($N_k) * double($N_h) * double($M);
+
+my $ta1 = $pre_a * double($N);
+my $ta2 = $pre_a * double($nu) * log(double($nu));
+my $ta3 = $pre_a * double($P)  * double($N);
+my $tb1 = double($N_it) * double($N_k) * $B * $B * double($M) * double($M);
+my $tb2 = $tb1 * $B * double($M);
+my $tc2 = double($N_it) * double($M) * double($mu);
+my $tc1 = $tc2 * log(double($mu));
+my $td2 = double($N_it) * double($mu);
+my $td3 = $td2 * log(double($mu));
+
+my @features = (
+    $ta1,$ta2,$ta3,
+    $tb1,$tb2,
+    $tc1,$tc2,
+    $td2,$td3,
+);
+
+my $n_sets  = 10;
+my $set_idx = long(floor($n_sets*random($runtime->dim(0))));
+my $line_fstring=join(' ',('%15.10g') x ($#features + 2));
+my $svr_fstring='%15.10g';
+for (my $i=0; $i<=$#features; $i++) {
+    $svr_fstring.=sprintf(' %d:%%15.10g',$i+1);
+}
+
+for (my $i=0;$i<$n_sets;$i++) {
+    my $fbase=sprintf('%s.%02d',$complexity_fname,$i);
+    my ($test_idx,$training_idx)=which_both($set_idx==$i);
+    my @test_data=map { $_($test_idx) } $runtime,@features;
+    my @training_data=map { $_($training_idx) } $runtime,@features;
+    my @test_raw=map { $_($test_idx) } @raw_data;
+    my @training_raw=map { $_($training_idx) } @raw_data;
+    wcols $line_fstring,@test_data,"${fbase}.test.dat";
+    wcols $line_fstring,@training_data,"${fbase}.training.dat";
+    wcols $svr_fstring,@test_data,"${fbase}.test.svr";
+    wcols $svr_fstring,@training_data,"${fbase}.training.svr";
+    wcols $fstring_raw,@test_raw,"${fbase}.raw.test.dat",{HEADER=>$header_raw};
+    wcols $fstring_raw,@training_raw,"${fbase}.raw.training.dat",{HEADER=>$header_raw};
+}

@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use PDL;
+use PDL::NiceSlice;
+use PDL::Fit::Levmar;
+my $B = pdl(2);
+
+my $complexity_fname=shift;
+die "usage $0 <complexity.dat>" unless ((defined $complexity_fname) and (-s $complexity_fname));
+my ($runtime_iter,
+    $N_k, $N_h,
+    $M, $N, $nu, $mu, $P) = rcols $complexity_fname;
+
+my $s = sequence(long,$P->dim(0));
+
+my $pre_a = double($N_k) * double($N_h) * double($M);
+my $ta1 = $pre_a * double($N);
+my $ta2 = $pre_a * double($nu) * log(double($nu));
+my $ta3 = $pre_a * double($P)  * double($N);
+my $tb1 = double($N_k) * $B * $B * double($M) * double($M);
+my $tb2 = $tb1 * $B * double($M);
+my $tc2 = double($M) * double($mu);
+my $tc1 = $tc2 * log(double($mu));
+my $td2 = double($mu);
+my $td3 = $td2 * log(double($mu));
+
+
+
+my $terms = transpose(cat($ta1,$ta2,$ta3,$tb1,$tb2,$tc1,$tc2,$td2,$td3))->sever();
+#my $tm = $terms->xchg(0,1)->maximum;
+#$terms /= $tm->dummy(1);
+
+sub lin_complexity {
+    my ($p,$xin,$t) = @_;
+    $xin.=inner($p,$terms);
+}
+
+my $p=random($terms->dim(0))*5;
+my $lb=ones($terms->dim(0))*1e-20;
+
+my $h = levmar($p,$runtime_iter,$s, FUNC => \&lin_complexity,
+    LB => $lb,
+    JFUNC => sub {
+        my ($p,$d,$t) = @_;
+        $d.=$terms;
+    },
+    MAXITS=>1e5,
+);
+print levmar_report($h);
