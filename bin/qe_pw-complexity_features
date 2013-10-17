@@ -40,9 +40,9 @@ do {
 my $init_N_it = $N_it + 0.5;
 my $runtime_iter = $runtime / double($init_N_it);
 
-wcols '%15.10g    %15.10g    %10d %10d %10d %5d    %5d %5d %5d',
-    $runtime_iter, $N_h, $N_k, $nbnd, $npw_pp, $nproj, $nr1, $nr2, $nr3_pp,
-    'fuckit.dat';
+#wcols '%15.10g    %15.10g    %10d %10d %10d %5d    %5d %5d %5d',
+#    $runtime_iter, $N_h, $N_k, $nbnd, $npw_pp, $nproj, $nr1, $nr2, $nr3_pp,
+#    'fuckit.dat';
 # [ double,    double,    long, long, long, long,    long, long, long ]
 
 my $fstring_raw        = '%15.10g    %10d %15.10g    %10d %10d %10d %10d %5d';
@@ -53,6 +53,7 @@ my @raw_data = (
     $N_k, $N_h,
     $M, $N, $nu, $mu, $P
 );
+wcols $fstring_raw,@raw_data,"${complexity_fname}.raw.dat",{HEADER=>$header_raw};
 
 my $pre_a = double($N_it) * double($N_k) * double($N_h) * double($M);
 
