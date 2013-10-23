@@ -89,7 +89,11 @@ sub to_perl {
 		)
 		[dD]([+-]?\d+)        ## group 2: exponent with optional sign
 		$}x) {
-		return($1 . 'e' . $2);
+        if (defined $2) {
+            return($1 . 'e' . $2);
+        } else {
+            return($1);
+        }
 	}
 	return(undef);
 }
@@ -118,13 +122,17 @@ sub to_perl {
 	if ($val=~m{^[ \t]*
 		(                     ## group1: mantissa
 			[+-]?             ##    optional sign
-			(?:\d*(\.\d+)     ##    group 2: decimal point and digits
+			(?:\d*\.\d+       ##    with decimal point
 			|
 			\d+)              ##    without decimal point
 		)
 		(?:[eE]([+-]?\d+))?   ## group3: exponent with optional sign
 		$}x) {
-		return($1);
+        if (defined $2) {
+            return($1 . 'e' . $2);
+        } else {
+            return($1);
+        }
 	}
 	return(undef);
 }
