@@ -1,0 +1,78 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use PDL;
+use PDL::NiceSlice;
+use Chemistry::Simulation::QuantumEspresso::pw::out;
+my $divisors_nk=sequence(long,10)+1;
+my $divisor_nr_max=pdl(long,50);
+my $divisors_nr = $divisor_nr_max-sequence(long,$divisor_nr_max);
+my $nproc_max = pdl(long,180);
+print "dnr: $divisors_nr\n";
+my $verbose = 2;
+foreach my $scf_out_fname (@ARGV) {
+    unless (-s $scf_out_fname) {
+        print STDERR "Empty or non-existant file '$scf_out_fname'\n";
+        next;
+    }
+    my $scf_out=Chemistry::Simulation::QuantumEspresso::pw::out::parse($scf_out_fname);
+    my $scf_init=$scf_out->[0];
+    unless (defined $scf_init) {
+        print STDERR "Missing init phase in '$scf_out_fname'\n";
+        next;
+    }
+    unless (defined $scf_init->{nr}) {
+        print STDERR "Missing FFT grid info in '$scf_out_fname'\n";
+        next;
+    }
+    my $nr   = pdl(long,$scf_init->{nr});
+    my $nbnd = pdl(long,$scf_init->{nbnd});
+    my $nk   = pdl(long,$scf_init->{nk});
+    my $header="# nbnd: $nbnd, nk: $nk, nr: $nr\n";
+    print $header;
+    my $nr3_m = $nr(2) % $divisors_nr;
+    my $nr3_d = $nr(2) / $divisors_nr;
+    my $nk_m = $nk % $divisors_nk;
+    my $nk_d = $nk / $divisors_nk;
+#    wcols '# %3d %4d %4d %4d %4d',$divisors,$nr3_d,$nr3_m,$nk_d,$nk_m,{HEADER=>'# div  nrd  nrm  nkd  nkm'};
+    my $good_nrd = which($nr3_m == 0);
+    my $good_nkd = which($nk_m == 0);
+    my $npool = $divisors_nk($good_nkd);
+    my $proc_per_pool = $nr3_d($good_nrd);
+    my $nproc = zeroes(long,$divisors_nr->dim(0),$divisors_nk->dim(0));
+    $nproc($good_nrd,$good_nkd) .= $npool->dummy(0) * $proc_per_pool->dummy(1);
+    my $np_ok=ones(long,$nproc->dims);
+    $np_ok->where($nproc==0).=0;
+    $np_ok->where($nproc>$nproc_max).=0;
+    $np_ok->where($nproc<$nbnd/2).=0;
+#    print "#  ppp: $proc_per_pool\n";
+#    print "#npool: $npool\n";
+    my $ok_iND=whichND($np_ok);
+#    print $nproc;
+    # print $np_ok;
+    my $nrd_m = ($ok_iND((0),:) < ($divisor_nr_max - 2));
+    my $sortl = zeroes(long,3,$ok_iND->dim(1));
+    $sortl((0),:).=-$nrd_m;
+    $sortl((2),:).=-$nproc->indexND($ok_iND);
+    $sortl((1),:).=$divisors_nk($ok_iND((1),:));
+    my $sorti=$sortl->qsortveci;
+    my $l_sorted = abs($sortl(:,$sorti));
+    my $ok_iND_s = $ok_iND(:,$sorti);
+    my $nproc_s = $nproc->indexND($ok_iND_s);
+    my $dnk_s   = $divisors_nk($ok_iND_s((1),:));
+    my $dnr_s   = $divisors_nr($ok_iND_s((0),:));
+    my $r_nr3   = $dnr_s * $nproc_s / $dnk_s;
+    if ($verbose > 1) {
+        wcols '%3d %3d   %3d %3d %3d   %3d   %4d',$ok_iND_s->transpose->dog,
+            $nproc_s,
+            $dnk_s,
+            $dnr_s,
+            $nrd_m($sorti),
+            $r_nr3,
+            ;
+    }
+    my $sl = 4;
+    $sl = $sortl->dim(1)-1 if (($sortl->dim(1)-1)<$sl);
+    my $ofn = "${scf_out_fname}.PARA_SUGGESTION";
+    wcols 'nr3pp: %4d, nproc: %4d, npool: %3d',$dnr_s(0:$sl),$nproc_s(0:$sl),$dnk_s(0:$sl),$ofn,{HEADER=>$header};
+}
