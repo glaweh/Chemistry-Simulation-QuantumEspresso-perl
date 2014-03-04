@@ -61,7 +61,7 @@ sub parse_value {
 		\s             # a space, to be substituted by a comma
 		(\s*[^\s,])    # first char of the next group of non-comma, non-space chars
 		}{$1,$2}gsx;
-	die "unimplemented: complex vars" if ($data_v =~ m{\(});
+	die "unimplemented: complex vars '$data_v'" if ($data_v =~ m{\(});
 	while ($data_v =~ m{(?:
 				([^\s,]+)\s*,?   # value, followed by optional space and comma
 			|
