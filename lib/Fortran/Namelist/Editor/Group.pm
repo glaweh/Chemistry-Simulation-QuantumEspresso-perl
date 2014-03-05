@@ -26,7 +26,7 @@ sub find_vars {
 	my (undef,$data_n) = $self->{_namelist}->get_data($offset_b,$offset_e);
 	my @offsets;
 	# scan data_n for variables: name, optionally index, followed by '='
-	while ($data_n=~m{,?\s+         ## variable assignments are separated by whitespace, optionally with a preceeding comma
+	while ($data_n=~m{(?:,\s*|\s+)  ## variable assignments are separated by whitespace, or comma with optional whitespace
 			([a-zA-Z][^\(\s]+)      ## a fortran identifier starts with a letter
 			\s*((?:\([^\)]*\)\s*?)*)## there may be more than one index statement attached to each variable
 			\s*=\s*                 ## = separates variable and value, maybe enclosed by whitespace
