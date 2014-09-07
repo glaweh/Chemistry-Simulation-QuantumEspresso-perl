@@ -17,7 +17,7 @@ foreach my $scf_out_fname (@ARGV) {
     if (defined $what) {
         my $val;
         eval "\$val=$what";
-        print "$val\n";
+        print "$scf_out_fname $val\n";
     } else {
         print sdump($data);
     }
