@@ -78,7 +78,10 @@ sub parse {
 			$data->{error}->{$err_name}->[1]=join("\n",@err_msg);
 			next;
 		}
-		$hot = 0 if ($hot and /^\|--- Localization - End/);
+		if ($hot and /^\|--- Localization - End/) {
+            $hot = 0;
+            $data->{'finished'}=1;
+        }
 		if ($hot) {
             next unless (/^\|/);
             s/\|/ /g;
