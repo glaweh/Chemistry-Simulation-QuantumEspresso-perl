@@ -98,6 +98,16 @@ sub parse {
             $data->{git_version}=$1;
         } elsif (/Program .+ v.(.+?)\s+starts on/) {
             $data->{espresso_version}=$1;
+        } elsif (/min_bader_atom_dist\(\s*(\d+)\s*;[^\)]*\):\s*([0-9\.]+)/) {
+            $data->{atom_bader_distance}->[$1-1]=$2;
+        } elsif (/number of grid points \(total,theta,bader\):\s*(\d+)\s+(\d+)\s+(\d+)/) {
+            $data->{ngrid_total} = $1;
+            $data->{ngrid_theta} = $2;
+            $data->{ngrid_bader} = $3;
+        } elsif (/volume \(total,theta,bader\):\s*([0-9\.]+)\s+([0-9\.]+)\s+([0-9\.]+)/) {
+            $data->{volume_total} = $1;
+            $data->{volume_theta} = $2;
+            $data->{volume_bader} = $3;
         }
 		$hot = 1 if (/^\|--- Localization --/);
 	}
