@@ -1,7 +1,7 @@
-package Chemistry::Simulation::QuantumEspresso::pw::in::card;
+package Chemistry::Simulation::QuantumEspresso::IN::pw::card;
 use strict;
 use warnings;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
+@Chemistry::Simulation::QuantumEspresso::IN::pw::card::ISA=qw{Fortran::Namelist::Editor::ContainerSpan};
 sub init {
 	my ($self,$namelist,$lines,$lines_cs,$o_lines,$i)=@_;
 	my $o_line=$o_lines->[$i] if (defined $i);

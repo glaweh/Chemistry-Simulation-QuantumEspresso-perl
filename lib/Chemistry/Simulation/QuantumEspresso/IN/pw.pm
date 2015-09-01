@@ -1,14 +1,14 @@
-package Chemistry::Simulation::QuantumEspresso::pw::in;
+package Chemistry::Simulation::QuantumEspresso::IN::pw;
 use strict;
 use warnings;
 use Carp;
 use Fortran::Namelist::Editor;
 use Scalar::Util qw(blessed);
-use Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES;
-use Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS;
-use Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS;
-use Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS;
-@Chemistry::Simulation::QuantumEspresso::pw::in::ISA=('Fortran::Namelist::Editor');
+use Chemistry::Simulation::QuantumEspresso::IN::pw::card::ATOMIC_SPECIES;
+use Chemistry::Simulation::QuantumEspresso::IN::pw::card::ATOMIC_POSITIONS;
+use Chemistry::Simulation::QuantumEspresso::IN::pw::card::CELL_PARAMETERS;
+use Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS;
+@Chemistry::Simulation::QuantumEspresso::IN::pw::ISA=('Fortran::Namelist::Editor');
 my @groups = qw{&control &system &electrons &ions &cell ATOMIC_SPECIES ATOMIC_POSITIONS K_POINTS CELL_PARAMETERS OCCUPATIONS CONSTRAINTS};
 my %groups = map { $groups[$_],$_ } 0 .. $#groups;
 
@@ -47,19 +47,19 @@ sub parse_cards {
 		# skip empty lines
 		next if ($lines_cs[$i] =~ /^\s*$/) ;
 		if ($lines_cs[$i] =~ /^\s*ATOMIC_SPECIES/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_SPECIES->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::IN::pw::card::ATOMIC_SPECIES->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*ATOMIC_POSITIONS/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::IN::pw::card::ATOMIC_POSITIONS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*CELL_PARAMETERS/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::CELL_PARAMETERS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::IN::pw::card::CELL_PARAMETERS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 		if ($lines_cs[$i] =~ /^\s*K_POINTS/) {
-			($i,$card)=Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
+			($i,$card)=Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS->parse($self,\@lines,\@lines_cs,\@o_lines,$i);
 			next;
 		}
 	} continue {
@@ -92,7 +92,7 @@ sub add_group {
 	return($self->SUPER::add_group($group_name,$after_idx,@options)) unless ($is_card);
 	my $offset_b    = $self->{_groups}->[$after_idx]->{_o}->[1];
 	$offset_b = $self->insert_new_line_after($offset_b,'');
-	my $class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::' . $group_name;
+	my $class = 'Chemistry::Simulation::QuantumEspresso::IN::pw::card::' . $group_name;
 	my $card  = $class->insert($self,$offset_b,'',$group_name,@options);
 	splice(@{$self->{_groups}},$after_idx+1,0,$card);
 	$self->{groups}->{$group_name}=$card;

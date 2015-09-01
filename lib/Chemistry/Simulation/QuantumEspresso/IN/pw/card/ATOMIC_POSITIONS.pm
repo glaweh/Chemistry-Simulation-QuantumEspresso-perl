@@ -1,9 +1,9 @@
-package Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS;
+package Chemistry::Simulation::QuantumEspresso::IN::pw::card::ATOMIC_POSITIONS;
 use strict;
 use warnings;
-use Chemistry::Simulation::QuantumEspresso::pw::in::card;
+use Chemistry::Simulation::QuantumEspresso::IN::pw::card;
 use Scalar::Util qw{blessed};
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::ATOMIC_POSITIONS::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
+@Chemistry::Simulation::QuantumEspresso::IN::pw::card::ATOMIC_POSITIONS::ISA = qw{Chemistry::Simulation::QuantumEspresso::IN::pw::card};
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->SUPER::init($namelist,@args);

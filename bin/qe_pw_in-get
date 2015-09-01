@@ -1,14 +1,14 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Chemistry::Simulation::QuantumEspresso::pw::in;
+use Chemistry::Simulation::QuantumEspresso::IN::pw;
 use Data::Dumper;
 use Getopt::Std;
 my %opt;
 getopts('d',\%opt);
 
 my $fname = shift;
-my $in = Chemistry::Simulation::QuantumEspresso::pw::in->new({filename => $fname});
+my $in = Chemistry::Simulation::QuantumEspresso::IN::pw->new({filename => $fname});
 my ($group,$var,@index) = split /\s*:\s*/,$ARGV[0] if ($#ARGV >=0);
 
 if ($opt{d}) {

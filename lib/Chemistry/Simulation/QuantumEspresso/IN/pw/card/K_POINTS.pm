@@ -1,9 +1,9 @@
-package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS;
+package Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS;
 use strict;
 use warnings;
 use Scalar::Util qw{blessed};
-use Chemistry::Simulation::QuantumEspresso::pw::in::card;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::ISA = qw{Chemistry::Simulation::QuantumEspresso::pw::in::card};
+use Chemistry::Simulation::QuantumEspresso::IN::pw::card;
+@Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::ISA = qw{Chemistry::Simulation::QuantumEspresso::IN::pw::card};
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->SUPER::init($namelist,@args);
@@ -84,11 +84,11 @@ sub insert {
 	my ($class,$namelist,$o_b,$separator,$name,$units,@args) = @_;
 	die "units option undefined" unless (defined $units);
 	if ($units eq 'gamma') {
-		$class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma';
+		$class = 'Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::gamma';
 	} elsif ($units eq 'automatic') {
-		$class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::automatic';
+		$class = 'Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::automatic';
 	} else {
-		$class = 'Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list';
+		$class = 'Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::list';
 	}
 	my $self = $class->new($namelist);
 	$self->{_o}->[0] = $o_b;
@@ -104,11 +104,11 @@ sub _insert_subclass {
 	return(undef);
 }
 
-package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma;
+package Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::gamma;
 use strict;
 use warnings;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::gamma::ISA =
-	qw{Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS};
+@Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::gamma::ISA =
+	qw{Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS};
 sub set {
 	my ($self,$variable,$value,@index)=@_;
 	return(undef) unless (defined $variable);
@@ -121,11 +121,11 @@ sub set {
 	die "unknown variable '$variable'";
 }
 
-package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::automatic;
+package Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::automatic;
 use strict;
 use warnings;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::automatic::ISA =
-	qw{Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS};
+@Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::automatic::ISA =
+	qw{Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS};
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->{nk}=[];
@@ -217,11 +217,11 @@ sub _insert_subclass {
 	return($self)
 }
 
-package Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list;
+package Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::list;
 use strict;
 use warnings;
-@Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS::list::ISA =
-	qw{Chemistry::Simulation::QuantumEspresso::pw::in::card::K_POINTS};
+@Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS::list::ISA =
+	qw{Chemistry::Simulation::QuantumEspresso::IN::pw::card::K_POINTS};
 sub init {
 	my ($self,$namelist,@args)=@_;
 	$self->{nks}=undef;

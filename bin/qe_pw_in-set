@@ -1,14 +1,14 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Chemistry::Simulation::QuantumEspresso::pw::in;
+use Chemistry::Simulation::QuantumEspresso::IN::pw;
 use Getopt::Std;
 
 my %opt;
 getopts('d',\%opt);
 
 my $fname = shift;
-my $in = Chemistry::Simulation::QuantumEspresso::pw::in->new({filename => $fname});
+my $in = Chemistry::Simulation::QuantumEspresso::IN::pw->new({filename => $fname});
 
 foreach my $setting (@ARGV) {
 	my ($group,$var,$val,@index) = split /\s*:\s*/,$setting;
