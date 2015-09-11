@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Chemistry::Simulation::QuantumEspresso::OUT;
+
+foreach my $outfname (@ARGV) {
+    my $out = Chemistry::Simulation::QuantumEspresso::OUT->new({filename=>$outfname,debug=>2});
+}
