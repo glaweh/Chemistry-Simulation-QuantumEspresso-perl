@@ -18,8 +18,10 @@ sub init {
 
     $self->{line}        = []; # line contents
     $self->{line_time}   = []; # line timestamp, defined if applicable
-    $self->{parse_target} = $self;
+    $self->{iter}        = [ {} ];
+    $self->{parse_target} = $self->{iter}->[0];
     $self->{debug}       = $opts{debug};
+    $self->{source_tag_width} = (defined $opts{source_tag_width} ? $opts{source_tag_width} : 20);
 
     # read in initial data
     my @init_lines;
@@ -38,25 +40,45 @@ sub init {
     foreach my $line (@init_lines) {
         $self->parse_line($line);
     }
+    print sdump($self->{iter});
 }
 
 sub parse_line {
     my ($self,$line) = @_;
     chomp $line;
-    my $line_time=0.0;
-    $line_time =$1 if ($line =~ s/^\s*(\d+\.\d+)\s*\| //);
+    my $line_time;
+    $line_time = $1 if ($line =~ s/^\s*(\d+\.\d+)\s*\| //);
     push @{$self->{line_time}},$line_time;
     push @{$self->{line}}     ,$line;
-    my $parsed = $self->_parse_line($line,$#{$self->{line}});
+    my ($parser_source,$parser_line) = $self->_parse_line($line,$#{$self->{line}});
     if ($self->{debug}) {
-        my $line_parsed=(defined $parsed ? $parsed : 'unparsed');
-        printf STDERR "%-20s | %20.3f | %s\n",$line_parsed,$line_time,$line;
+        my $debug_output='';
+        if (defined $parser_source) {
+            $parser_source=$1 if ($parser_source=~/(OUT.*)$/);
+            $parser_source=substr($parser_source,-$self->{source_tag_width})
+                if (length($parser_source)>$self->{source_tag_width});
+            $debug_output.=sprintf("%" . $self->{source_tag_width} . "s:%04d | ",$parser_source,$parser_line);
+        } else {
+            $debug_output.=sprintf("%" . ($self->{source_tag_width}+5) . "s | ",'unparsed');
+        }
+        $debug_output.=sprintf("%20.3f | ",$line_time) if (defined $line_time);
+        print STDERR $debug_output . $line . "\n";
     }
 }
 
 sub _parse_line {
     my ($self,$line,$lineno) = @_;
-    return(__FILE__ . ":" . __LINE__) if ($line=~/^\s+$/);
+    my $dest=$self->{parse_target};
+    if ($line=~/^\s*Program\s+(.*)\s+v(\S+)\s+starts on\s+(\S+)\s+at\s+(\S+)\s*$/) {
+        $dest->{prog_name}=$1;
+        $dest->{prog_version}=$2;
+        $dest->{start_date}=$3;
+        $dest->{start_time}=$4;
+        return(__FILE__,__LINE__);
+    } elsif ($line=~/^\s*git_version:\s*(\S+):\s*(.*?)\s*$/) {
+        $dest->{$1}=$2;
+        return(__FILE__,__LINE__);
+    }
     return(undef);
 }
 
