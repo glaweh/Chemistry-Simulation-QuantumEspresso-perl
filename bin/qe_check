@@ -1,8 +1,13 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Chemistry::Simulation::QuantumEspresso::OUT;
+use Chemistry::Simulation::QuantumEspresso;
 
 foreach my $outfname (@ARGV) {
-    my $out = Chemistry::Simulation::QuantumEspresso::OUT->new({filename=>$outfname,debug=>2});
+    my ($cons,$cons_err) = Chemistry::Simulation::QuantumEspresso::qe_constructor($outfname);
+    unless (defined($cons)) {
+        print STDERR "cannot get constructor for $outfname: $cons_err\n";
+        next;
+    }
+    my $out = $cons->({filename=>$outfname,debug=>2});
 }
