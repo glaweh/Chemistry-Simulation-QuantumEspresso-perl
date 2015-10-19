@@ -66,7 +66,9 @@ sub parse {
 			$_=$lines[$i++];
 			last if (($#atoms>=0) and /^\s*$/);
 			if (/^\s*state #\s*(\d+): atom\s*(\d+)\s*\(\s*(\S+)\s*\), wfc\s*(\d+)\s*\(l=\s*(\d+)\s*m=\s*(\d+)\s*\)/) {
+                # atom name
 				$atoms[$2-1]=$3;
+                # $projstates[$state]=[ $atom, $atom_wfc, $l, $m ]
 				push @projstates,[ $2-1, $4-1, $5, $6 ];
 			}
 		}
