@@ -196,6 +196,18 @@ sub parse {
 			$data->{nk}=$1;
 			next;
 		}
+		if (/^\s*cart\. coord\./) {
+		    annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$fh_line) if ($annotated_debug_fh);
+            parse_k($fh,'cart',$data->{nk},$data,$annotated_debug_fh);
+			$fh_line='';
+			next;
+		}
+		if (/^\s*cryst\. coord\./) {
+		    annotate_debug($annotated_debug_fh,'parse',__LINE__-1,$fh_line) if ($annotated_debug_fh);
+            parse_k($fh,'cryst',$data->{nk},$data,$annotated_debug_fh);
+			$fh_line='';
+			next;
+		}
 		if (/^\s*number of atoms\/cell\s*=\s*(\d+)/) {
 			$fh_parsed=__LINE__-1;
 			$data->{nat}=$1;
@@ -702,6 +714,50 @@ sub parse {
 		}
 	}
 	return(\@data_accum);
+}
+
+sub parse_k {
+    my $fh     = shift;
+    my $units  = shift;
+    my $nk     = shift;
+    my $result = shift;
+    my $annotated_debug_fh=shift;
+    my $k  = zeroes(double,3,$nk);
+    my $wk = zeroes(double,  $nk);
+    $result->{"k_${units}"}=$k;
+    $result->{"w_k"}=$wk;
+    my $ik=0;
+    my $kc=0;
+    my $fh_parsed;
+    my $fh_line;
+    while (<$fh>) {
+        $fh_line   = $_;
+        $fh_parsed = 0;
+        # k(    1) = (   0.0000000   0.0000000   0.0000000), wk =   0.0001736
+        if (/^\s*k\(\s*(\d+)\s*\)\s*=\s*\(
+                 \s*([0-9\.ed\-\+]+)
+                 \s+([0-9\.ed\-\+]+)
+                 \s+([0-9\.ed\-\+]+)
+               \s*\),\s*
+               wk\s*=\s*([0-9\.ed\-\+]+)
+            /x) {
+            $fh_parsed=__LINE__-1;
+            $ik=$1-1;
+            $k(0,$ik).=$2;
+            $k(1,$ik).=$3;
+            $k(2,$ik).=$4;
+            $wk($ik) .=$5;
+        } else {
+            last;
+        }
+        $kc++;
+        last if ($kc>$nk);
+    } continue {
+		annotate_debug($annotated_debug_fh,'parse_k',$fh_parsed,$fh_line)
+            if ($annotated_debug_fh and $fh_line);
+    }
+	annotate_debug($annotated_debug_fh,'parse_k',$fh_parsed,$fh_line)
+        if ($annotated_debug_fh and $fh_line);
 }
 
 sub parse_write_ns {
