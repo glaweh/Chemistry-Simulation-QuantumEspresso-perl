@@ -1,0 +1,140 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use PDL;
+use PDL::NiceSlice;
+use PDL::IO::Dumper;
+use Chemistry::Simulation::QuantumEspresso::projwfc::out;
+use Chemistry::Simulation::QuantumEspresso::pw::out;
+use Chemistry::Simulation::QuantumEspresso::IN::pw;
+use HG::PDL::Util::Approx;
+my $scf_in  = Chemistry::Simulation::QuantumEspresso::IN::pw->new({filename=>'scf.pw.IN'});
+my $scf_out = Chemistry::Simulation::QuantumEspresso::pw::out::parse('scf.pw.OUT');
+my $proj    = Chemistry::Simulation::QuantumEspresso::projwfc::out::parse('projwfc.OUT');
+my $tol     = pdl(double,0.0001);
+
+die "parse error" unless ((defined $scf_in) and (defined $scf_out) and (defined $proj));
+
+# setup full k grid
+my $k;
+do {
+    my $kcard=$scf_in->get('K_POINTS') or die "error getting K-Point settings";
+    die "not a regular K-Grid" unless ($kcard->{units} eq 'automatic');
+    $k->{nk} = $kcard->{nk};
+    $k->{sk} = $kcard->{sk};
+    my $cryst = (ndcoords(double,@{$k->{nk}})+pdl(double,$k->{sk})/2)/pdl(double,$kcard->{nk});
+    # 1BZ : [0:1)
+    $k->{cryst} = $cryst;
+};
+print join('*',$k->{cryst}->dims) . "\n";
+
+my $vtk_fh;
+open($vtk_fh,'>','doof.vtk') or die "error opening doof.vtk";
+print $vtk_fh <<doof_end1;
+# vtk DataFile Version 3.0
+go_home
+ASCII
+DATASET STRUCTURED_GRID
+doof_end1
+printf $vtk_fh "DIMENSIONS %4d %4d %4d\nPOINTS %6d double\n",@{$k->{nk}},pdl($k->{nk})->prodover;
+wcols "  %10.8f %10.8f %10.8f",$k->{cryst}->clump(1,2,3)->transpose->dog,$vtk_fh;
+printf $vtk_fh "POINT_DATA %7d\n",pdl($k->{nk})->prodover;
+
+sub find_grid_index {
+    # list of k points in crystal coordinates
+    my $mapped_k = shift;
+    $mapped_k=$mapped_k->copy(); # create local copy
+    print "  mk  " . join('*', $mapped_k->dims) . "\n";
+
+    # normalize to 1BZ
+    my $shift_idx=whichND(abs($mapped_k)>$tol);
+    $mapped_k->indexND($shift_idx)-=$mapped_k->indexND($shift_idx)->floor;
+
+    # remove duplicates
+    my $k_uniq   = $mapped_k->approx_uniqvec($tol);
+    print "  mku " . join('*', $k_uniq->dims) . "\n";
+
+    # compute grid index coordinates
+    #   first as double
+    my $ki_dbl = $k_uniq*pdl(double,$k->{nk})-pdl(double,$k->{sk})/2;
+    # print $ki_dbl;
+    #   round to nearest int
+    my $ki_int = $ki_dbl->rint;
+    # remove all non-grid-members
+    do {
+        my $outofgrid_mask  = long(abs($ki_dbl-$ki_int)>$tol)->orover; # non-integers
+        $outofgrid_mask    |= long($ki_int<-$tol)->orover;             # negative index
+        $outofgrid_mask    |= long(($ki_int-pdl(double,$k->{nk})+1)>$tol)->orover; # too-large index
+        print "  ogm: " . join('*',$outofgrid_mask->dims) . "\n";
+        my ($outofgrid,$ongrid) = which_both($outofgrid_mask);
+        if ($outofgrid->dim(0)>1) {
+            printf "  removing %6d outside-grid points\n",$outofgrid->dim(0);
+            wcols "    %10.8f %10.8f %10.8f      %10.4f %10.4f %10.4f",
+                $k_uniq(:,$outofgrid)->transpose->dog,
+                $ki_dbl(:,$outofgrid)->transpose->dog;
+        }
+        $k_uniq=$k_uniq(:,$ongrid)->sever;
+        $ki_dbl=$ki_dbl(:,$ongrid)->sever;
+        $ki_int=long($ki_int(:,$ongrid)); # convert to integer
+    };
+
+    # generate ND index for double-checking coordinates
+    my $ki_ND        = zeroes(long,4,3,$ki_int->dim(1)); # allocate
+    $ki_ND(1:3,:,:) .= $ki_int->dummy(1);                # fill grid index
+    $ki_ND((0),:,:) .= sequence(3);                      # and coordinate
+    # print $ki;
+    my $k_from_grid  = $k->{cryst}->indexND($ki_ND);
+    my $k_diff       = $k_uniq - $k_from_grid;           # should be zero
+    my $problem      = long(abs($k_diff)>$tol)->orover;
+    # print "pb: " . join('*',$problem->dims) . "\n";
+    if ($problem->orover) {
+        print "  PROBLEM\n";
+        wcols "    %10.8f %10.8f %10.8f      %10.4f %10.4f %10.4f   %10.8f %10.8f %10.8f",
+            $k_uniq->transpose->dog,
+            $ki_dbl->transpose->dog,
+            $k_from_grid->transpose->dog;
+    }
+    return($ki_int);
+}
+
+# check if espressos crystal k points are part of our grid;
+do {
+    my $symm    = pdl($scf_out->[0]->{symm_cryst}->{s});
+    my $symm_ft = pdl($scf_out->[0]->{symm_cryst}->{ft});
+    print "symm " . join('*',$symm->dims) . " ft " . join('*',$symm_ft->dims) . "\n";
+    my $k_ibz      = $scf_out->[0]->{k_cryst};
+    my $hit_by_n_k = zeroes(long,@{$k->{nk}}); # count how many ibz k points map to given point
+    print "Checking grid membership of IBZ k points\n";
+    my $ki_ibz  = find_grid_index($k_ibz);
+    $hit_by_n_k->indexND($ki_ibz).=1;
+    printf $vtk_fh "SCALARS ibz int 1\nLOOKUP_TABLE default\n";
+    wcols "  %7d",$hit_by_n_k->flat,$vtk_fh;
+    $hit_by_n_k.=0;
+
+    my $hit_by_i_k = zeroes(long,@{$k->{nk}})-1; # which ibz k point maps to that bz k point
+    # expand ibz grid
+    print "Symmetry-expanding IBZ to full 1BZ\n";
+    for (my $ik_ibz=0; $ik_ibz<$k_ibz->dim(1); $ik_ibz++) {
+        print "k $ik_ibz: " . $k_ibz(:,($ik_ibz)) . "\n";
+        # apply espresso symm op
+        my $mapped_k  = ($k_ibz(:,($ik_ibz)) x $symm(:,:,:)->xchg(0,1))->clump(1,2) + $symm_ft;
+        my $ki_mapped = find_grid_index($mapped_k);
+        $hit_by_n_k->indexND($ki_mapped)++;
+        $hit_by_i_k->indexND($ki_mapped).=$ik_ibz;
+    }
+    printf $vtk_fh "SCALARS expanded int 1\nLOOKUP_TABLE default\n";
+    wcols "  %7d",$hit_by_n_k->flat,$vtk_fh;
+    if (any($hit_by_n_k != 1)) {
+        my $hbnk_u = $hit_by_n_k->flat->uniq;
+        my $hbnk_u_c = zeroes($hbnk_u);
+        for (my $i=0;$i<$hbnk_u->dim(0);$i++) {
+            $hbnk_u_c($i).=($hit_by_n_k==$hbnk_u($i))->sum;
+        }
+        print "Problems symmetry-expanding k points\n";
+        wcols '%3d   %6d',$hbnk_u,$hbnk_u_c;
+    } else {
+        print "All k symmetry expansions correct\n";
+    }
+};
+
+# wcols "%3d %10.8f",sequence(long,$k->{nk}->[1]),$k->{cryst}->((0),:,(0),(10));
