@@ -105,6 +105,10 @@ do {
     print "NO_INVERSION\n" unless ($scf_out->[0]->{sym_inversion});
     print "HAS_FRACTIONAL_TRANSLATION\n" if (any(abs($symm_ft)>$tol));
 
+    # magnetic_sym = noncolin .AND. domag
+    # time_reversal = .NOT. noinv .AND. .NOT. magnetic_sym
+    my $time_reversal = 1;
+
     my $k_ibz      = $scf_out->[0]->{k_cryst};
     my $hit_by_n_k = zeroes(long,@{$k->{nk}}); # count how many ibz k points map to given point
     print "Checking grid membership of IBZ k points\n";
@@ -121,6 +125,8 @@ do {
         print "k $ik_ibz: " . $k_ibz(:,($ik_ibz)) . "\n";
         # apply espresso symm op
         my $mapped_k  = ($k_ibz(:,($ik_ibz)) x $symm(:,:,:)->xchg(0,1))->clump(1,2) + $symm_ft;
+        # add time-reversal symmetry
+        $mapped_k = cat($mapped_k,-$mapped_k)->clump(1,2) if ($time_reversal);
         my $ki_mapped = find_grid_index($mapped_k);
         $hit_by_n_k->indexND($ki_mapped)++;
         $hit_by_i_k->indexND($ki_mapped).=$ik_ibz;
