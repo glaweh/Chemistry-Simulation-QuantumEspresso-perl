@@ -102,6 +102,9 @@ do {
     my $symm    = pdl($scf_out->[0]->{symm_cryst}->{s});
     my $symm_ft = pdl($scf_out->[0]->{symm_cryst}->{ft});
     print "symm " . join('*',$symm->dims) . " ft " . join('*',$symm_ft->dims) . "\n";
+    print "NO_INVERSION\n" unless ($scf_out->[0]->{sym_inversion});
+    print "HAS_FRACTIONAL_TRANSLATION\n" if (any(abs($symm_ft)>$tol));
+
     my $k_ibz      = $scf_out->[0]->{k_cryst};
     my $hit_by_n_k = zeroes(long,@{$k->{nk}}); # count how many ibz k points map to given point
     print "Checking grid membership of IBZ k points\n";
